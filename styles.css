@@ -1,0 +1,238 @@
+/* Dnamo Football Foundation
+   Palette: red #eb2323 (hover / red text on white #c81a1a), black, white,
+   light grey #f4f4f4, muted grey #6a6a6a, hairline #1a1a1a.
+   Rules: square corners, no shadows, 8px spacing scale, 1320px max width. */
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{max-width:100%;overflow-x:hidden}
+body{margin:0;font-family:Inter,sans-serif;color:#000;background:#fff;line-height:1.55}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit}
+button:focus-visible,a:focus-visible,input:focus,textarea:focus{outline:2px solid #eb2323;outline-offset:0}
+input,textarea{border:1px solid #000;border-radius:0;padding:12px 16px;font:inherit;background:#fff;color:#000}
+[hidden]{display:none!important}
+
+/* Layout */
+.w{max-width:1384px;margin:0 auto;padding-left:32px;padding-right:32px}
+.pad{padding-top:72px;padding-bottom:96px}
+.pad-l{padding-top:120px;padding-bottom:120px}
+.pad-sub{padding-top:56px}
+.pad-after-sub{padding-top:32px;padding-bottom:96px}
+.dark{background:#000;color:#fff}
+.grid{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.split{display:grid;grid-template-columns:2fr 3fr;gap:48px}
+.split2{display:grid;grid-template-columns:3fr 2fr;gap:48px;align-items:start}
+.split>*,.split2>*{min-width:0}
+.tray{background:#f4f4f4;padding:24px}
+.row-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.row-wrap.g12{gap:12px}
+.row-wrap.g16{gap:16px}
+.mb24{margin-bottom:24px}
+.mb32{margin-bottom:32px}
+.mb48{margin-bottom:48px}
+.mt48{margin-top:48px}
+
+/* Type */
+.h{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;margin:0;line-height:1}
+h1.h{font-size:72px}
+h1.h.init-title{font-size:68px}
+h2.h{font-size:54px}
+h3.h{font-size:28px;margin:16px 0 12px}
+.eyebrow{margin:0 0 12px;color:#6a6a6a;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px}
+.dark .eyebrow{color:#bdbdbd}
+.lead{margin:16px 0 40px;font-size:18px;color:#6a6a6a;max-width:640px}
+.lead.l48{margin-bottom:48px}
+.prose{font-size:17px}
+.prose p{margin:0 0 18px}
+.prose p:last-child{margin-bottom:0}
+.num{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:88px;line-height:1;font-variant-numeric:tabular-nums}
+.more{font-weight:600;text-decoration:underline}
+.red{color:#c81a1a;font-weight:600;font-size:14px}
+.lab{display:block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px}
+
+/* Header and nav */
+.site-header{position:fixed;top:0;left:0;right:0;z-index:20;background:transparent;color:#fff}
+.site-header.solid{background:#000}
+.site-header .w{padding-top:14px;padding-bottom:14px;display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;justify-content:space-between}
+main{padding-top:72px}
+.home main{padding-top:0}
+.nav{display:inline-flex;align-items:center;background:none;border:0;border-bottom:2px solid transparent;color:#fff;font:600 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:12px 4px;min-height:44px;cursor:pointer}
+.nav:hover{border-bottom-color:#fff}
+.nav.on{border-bottom-color:#eb2323}
+.nav.brand{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:28px;letter-spacing:.04em;gap:.25em}
+.nav.brand span{font-weight:500}
+.burger{display:none}
+.navbox{display:flex;flex-wrap:wrap;gap:4px 24px;align-items:center}
+
+/* Buttons */
+.btn{display:inline-block;background:#eb2323;color:#fff;font:700 14px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:14px 28px;min-height:44px;border-radius:0;border:0;cursor:pointer}
+.btn:hover{background:#c81a1a}
+.btn.s{background:transparent;color:#000;border:1px solid #000}
+.btn.s:hover{background:#f4f4f4}
+.btn.o{background:transparent;color:#fff;border:1px solid #fff}
+.btn.o:hover{background:#1a1a1a}
+.btn.block{display:block;text-align:center;margin:24px 0 20px}
+.sub{background:#fff;border:1px solid #000;color:#000;font:700 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:12px 24px;min-height:44px;cursor:pointer;border-radius:0;display:inline-flex;align-items:center}
+.sub:hover{background:#f4f4f4}
+.sub.on{background:#000;color:#fff}
+
+/* Cards: hairlines above and below only */
+.card,.dir{display:block;width:100%;background:#fff;border:0;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;border-radius:0;text-align:left;font:inherit;color:#000;cursor:pointer}
+.card{padding:32px}
+.dir{padding:24px}
+.card:hover,.dir:hover{background:#f4f4f4}
+.card.static{cursor:default}
+.card.static:hover{background:#fff}
+.card.d{background:transparent;color:#fff;border-color:#6a6a6a}
+.card.d:hover{background:#1a1a1a}
+.card.d p{color:#d0d0d0}
+.card p{margin:0 0 16px;color:#6a6a6a}
+.card.on,.dir.on{background:#000;color:#fff}
+.card .ft{display:block;font-size:24px;margin-bottom:8px}
+.dsc{display:block;margin:0;color:#6a6a6a}
+.card.on .dsc{color:#d0d0d0}
+.dir .ph{height:150px;margin-bottom:18px}
+.dir .h{display:block;font-size:26px}
+.dir .red{display:block}
+.dir.on .red{color:#d0d0d0}
+.quote{font-size:18px;color:#000!important;margin-bottom:20px!important}
+.who{font-size:22px}
+
+/* Photo placeholders */
+.ph{background:#1a1a1a;color:#bdbdbd;font-size:12px;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:flex-end;padding:24px}
+.ph.tall{min-height:380px}
+
+/* Hero */
+.hero2{display:grid;grid-template-columns:2fr 3fr;align-items:stretch;min-height:640px}
+.herotx{padding:144px 48px 96px max(32px,calc((100vw - 1320px)/2));display:flex;flex-direction:column;justify-content:center}
+.herotx h1.h{font-size:88px}
+.herotx .kicker{margin:0 0 16px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#bdbdbd;font-weight:600}
+.herotx .intro{margin:24px 0 32px;font-size:19px;color:#e0e0e0;max-width:480px}
+.heroph{min-height:560px;padding:32px}
+
+/* Board */
+.profile{margin-top:32px;background:#000;color:#fff;padding:36px}
+.profile h2.h{font-size:40px}
+.profile .prole{margin:4px 0 16px;color:#bdbdbd;font-weight:600}
+.profile .pbio{margin:0 0 20px;max-width:760px;color:#e6e6e6}
+.cta-row{margin-top:48px;border-top:1px solid #1a1a1a;padding-top:24px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;justify-content:space-between}
+.cta-row p{margin:0;font-size:18px}
+
+/* Initiative page */
+.init-lead{margin:20px 0 28px;font-size:20px}
+.goals{margin:0 0 32px;padding-left:22px;font-size:18px;display:flex;flex-direction:column;gap:10px}
+
+/* Forms and summary boxes */
+.field{display:block;width:100%;margin-bottom:24px}
+.field.short{max-width:240px}
+.sum{background:#fff;color:#000;padding:32px;border:1px solid #1a1a1a}
+.sum h2.h{font-size:32px;margin-bottom:20px}
+.sum .row{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #d9d9d9;padding:12px 0}
+.sum .row a,.u{text-decoration:underline}
+.sum .note{margin:24px 0 16px;color:#6a6a6a}
+.sum .fine{margin:0;font-size:13px;color:#6a6a6a}
+.right{text-align:right}
+.bold{font-weight:700}
+
+/* Donate band */
+.band{background:#fff;color:#000}
+.band.dk{background:#000;color:#fff}
+.band .w{padding-top:72px;padding-bottom:72px;text-align:center}
+.band h2.h{font-size:80px}
+.band p{margin:18px auto 28px;font-size:18px;max-width:540px}
+
+/* Footer and social */
+.site-footer{background:#000;color:#bdbdbd;font-size:14px;border-top:1px solid #1a1a1a}
+.foot{padding-top:40px;padding-bottom:136px}
+.foot-links{display:flex;flex-wrap:wrap;gap:0 24px;margin-bottom:24px}
+.foot .legal{margin:0 0 16px;max-width:760px}
+.foot-base{display:flex;flex-wrap:wrap;gap:8px 32px;justify-content:space-between}
+.soc{position:fixed;left:16px;bottom:16px;z-index:15;display:flex;flex-direction:column;gap:8px}
+.soc a{width:44px;height:44px;background:#6a6a6a;border:1px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center}
+.soc a:hover{background:#eb2323;border-color:#eb2323}
+
+/* Scroll effects: progressive enhancement, off for reduced motion */
+.prog{display:none}
+@media (prefers-reduced-motion:no-preference){
+@supports (animation-timeline:view()){
+@keyframes rise{from{opacity:0;transform:translateY(48px)}to{opacity:1;transform:none}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes lift{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-48px)}}
+@keyframes drift{from{transform:none}to{transform:translateY(72px)}}
+.prog{display:block;position:fixed;top:0;left:0;right:0;height:3px;background:#fff;z-index:30;transform-origin:0 50%;animation:grow linear both;animation-timeline:scroll(root)}
+.herotx{animation:lift linear both;animation-timeline:scroll(root);animation-range:0 520px}
+.hero2{overflow:hidden}
+.heroph{animation:drift linear both;animation-timeline:scroll(root);animation-range:0 520px}
+.grid>*,.split>*,.split2>*,.sum{animation:rise linear both;animation-timeline:view();animation-range:entry 0% entry 45%}
+.w h1.h,.w h2.h{animation:wipe linear both;animation-timeline:view();animation-range:entry 0% entry 70%}
+}
+}
+
+/* Logo splash on phones and tablets (any touch device, or any narrow screen).
+   script.js fades it out once the logo has loaded; the animation is the no-JS fallback. */
+.splash{display:none}
+@keyframes splash-out{to{opacity:0;visibility:hidden}}
+@media (max-width:1100px),(pointer:coarse){
+.splash{display:flex;position:fixed;inset:0;z-index:100;background:#000;align-items:center;justify-content:center;animation:splash-out .4s ease 3s forwards}
+.splash img{display:block;width:min(56vw,280px);height:auto;border-radius:50%}
+.splash.done{animation:none;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility 0s .4s}
+.no-splash .splash{display:none}
+}
+
+/* Tablet landscape: two-column layouts stay, type and spacing step down */
+@media (min-width:901px) and (max-width:1100px){
+h1.h,h1.h.init-title,.herotx h1.h{font-size:64px}
+h2.h{font-size:44px}
+.band h2.h{font-size:64px}
+.pad-l{padding-top:96px;padding-bottom:96px}
+.split,.split2{gap:32px}
+.hero2{grid-template-columns:1fr 1fr;min-height:560px}
+.herotx{padding:120px 32px 72px}
+.heroph{min-height:480px}
+main{padding-top:88px}
+}
+
+/* Nav collapses to the Menu button before the links would wrap */
+@media (max-width:1100px){
+.nav.burger{display:inline-flex;border:1px solid #fff;padding:8px 16px}
+.navbox{display:none;flex-direction:column;align-items:stretch;width:100%;gap:0}
+.navbox.open{display:flex}
+.navbox .nav{border-bottom:1px solid #1a1a1a;padding:14px 4px}
+.navbox .btn{margin-top:12px;text-align:center}
+}
+@media (max-width:900px){
+.w{padding-left:20px;padding-right:20px}
+h1.h,h1.h.init-title,.herotx h1.h{font-size:64px}
+h2.h,.band h2.h{font-size:40px}
+.num{font-size:72px}
+.split,.split2{grid-template-columns:1fr;gap:32px}
+.hero2{grid-template-columns:1fr;min-height:0}
+.home main{padding-top:72px;background:#000}
+.herotx{padding:40px 20px 56px}
+.heroph{order:-1;min-height:420px;padding:20px}
+.herotx .intro{max-width:560px}
+.pad,.pad-l,.pad-after-sub{padding-top:48px;padding-bottom:64px}
+.pad-after-sub{padding-top:32px}
+.ph.tall{min-height:220px}
+.nav.brand{font-size:20px}
+.btn{text-align:center}
+.soc{left:12px;bottom:12px}
+}
+/* Phones: full-width buttons and tabs */
+@media (max-width:600px){
+.heroph{min-height:320px}
+.herotx .btn{flex:1 1 100%}
+.sub{flex:1 1 100%;text-align:left}
+.soc{position:static;flex-direction:row;margin-top:24px}
+.foot{padding-bottom:40px}
+}
+@media (max-width:480px){
+h1.h,h1.h.init-title,.herotx h1.h{font-size:48px}
+h2.h,.band h2.h{font-size:36px}
+.num{font-size:64px}
+.nav.brand{font-size:17px;letter-spacing:.02em}
+.site-header .w{gap:10px 12px}
+.nav.burger{padding:8px 12px}
+}

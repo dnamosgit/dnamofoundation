@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Donate | Dnamo Football Foundation</title>
+<meta name="description" content="Support a young player. Choose a fund and an amount to give to Dnamo Football Foundation.">
+<meta name="theme-color" content="#000000">
+<link rel="preload" as="image" href="logo.png">
+<script>try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className='no-splash'}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Logo splash: phones and tablets only, once per visit (see styles.css and script.js) -->
+<div class="splash" aria-hidden="true"><img src="logo.png" alt="" width="447" height="447"></div>
+<div class="prog"></div>
+
+<header class="site-header solid">
+  <div class="w">
+    <a class="nav brand" href="index.html">Dnamo <span>Football Foundation</span></a>
+    <button class="nav burger" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav class="navbox" id="site-nav" aria-label="Main">
+      <a class="nav" href="index.html">Home</a>
+      <a class="nav" href="board.html">Board of Directors</a>
+      <a class="nav" href="initiatives.html">Our Initiatives</a>
+      <a class="nav" href="testimonials.html">Testimonials</a>
+      <a class="nav" href="contact.html">Contact Us</a>
+      <a class="btn" href="donate.html">Donate</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="w pad" id="donate">
+  <p class="eyebrow">Donate</p>
+  <h1 class="h">Support a young player</h1>
+  <p class="lead l48">Choose where your gift goes and how much to give.</p>
+  <div class="split2">
+    <div>
+      <span class="lab" id="fund-lab">1. Where should your gift go?</span>
+      <div class="grid mb48" role="group" aria-labelledby="fund-lab">
+        <button class="card on" type="button" data-fund="general" aria-pressed="true"><span class="h ft">Where it is needed most</span><span class="dsc">Flexible support across all three initiatives.</span></button>
+        <button class="card" type="button" data-fund="train" aria-pressed="false"><span class="h ft">Training &amp; Development</span><span class="dsc">High-quality coaching for all youth.</span></button>
+        <button class="card" type="button" data-fund="schol" aria-pressed="false"><span class="h ft">Scholarships &amp; Financial Support</span><span class="dsc">Ensuring no child is turned away.</span></button>
+        <button class="card" type="button" data-fund="acad" aria-pressed="false"><span class="h ft">Academic Support &amp; Leadership</span><span class="dsc">Tutoring, mentoring and leadership for life beyond the game.</span></button>
+      </div>
+      <span class="lab" id="amt-lab">2. Choose an amount</span>
+      <div class="row-wrap mb24" role="group" aria-labelledby="amt-lab">
+        <button class="sub" type="button" data-amt="25" aria-pressed="false">$25</button>
+        <button class="sub on" type="button" data-amt="50" aria-pressed="true">$50</button>
+        <button class="sub" type="button" data-amt="100" aria-pressed="false">$100</button>
+        <button class="sub" type="button" data-amt="250" aria-pressed="false">$250</button>
+      </div>
+      <label class="lab" for="other-amount">Or enter another amount ($)</label>
+      <input class="field short" id="other-amount" inputmode="numeric" autocomplete="off">
+    </div>
+    <div class="sum" aria-live="polite">
+      <h2 class="h">Your gift</h2>
+      <div class="row"><span>Fund</span><span class="right" id="sum-fund">Where it is needed most</span></div>
+      <div class="row"><span>Amount</span><span class="bold" id="sum-amount">$50</span></div>
+      <!-- TODO: no payment provider yet. Point this at Wix donations, PayPal or Stripe. -->
+      <a class="btn block" href="#">Continue to payment</a>
+      <p class="fine">The Dnamo Football Academy Foundation has a nonprofit tax exempt status with the IRS (EIN 39-2786889).</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="w foot">
+    <nav class="foot-links" aria-label="Footer">
+      <a class="nav" href="index.html">Home</a>
+      <a class="nav" href="board.html">Board of Directors</a>
+      <a class="nav" href="initiatives.html">Our Initiatives</a>
+      <a class="nav" href="testimonials.html">Testimonials</a>
+      <a class="nav" href="contact.html">Contact Us</a>
+      <a class="nav" href="donate.html">Donate</a>
+    </nav>
+    <p class="legal">The Dnamo Football Academy Foundation has a nonprofit tax exempt status with the IRS (EIN 39-2786889).</p>
+    <div class="foot-base"><span>Dnamo Football Foundation &middot; San Francisco, California &middot; <a href="mailto:impact@dnamoacademy.com">impact@dnamoacademy.com</a></span><span>&copy; Dnamo Football Foundation</span></div>
+<!-- Social icons: float bottom-left on tablet and desktop, sit here in the footer on phones.
+     TODO: replace "#" with the real LinkedIn and Instagram URLs -->
+<div class="soc">
+  <a href="#" aria-label="Dnamo on LinkedIn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+  <a href="#" aria-label="Dnamo on Instagram"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+</div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

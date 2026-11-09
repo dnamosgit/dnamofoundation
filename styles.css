@@ -175,9 +175,9 @@ main{padding-top:72px}
 .splash{display:none}
 @keyframes splash-out{to{opacity:0;visibility:hidden}}
 @media (max-width:1100px),(pointer:coarse){
-.splash{display:flex;position:fixed;inset:0;z-index:100;background:#000;align-items:center;justify-content:center;animation:splash-out .4s ease 3s forwards}
+.splash{display:flex;position:fixed;inset:0;z-index:100;background:#fff;align-items:center;justify-content:center;animation:splash-out 1.4s ease 3s forwards}
 .splash img{display:block;width:min(56vw,280px);height:auto;border-radius:50%}
-.splash.done{animation:none;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility 0s .4s}
+.splash.done{animation:none;opacity:0;visibility:hidden;transition:opacity 1.4s ease,visibility 0s 1.4s}
 .no-splash .splash{display:none}
 }
 

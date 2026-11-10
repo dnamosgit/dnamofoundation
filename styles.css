@@ -188,7 +188,7 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 .grid:has(.tier){grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr))}
 .card .sub{flex:0 0 auto;padding:8px 16px;min-height:40px}
 .card.static>p:last-child{margin-bottom:0}
-.shot{display:block;width:100%;height:460px;object-fit:cover;border-radius:32px 32px 120px 32px}
+.shot{display:block;width:100%;height:460px;object-fit:cover}
 .thermo{position:relative;height:30px;margin:0 0 16px 24px;background:var(--card);border:1px solid var(--line-strong);border-radius:0 999px 999px 0}
 .thermo::before{content:"";position:absolute;left:-26px;top:50%;width:54px;height:54px;margin-top:-27px;border-radius:50%;background:var(--red)}
 .thermo span{display:block;position:relative;height:100%;background:var(--red);border-radius:0 999px 999px 0}
@@ -228,6 +228,11 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 .sum .row{display:flex;justify-content:space-between;gap:16px;border-top:1px solid #e3e3e3;padding:12px 0}
 .sum .row a,.u{text-decoration:underline}
 .sum .note{margin:24px 0 16px;color:var(--muted)}
+/* Contact page "Reach us directly" box: smaller text, Donate centered */
+.reach{font-size:15px}
+.reach h2.h{font-size:26px;margin-bottom:16px}
+.reach .note{font-size:14px;text-align:center}
+.reach .btn{display:flex;width:fit-content;margin:0 auto}
 .sum .fine{margin:0;font-size:13px;color:var(--muted)}
 .right{text-align:right}
 .bold{font-weight:700;font-variant-numeric:tabular-nums}
@@ -241,11 +246,13 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 
 /* Footer and social */
 .site-footer{background:var(--slab);color:var(--muted);font-size:14px;border-top:1px solid var(--line)}
-.foot{padding-top:48px;padding-bottom:136px}
-.foot-links{display:flex;flex-wrap:wrap;gap:0 24px;margin-bottom:24px}
-.foot .legal{margin:0 0 16px;max-width:760px}
-.foot-base{display:flex;flex-wrap:wrap;gap:8px 32px;justify-content:space-between;align-items:center;padding-right:64px}
-.foot-base a{text-decoration:underline}
+/* Two rows split by a hairline: links + theme switch, then legal line + copyright.
+   The right padding keeps both rows clear of the floating social icons. */
+.foot{padding-top:16px;padding-bottom:20px}
+.foot-top,.foot-base{display:flex;flex-wrap:wrap;gap:4px 32px;justify-content:space-between;align-items:center;padding-right:64px}
+.foot-links{display:flex;flex-wrap:wrap;gap:0 24px}
+.foot-base{margin-top:10px;padding-top:16px;border-top:1px solid var(--line);font-size:13px}
+.foot .legal{margin:0;max-width:760px}
 /* Right edge, stacked above the back-to-top button */
 .soc{position:fixed;right:18px;bottom:68px;z-index:15;display:flex;flex-direction:column;gap:4px}
 .soc a{width:40px;height:40px;background:none;border:0;border-radius:50%;color:#8a8a8a;opacity:.7;display:flex;align-items:center;justify-content:center;transition:opacity .15s,color .15s}
@@ -368,7 +375,7 @@ h2.h,.band h2.h{font-size:36px}
 .pad,.pad-l,.pad-after-sub{padding-top:48px;padding-bottom:64px}
 .pad-after-sub{padding-top:32px}
 .ph.tall{min-height:240px;border-radius:28px 28px 88px 28px}
-.shot{height:280px;border-radius:28px 28px 88px 28px}
+.shot{height:280px}
 .price{font-size:34px}
 .tray{padding:16px}
 .nav.brand{font-size:20px}
@@ -385,9 +392,10 @@ h2.h,.band h2.h{font-size:36px}
 .cta-row{padding:24px}
 .cta-row .btn{width:100%}
 .soc{position:static;flex-direction:row;margin-top:16px}
-.foot-base{padding-right:0}
+.foot-top,.foot-base{padding-right:0}
+.foot-base{flex-direction:column;align-items:flex-start;gap:6px}
 .soc a{width:44px;height:44px;justify-content:flex-start}
-.foot{padding-bottom:72px}
+.foot{padding-bottom:24px}
 }
 @media (max-width:480px){
 h1.h,h1.h.init-title{font-size:38px}

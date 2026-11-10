@@ -98,6 +98,16 @@ main{padding-top:70px}
 .nav.brand span{font-weight:500;color:var(--fg)}
 .burger{display:none}
 .navbox{display:flex;flex-wrap:wrap;gap:4px 24px;align-items:center}
+/* Our Initiatives dropdown: opens on hover or keyboard focus; the link itself still opens the overview */
+.navdrop{position:relative;display:flex;align-items:center}
+.caret{width:11px;height:11px;margin-left:6px;transition:transform .2s ease}
+.dropmenu{position:absolute;top:100%;left:-14px;z-index:5;min-width:250px;display:flex;flex-direction:column;gap:2px;padding:8px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 16px 40px rgba(0,0,0,.16);opacity:0;visibility:hidden;transform:translateY(6px);transition:opacity .2s ease,transform .2s ease,visibility 0s .2s}
+.navdrop:hover .dropmenu,.navdrop:focus-within .dropmenu{opacity:1;visibility:visible;transform:none;transition:opacity .2s ease,transform .2s ease}
+.navdrop:hover .caret,.navdrop:focus-within .caret{transform:rotate(180deg)}
+.dropmenu a{display:flex;align-items:center;min-height:44px;padding:8px 14px;border-radius:10px;color:var(--fg);font:600 13px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;transition:background-color .15s ease,color .15s ease}
+.dropmenu a:hover,.dropmenu a:focus-visible{background:var(--red);color:#fff}
+.dropmenu a.on{color:var(--red)}
+.dropmenu a.on:hover,.dropmenu a.on:focus-visible{color:#fff}
 
 /* Buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;background:var(--red);color:#fff;font:700 14px Inter,sans-serif;text-transform:uppercase;letter-spacing:.06em;padding:14px 28px;min-height:48px;border-radius:999px;border:0;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease,color .2s ease}
@@ -337,6 +347,12 @@ h2.h{font-size:40px}
 .navbox .nav::after{display:none}
 .navbox .nav.on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);margin-right:10px}
 .navbox .btn{margin-top:8px}
+/* In the phone and tablet menu the initiatives are listed, indented, under Our Initiatives */
+.navdrop{display:block}
+.caret{display:none}
+.dropmenu{position:static;min-width:0;padding:0 0 6px 18px;background:none;border:0;border-left:2px solid var(--red);border-radius:0;box-shadow:none;margin-left:6px;opacity:1;visibility:visible;transform:none;transition:none}
+.dropmenu a{padding:8px 4px;font-size:12px;border-radius:0}
+.dropmenu a:hover,.dropmenu a:focus-visible{background:none;color:var(--red)}
 }
 @media (max-width:900px){
 .w{padding-left:20px;padding-right:20px}

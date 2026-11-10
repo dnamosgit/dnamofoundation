@@ -26,7 +26,15 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
     <nav class="navbox" id="site-nav" aria-label="Main">
       <a class="nav" href="index.html">Home</a>
       <a class="nav" href="board.html">Board of Directors</a>
-      <a class="nav on" href="initiatives.html" aria-current="page">Our Initiatives</a>
+      <div class="navdrop">
+        <a class="nav on" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
+        <div class="dropmenu">
+          <a href="scholarships.html" class="on" aria-current="page">Scholarships</a>
+          <a href="coaches.html">Coach Recruitment &amp; Support</a>
+          <a href="clubhouse.html">Club House &amp; Field</a>
+          <a href="initiatives.html#kit">Kit Sponsorship</a>
+        </div>
+      </div>
       <a class="nav" href="testimonials.html">Testimonials</a>
       <a class="nav" href="contact.html">Contact Us</a>
       <a class="btn" href="donate.html">Donate</a>

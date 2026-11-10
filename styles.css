@@ -204,10 +204,10 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 
 /* Initiative page */
 .init-lead{margin:20px 0 28px;font-size:20px}
-.goals{list-style:none;margin:0 0 32px;padding:0;font-size:18px;display:flex;flex-direction:column;border-bottom:1px solid var(--line)}
-.goals li{position:relative;padding:16px 0 16px 34px;border-top:1px solid var(--line)}
+.goals{list-style:none;margin:0 0 32px;padding:0;font-size:18px;display:flex;flex-direction:column;gap:14px}
+.goals li{position:relative;padding-left:34px}
 /* Marker: a thin red tick drawn with a mask, so it takes the brand red in both themes */
-.goals li::before{content:"";position:absolute;left:0;top:20px;width:20px;height:20px;background:var(--red);-webkit-mask:var(--tick) center/contain no-repeat;mask:var(--tick) center/contain no-repeat}
+.goals li::before{content:"";position:absolute;left:0;top:4px;width:20px;height:20px;background:var(--red);-webkit-mask:var(--tick) center/contain no-repeat;mask:var(--tick) center/contain no-repeat}
 
 /* Forms and summary boxes */
 .field{display:block;width:100%;margin-bottom:24px}
@@ -234,9 +234,10 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 .foot{padding-top:48px;padding-bottom:136px}
 .foot-links{display:flex;flex-wrap:wrap;gap:0 24px;margin-bottom:24px}
 .foot .legal{margin:0 0 16px;max-width:760px}
-.foot-base{display:flex;flex-wrap:wrap;gap:8px 32px;justify-content:space-between;align-items:center}
+.foot-base{display:flex;flex-wrap:wrap;gap:8px 32px;justify-content:space-between;align-items:center;padding-right:64px}
 .foot-base a{text-decoration:underline}
-.soc{position:fixed;left:16px;bottom:16px;z-index:15;display:flex;flex-direction:column;gap:4px}
+/* Right edge, stacked above the back-to-top button */
+.soc{position:fixed;right:18px;bottom:68px;z-index:15;display:flex;flex-direction:column;gap:4px}
 .soc a{width:40px;height:40px;background:none;border:0;border-radius:50%;color:#8a8a8a;opacity:.7;display:flex;align-items:center;justify-content:center;transition:opacity .15s,color .15s}
 .soc svg{width:22px;height:22px}
 .soc a:hover,.soc a:focus-visible{color:#000;opacity:1}
@@ -356,7 +357,7 @@ h2.h,.band h2.h{font-size:36px}
 .tray{padding:16px}
 .nav.brand{font-size:20px}
 .band .w{padding-top:56px;padding-bottom:56px}
-.soc{left:12px;bottom:12px}
+.soc{right:14px;bottom:64px}
 .totop{right:12px;bottom:12px}
 .mq-track span{font-size:20px}
 .mq-track span::after{margin:0 20px}
@@ -368,6 +369,7 @@ h2.h,.band h2.h{font-size:36px}
 .cta-row{padding:24px}
 .cta-row .btn{width:100%}
 .soc{position:static;flex-direction:row;margin-top:16px}
+.foot-base{padding-right:0}
 .soc a{width:44px;height:44px;justify-content:flex-start}
 .foot{padding-bottom:72px}
 }

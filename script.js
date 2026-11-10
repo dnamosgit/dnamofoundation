@@ -35,24 +35,77 @@
     showTheme();
   }
 
-  /* Header: transparent over the home hero, black once scrolled or when the menu is open */
-  var header = document.querySelector('.site-header');
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canHover = window.matchMedia('(hover: hover)').matches;
+
+  /* Menu button on phones and tablets */
   var navbox = document.querySelector('.navbox');
   var burger = document.querySelector('.burger');
-  var isHome = document.body.classList.contains('home');
-
-  function syncHeader() {
-    if (!isHome) return;
-    var solid = window.scrollY > 40 || navbox.classList.contains('open');
-    header.classList.toggle('solid', solid);
-  }
-  window.addEventListener('scroll', syncHeader, { passive: true });
-  syncHeader();
-
   burger.addEventListener('click', function () {
     var open = navbox.classList.toggle('open');
     burger.setAttribute('aria-expanded', String(open));
-    syncHeader();
+  });
+
+  /* Blocks fade up as they scroll into view. The .reveal class is added here, so the page
+     is fully visible without JavaScript. Classes are removed afterwards so hover effects
+     are not slowed by the stagger delay. */
+  if (!reduceMotion && 'IntersectionObserver' in window) {
+    var revealIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        revealIO.unobserve(el);
+        el.classList.add('in');
+        setTimeout(function () {
+          el.classList.remove('reveal', 'in');
+          el.style.transitionDelay = '';
+        }, 1400);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    var seen = [];
+    Array.prototype.forEach.call(document.querySelectorAll(
+      'main section.w > .eyebrow, main section.w > h1.h, main section.w > .lead, ' +
+      '.dark > .w > .eyebrow, .dark > .w > h2.h, .grid > *, .split > *, .split2 > *, ' +
+      '.goals li, .cta-row, .band .w'
+    ), function (el) {
+      var i = seen.filter(function (p) { return p === el.parentNode; }).length;
+      seen.push(el.parentNode);
+      el.style.transitionDelay = Math.min(i * 90, 450) + 'ms';
+      el.classList.add('reveal');
+      revealIO.observe(el);
+    });
+  }
+
+  /* Cards: a soft red glow follows the pointer */
+  if (canHover) {
+    document.addEventListener('pointermove', function (e) {
+      var c = e.target.closest ? e.target.closest('.card, .dir') : null;
+      if (!c) return;
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (e.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+    });
+  }
+
+  /* Home hero: the background video stays still for visitors who ask for reduced motion */
+  var heroVideo = document.querySelector('.heromedia video');
+  if (heroVideo && reduceMotion) {
+    heroVideo.removeAttribute('autoplay');
+    heroVideo.pause();
+  }
+
+  /* Back to top button, shown after scrolling down */
+  var totop = document.createElement('button');
+  totop.type = 'button';
+  totop.className = 'totop';
+  totop.setAttribute('aria-label', 'Back to top');
+  totop.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+  document.body.appendChild(totop);
+  var syncTop = function () { totop.classList.toggle('show', window.scrollY > 600); };
+  window.addEventListener('scroll', syncTop, { passive: true });
+  syncTop();
+  totop.addEventListener('click', function () {
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   });
 
   /* Board of Directors: click a card to open its profile panel */
@@ -74,6 +127,7 @@
         profile.querySelector('.prole').textContent = d.dataset.role;
         profile.querySelector('.pbio').textContent = d.dataset.bio;
         profile.hidden = false;
+        profile.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' });
       });
     });
     profile.querySelector('.pclose').addEventListener('click', closeProfile);
@@ -101,6 +155,7 @@
       var name = form.elements.name.value;
       var email = form.elements.email.value;
       var msg = form.elements.message.value;
+      document.getElementById('form-note').hidden = false;
       window.location.href = 'mailto:impact@dnamoacademy.com?subject=' +
         encodeURIComponent('Dnamo Football Foundation: ' + topic) +
         '&body=' + encodeURIComponent(msg + '\n\n' + name + '\n' + email);
@@ -121,8 +176,26 @@
       choose(funds, b);
       sumFund.textContent = b.querySelector('.ft').textContent;
     };
+    /* The summary amount counts up or down to the new value */
+    var shown = amount;
+    var countFrame = 0;
     var showAmount = function () {
-      sumAmt.textContent = '$' + (other.value || amount);
+      var target = Number(other.value || amount);
+      cancelAnimationFrame(countFrame);
+      if (reduceMotion || document.hidden) {
+        shown = target;
+        sumAmt.textContent = '$' + target;
+        return;
+      }
+      var from = shown;
+      var start = performance.now();
+      var step = function (now) {
+        var t = Math.min((now - start) / 350, 1);
+        shown = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+        sumAmt.textContent = '$' + shown;
+        if (t < 1) countFrame = requestAnimationFrame(step);
+      };
+      countFrame = requestAnimationFrame(step);
     };
 
     funds.forEach(function (b) { b.addEventListener('click', function () { pickFund(b); }); });

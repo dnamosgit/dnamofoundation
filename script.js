@@ -150,6 +150,10 @@
     topics.forEach(function (b) {
       b.addEventListener('click', function () { topic = b.dataset.topic; choose(topics, b); });
     });
+    /* Links such as contact.html?topic=kit arrive with that topic already chosen */
+    var askedTopic = new URLSearchParams(window.location.search).get('topic');
+    var topicMatch = topics.filter(function (b) { return askedTopic && b.dataset.key === askedTopic; })[0];
+    if (topicMatch) { topic = topicMatch.dataset.topic; choose(topics, topicMatch); }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var name = form.elements.name.value;
@@ -162,29 +166,36 @@
     });
   }
 
-  /* Donate: fund (preselectable with ?fund=train|schol|acad), amount, summary */
+  /* Donate: fund, gift within the fund, amount, summary.
+     Links can preselect all three: donate.html?fund=schol&opt=monthly&amt=100 */
   var donate = document.getElementById('donate');
   if (donate) {
     var funds = Array.prototype.slice.call(donate.querySelectorAll('[data-fund]'));
-    var amts = Array.prototype.slice.call(donate.querySelectorAll('[data-amt]'));
+    var optGroups = Array.prototype.slice.call(donate.querySelectorAll('[data-opts]'));
+    var optStep = document.getElementById('opt-step');
+    var amtBox = document.getElementById('amt-box');
     var other = document.getElementById('other-amount');
+    var otherWrap = document.getElementById('other-wrap');
     var sumFund = document.getElementById('sum-fund');
+    var sumGift = document.getElementById('sum-gift');
+    var sumGiftRow = document.getElementById('sum-gift-row');
     var sumAmt = document.getElementById('sum-amount');
-    var amount = 50;
+    var opts = [];
+    var amts = [];
+    var amount = 0;
+    var per = '';
+    var money = function (n) { return '$' + Number(n).toLocaleString('en-US'); };
+    var suffix = function () { return per ? ' / ' + per : ''; };
 
-    var pickFund = function (b) {
-      choose(funds, b);
-      sumFund.textContent = b.querySelector('.ft').textContent;
-    };
     /* The summary amount counts up or down to the new value */
-    var shown = amount;
+    var shown = 0;
     var countFrame = 0;
     var showAmount = function () {
       var target = Number(other.value || amount);
       cancelAnimationFrame(countFrame);
       if (reduceMotion || document.hidden) {
         shown = target;
-        sumAmt.textContent = '$' + target;
+        sumAmt.textContent = money(target) + suffix();
         return;
       }
       var from = shown;
@@ -192,33 +203,76 @@
       var step = function (now) {
         var t = Math.min((now - start) / 350, 1);
         shown = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
-        sumAmt.textContent = '$' + shown;
+        sumAmt.textContent = money(shown) + suffix();
         if (t < 1) countFrame = requestAnimationFrame(step);
       };
       countFrame = requestAnimationFrame(step);
     };
 
+    /* Build the amount buttons from the data-amts list on a fund or gift button */
+    var setAmounts = function (src, want) {
+      var list = src.dataset.amts.split(',').map(Number);
+      per = src.dataset.per || '';
+      otherWrap.hidden = list.length === 1 || src.dataset.fixed === '1';
+      other.value = '';
+      amount = list.indexOf(Number(want)) > -1 ? Number(want) : Number(src.dataset.def || list[0]);
+      amtBox.innerHTML = '';
+      amts = list.map(function (n) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'sub';
+        b.dataset.amt = n;
+        b.textContent = money(n) + suffix();
+        b.addEventListener('click', function () {
+          amount = n;
+          other.value = '';
+          choose(amts, b);
+          showAmount();
+        });
+        amtBox.appendChild(b);
+        choose([b], n === amount ? b : null);
+        return b;
+      });
+      showAmount();
+      if (want === 'other' && !otherWrap.hidden) other.focus();
+    };
+    var pickOpt = function (b, want) {
+      choose(opts, b);
+      sumGift.textContent = b.dataset.label;
+      setAmounts(b, want);
+    };
+    var pickFund = function (b, wantOpt, want) {
+      choose(funds, b);
+      sumFund.textContent = b.querySelector('.ft').textContent;
+      opts = [];
+      optGroups.forEach(function (g) {
+        g.hidden = g.dataset.opts !== b.dataset.fund;
+        if (!g.hidden) opts = Array.prototype.slice.call(g.querySelectorAll('[data-opt]'));
+      });
+      optStep.hidden = sumGiftRow.hidden = !opts.length;
+      if (opts.length) {
+        pickOpt(opts.filter(function (o) { return o.dataset.opt === wantOpt; })[0] || opts[0], want);
+      } else {
+        setAmounts(b, want);
+      }
+    };
+
     funds.forEach(function (b) { b.addEventListener('click', function () { pickFund(b); }); });
-    amts.forEach(function (b) {
-      b.addEventListener('click', function () {
-        amount = Number(b.dataset.amt);
-        other.value = '';
-        choose(amts, b);
-        showAmount();
+    optGroups.forEach(function (g) {
+      Array.prototype.forEach.call(g.querySelectorAll('[data-opt]'), function (o) {
+        o.addEventListener('click', function () { pickOpt(o); });
       });
     });
     other.addEventListener('input', function () {
       other.value = other.value.replace(/[^0-9]/g, '');
-      if (other.value) {
-        choose(amts, null);
-      } else {
-        choose(amts, amts.filter(function (b) { return Number(b.dataset.amt) === amount; })[0]);
-      }
+      var back = other.value ? null : amts.filter(function (b) { return Number(b.dataset.amt) === amount; })[0];
+      choose(amts, back || null);
       showAmount();
     });
 
-    var wanted = new URLSearchParams(window.location.search).get('fund');
-    var match = funds.filter(function (b) { return b.dataset.fund === wanted; })[0];
-    if (match) pickFund(match);
+    var params = new URLSearchParams(window.location.search);
+    var wanted = params.get('fund');
+    pickFund(funds.filter(function (b) { return b.dataset.fund === wanted; })[0] || funds[0],
+      params.get('opt'), params.get('amt'));
   }
 })();

@@ -14,6 +14,27 @@
     else { logo.addEventListener('load', hideSplash); logo.addEventListener('error', hideSplash); }
   }
 
+  /* Light / dark mode. Light is the default; the choice is remembered on this device.
+     The inline script in <head> applies a saved "dark" choice before the page paints. */
+  var root = document.documentElement;
+  var themeBtn = document.querySelector('.theme-toggle');
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+  function showTheme() {
+    var dark = root.getAttribute('data-theme') === 'dark';
+    themeBtn.setAttribute('aria-checked', String(dark));
+    if (themeMeta) themeMeta.setAttribute('content', dark ? '#000000' : '#ffffff');
+  }
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      var dark = root.getAttribute('data-theme') !== 'dark';
+      if (dark) root.setAttribute('data-theme', 'dark');
+      else root.removeAttribute('data-theme');
+      try { localStorage.setItem('dnamoTheme', dark ? 'dark' : 'light'); } catch (e) {}
+      showTheme();
+    });
+    showTheme();
+  }
+
   /* Header: transparent over the home hero, black once scrolled or when the menu is open */
   var header = document.querySelector('.site-header');
   var navbox = document.querySelector('.navbox');

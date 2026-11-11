@@ -4,6 +4,12 @@
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+const attr = (s) => esc(s).replace(/\n/g, '&#10;');
+// Text where **double stars** mark bold
+const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+const money = (n) => '$' + Number(n).toLocaleString('en-US');
+const get = (o, path) => path.split('.').reduce((v, k) => (v == null ? undefined : v[k]), o);
+
 const CARET = '<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>';
 
 // "/board" and "/board.html" are both board.html; "/" is index.html
@@ -41,24 +47,79 @@ function navHtml(header, page) {
   return out;
 }
 
+// --- Lists and blocks rebuilt from saved content ---------------------------
+// Each returns the inner HTML for the element tagged data-list="<name>", or
+// undefined when that content has not been saved (the original markup stays).
+
+const statCards = (items, cls) => items.map((c) =>
+  `<div class="card ${cls}"><span class="price">${esc(c.amount)}</span><h3 class="h">${esc(c.label)}</h3><p>${esc(c.note)}</p></div>`).join('');
+
+function chip(fund, opt, amt, label) {
+  let q = 'fund=' + fund + '&amp;opt=' + opt;
+  if (amt) q += '&amp;amt=' + amt;
+  return `<a class="sub" href="donate.html?${q}">${esc(label)}</a>`;
+}
+
+// Giving cards on an initiative page. One amount shows as a price; several show as buttons.
+function tiers(gifts, fund) {
+  return gifts.map((g) => {
+    const single = g.amounts.length === 1;
+    let chips = single ? chip(fund, g.id, '', 'Give ' + money(g.amounts[0]))
+      : g.amounts.map((a) => chip(fund, g.id, a, money(a))).join('');
+    if (fund === 'coach') chips += chip(fund, g.id, 'other', 'Other');
+    return `<div class="card d static tier"><span class="price">${esc(single ? money(g.amounts[0]) : g.tag)}</span><h3 class="h">${esc(g.title)}</h3><p>${esc(g.desc)}</p><div class="row-wrap">${chips}</div></div>`;
+  }).join('');
+}
+
+const LISTS = {
+  'home.values': (c) => c.home && c.home.values.map((v) => `<span>${esc(v)}</span>`).join('').repeat(2),
+  'board.members': (c) => c.board && c.board.members.map((m) =>
+    `<button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="${attr(m.name)}" data-role="${attr(m.role)}" data-bio="${attr(m.bio)}"><img src="${esc(m.photo || 'person.svg')}" alt="" width="120" height="120" loading="lazy"><span class="h">${esc(m.name)}</span><span class="red">${esc(m.role)}</span></button>`).join(''),
+  'testimonials.items': (c) => c.testimonials && c.testimonials.items.map((t) =>
+    `<figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">${esc(t.quote).replace(/\n+/g, '<br>')}</p></blockquote><figcaption><div class="h who">${esc(t.name)}</div><div class="red">${esc(t.role)}</div></figcaption></figure>`).join(''),
+  'inits.kit': (c) => c.inits && statCards(c.inits.kit, 'd static'),
+  'inits.contrib': (c) => c.inits && statCards(c.inits.contrib, 'static'),
+  'inits.club.goals': (c) => c.inits && c.inits.club.goals.map((g) => `<li>${rich(g)}</li>`).join(''),
+  'inits.club.thermo': (c) => {
+    if (!c.inits) return undefined;
+    const { raised, goal } = c.inits.club;
+    const pct = goal > 0 ? Math.min(100, Math.round((100 * raised) / goal)) : 0;
+    const shown = goal > 0 ? [money(raised), money(goal)] : ['[AMOUNT RAISED]', '[GOAL]'];
+    return `<div class="thermo" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>`
+      + `<div class="thermo-nums"><span><strong>${shown[0]}</strong> raised</span><span>Goal: <strong>${shown[1]}</strong></span></div>`;
+  },
+  'tiers.schol': (c) => c.giving && tiers(c.giving.schol, 'schol'),
+  'tiers.coach': (c) => c.giving && tiers(c.giving.coach, 'coach'),
+};
+
+// An initiative page takes its browser-tab title from the saved title of that initiative
+const INIT_PAGES = { 'scholarships.html': ['schol', 'Scholarships'], 'coaches.html': ['coach', 'Coach Recruitment &amp; Support'], 'clubhouse.html': ['club', 'Club House &amp; Field'] };
+
 export function render(response, saved, pathname) {
-  const { identity, header, footer, photos } = saved;
-  if (!identity && !header && !footer && !(photos && Object.keys(photos).length)) return response;
+  const { identity, header, footer, photos, inits, giving } = saved;
+  if (!Object.keys(saved).length) return response;
 
   const rw = new HTMLRewriter();
   const page = pageFile(pathname);
 
+  const initPage = inits && INIT_PAGES[page];
   if (identity) {
-    const full = (identity.nameA + ' ' + identity.nameB).trim();
     rw.on('a.nav.brand', { element(el) {
       el.setInnerContent(esc(identity.nameA) + (identity.nameB ? ` <span>${esc(identity.nameB)}</span>` : ''), { html: true });
     } });
-    // The browser tab title: swap the original site name for the saved one
+  }
+  if (identity || initPage) {
+    // The browser tab title: swap in the saved site name and initiative title.
+    // The text arrives as it is written in the file (already escaped), so it is put back as HTML.
+    const full = identity ? (identity.nameA + ' ' + identity.nameB).trim() : null;
     let buffer = '';
     rw.on('title', { text(t) {
       buffer += t.text;
       if (!t.lastInTextNode) { t.remove(); return; }
-      t.replace(buffer.split('Dnamo Football Foundation').join(full));
+      let title = buffer;
+      if (initPage) title = title.split(initPage[1]).join(esc(inits[initPage[0]].title));
+      if (full) title = title.split('Dnamo Football Foundation').join(esc(full));
+      t.replace(title, { html: true });
       buffer = '';
     } });
   }
@@ -90,6 +151,45 @@ export function render(response, saved, pathname) {
         if (el.getAttribute('type') === 'image/png') el.removeAttribute('type');
       } });
     }
+  }
+
+  // Page content: single texts, paragraphs, buttons, and rebuilt lists
+  rw.on('[data-t]', { element(el) {
+    const v = get(saved, el.getAttribute('data-t'));
+    if (typeof v === 'string') el.setInnerContent(v);
+  } });
+  rw.on('[data-p]', { element(el) {
+    const v = get(saved, el.getAttribute('data-p'));
+    if (Array.isArray(v)) el.setInnerContent(v.map((p) => `<p>${rich(p)}</p>`).join(''), { html: true });
+  } });
+  rw.on('[data-link]', { element(el) {
+    const v = get(saved, el.getAttribute('data-link'));
+    if (v && v.label) { el.setAttribute('href', v.href); el.setInnerContent(v.label); }
+  } });
+  rw.on('[data-list]', { element(el) {
+    const make = LISTS[el.getAttribute('data-list')];
+    const html = make && make(saved);
+    if (typeof html === 'string') el.setInnerContent(html, { html: true });
+  } });
+
+  // Donate page: amounts and gift names follow the saved giving options
+  if (giving) {
+    const funds = { general: giving.general, club: giving.club };
+    rw.on('[data-fund]', { element(el) {
+      const f = funds[el.getAttribute('data-fund')];
+      if (!f) return;
+      el.setAttribute('data-amts', f.amounts.join(','));
+      el.setAttribute('data-def', String(f.def));
+    } });
+    const gifts = {};
+    for (const g of [...giving.schol, ...giving.coach]) gifts[g.id] = g;
+    rw.on('[data-opt]', { element(el) {
+      const g = gifts[el.getAttribute('data-opt')];
+      if (!g) return;
+      el.setAttribute('data-label', g.title);
+      el.setAttribute('data-amts', g.amounts.join(','));
+      el.setInnerContent(g.short);
+    } });
   }
 
   const out = rw.transform(response);

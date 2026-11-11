@@ -48,7 +48,7 @@ $intro = @{}
 $more = @{}
 
 $intro['schol'] = @'
-    <div class="prose mb32">
+    <div class="prose mb32" data-p="inits.schol.intro">
       <p>A scholarship covers what a family cannot, so a player can train, compete and travel with their team. Choose a full sponsorship, a monthly gift or help with tournament costs.</p>
     </div>
 '@
@@ -62,7 +62,7 @@ $more['schol'] = @'
   <div class="w pad-l">
     <p class="eyebrow">Ways to give</p>
     <h2 class="h mb48">Sponsor a player</h2>
-    <div class="grid">
+    <div class="grid" data-list="tiers.schol">
 {{TIERS}}
     </div>
   </div>
@@ -71,9 +71,9 @@ $more['schol'] = @'
 <section class="w pad-l">
   <p class="eyebrow">Our own commitment</p>
   <h2 class="h">What Dnamo has contributed</h2>
-  <p class="lead">Dnamo funds scholarships for its own players every year. These are the totals for the last three years.</p>
+  <p class="lead" data-t="inits.contribLead">Dnamo funds scholarships for its own players every year. These are the totals for the last three years.</p>
   <!-- TODO: fill in the three yearly totals and the three-year total -->
-  <div class="grid">
+  <div class="grid" data-list="inits.contrib">
     <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">[YEAR 1]</h3><p>Scholarships funded by Dnamo</p></div>
     <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">[YEAR 2]</h3><p>Scholarships funded by Dnamo</p></div>
     <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">[YEAR 3]</h3><p>Scholarships funded by Dnamo</p></div>
@@ -83,7 +83,7 @@ $more['schol'] = @'
 '@.Replace('{{TIERS}}', $tiers.TrimEnd())
 
 $intro['coach'] = @'
-    <div class="prose mb32">
+    <div class="prose mb32" data-p="inits.coach.intro">
       <p>Our coaches do this because they believe in the mission. They are all young and have day jobs. They are here for the passion of the sport and the relationships they have with the players.</p>
       <p>Each coach connects with their players and is a consistent source of support, advice and mentorship. Many coaches help with carpools, school problems and social issues when parents ask for help.</p>
       <p>As players mature, coaches can be a safe place to ask for help.</p>
@@ -96,7 +96,7 @@ $more['coach'] = @'
   <div class="w pad-l">
     <p class="eyebrow">Ways to give</p>
     <h2 class="h mb48">Two funds for our coaches</h2>
-    <div class="grid">
+    <div class="grid" data-list="tiers.coach">
 {{TIERS}}
     </div>
   </div>
@@ -104,11 +104,11 @@ $more['coach'] = @'
 '@.Replace('{{TIERS}}', $tiers.TrimEnd())
 
 $intro['club'] = @'
-    <div class="prose mb32">
+    <div class="prose mb32" data-p="inits.club.intro">
       <p>We are looking for a home. We believe we have created a community, and we are now looking for a multi-field space that can act as a home away from home.</p>
       <p>Dnamo FC is here to stay. Now let&rsquo;s put a <strong>stake in the ground</strong>!</p>
     </div>
-    <ul class="goals"><li>The Club House will be a place for players to study, come together and interact with other age groups.</li><li>One fund covers both the Club House and the fields.</li></ul>
+    <ul class="goals" data-list="inits.club.goals"><li>The Club House will be a place for players to study, come together and interact with other age groups.</li><li>One fund covers both the Club House and the fields.</li></ul>
 '@
 $pct = 0; $raisedTx = '[AMOUNT RAISED]'; $goalTx = '[GOAL]'
 if ($clubGoal -gt 0) {
@@ -121,10 +121,12 @@ $more['club'] = @'
     <p class="eyebrow">Fund tracker</p>
     <h2 class="h mb48">How close we are to home</h2>
     <!-- TODO: set clubRaised and clubGoal in the build script (or edit the numbers and the width here) once the goal is agreed -->
+    <div data-list="inits.club.thermo">
     <div class="thermo" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{PCT}}"><span style="width:{{PCT}}%"></span></div>
     <div class="thermo-nums"><span><strong>{{RAISED}}</strong> raised</span><span>Goal: <strong>{{GOAL}}</strong></span></div>
+    </div>
     <a class="btn" href="donate.html?fund=club">Give to the Club House &amp; Field fund</a>
-    <div class="cta-row"><p>Would you or your company match gifts to this fund? We would love to hear from you.</p><a class="btn s" href="contact.html?topic=match">Match a gift</a></div>
+    <div class="cta-row"><p data-t="inits.club.matchText">Would you or your company match gifts to this fund? We would love to hear from you.</p><a class="btn s" href="contact.html?topic=match">Match a gift</a></div>
   </div>
 </section>
 '@.Replace('{{PCT}}', "$pct").Replace('{{RAISED}}', $raisedTx).Replace('{{GOAL}}', $goalTx)
@@ -247,20 +249,20 @@ function Page($file, $title, $desc, $key, $main, $band, $fund) {
 function InitCards($extra) {
   $s = ''
   foreach ($i in $inits) {
-    $s += "    <a class=`"card$extra`" href=`"$($i.file)`"><span class=`"num`">$($i.num)</span><h3 class=`"h`">$($i.title)</h3><p>$($i.lead)</p><span class=`"more`">Learn more <span class=`"arr`" aria-hidden=`"true`">&rarr;</span></span></a>`r`n"
+    $s += "    <a class=`"card$extra`" href=`"$($i.file)`"><span class=`"num`">$($i.num)</span><h3 class=`"h`" data-t=`"inits.$($i.id).title`">$($i.title)</h3><p data-t=`"inits.$($i.id).lead`">$($i.lead)</p><span class=`"more`">Learn more <span class=`"arr`" aria-hidden=`"true`">&rarr;</span></span></a>`r`n"
   }
   $s.TrimEnd()
 }
 
 function Subnav($activeFile) {
   $items = @(,@('Overview','initiatives.html'))
-  foreach ($i in $inits) { $items += ,@($i.title, $i.file) }
+  foreach ($i in $inits) { $items += ,@($i.title, $i.file, " data-t=`"inits.$($i.id).title`"") }
   $items += ,@('Kit Sponsorship','initiatives.html#kit')
   $s = ''
   foreach ($it in $items) {
     $cls = 'sub'; $cur = ''
     if ($it[1] -eq $activeFile) { $cls = 'sub on'; $cur = ' aria-current="page"' }
-    $s += "    <a class=`"$cls`" href=`"$($it[1])`"$cur>$($it[0])</a>`r`n"
+    $s += "    <a class=`"$cls`" href=`"$($it[1])`"$cur$($it[2])>$($it[0])</a>`r`n"
   }
   @"
 <section class="w pad-sub">
@@ -286,21 +288,21 @@ $main = @"
       <img data-slot="hero4" src="hero-4.jpg" alt="">
     </div>
     <div class="herotx">
-      <p class="kicker">An offshoot of Dnamo Football Club</p>
-      <h1 class="h">Where talent meets possibility.</h1>
-      <p class="intro">Youth of all backgrounds deserve high-quality soccer training, development and facilities.</p>
-      <div class="row-wrap g16"><a class="btn" href="donate.html">Support a player</a><a class="btn o" href="initiatives.html">Our initiatives</a></div>
+      <p class="kicker" data-t="home.kicker">An offshoot of Dnamo Football Club</p>
+      <h1 class="h" data-t="home.headline">Where talent meets possibility.</h1>
+      <p class="intro" data-t="home.intro">Youth of all backgrounds deserve high-quality soccer training, development and facilities.</p>
+      <div class="row-wrap g16"><a class="btn" data-link="home.button1" href="donate.html">Support a player</a><a class="btn o" data-link="home.button2" href="initiatives.html">Our initiatives</a></div>
     </div>
     <span class="herocue" aria-hidden="true"></span>
   </div>
 </section>
 
 <!-- Decorative ticker of the values named in the mission text; hidden from screen readers -->
-<div class="marquee" aria-hidden="true"><div class="mq-track">$mq$mq</div></div>
+<div class="marquee" aria-hidden="true"><div class="mq-track" data-list="home.values">$mq$mq</div></div>
 
 <section class="w split pad-l">
-  <div><p class="eyebrow">Our mission</p><h2 class="h">Soccer excellence, on and off the pitch.</h2></div>
-  <div class="prose">
+  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2></div>
+  <div class="prose" data-p="home.mission">
     <p>Dnamo Football Academy Foundation, founded in 2025, is a nonprofit organization dedicated to providing youth of all backgrounds with access to high-quality soccer training, development, and facilities. We are an offshoot of Dnamo Football Club.</p>
     <p>Our mission is to deliver soccer excellence on and off the pitch by developing not only skilled athletes but also disciplined, respectful, and motivated individuals. Soccer excellence means fostering technical mastery, tactical awareness, and a genuine love for the game while promoting teamwork, perseverance, and sportsmanship.</p>
     <p>We are committed to breaking down financial and social barriers by offering affordable programs, scholarships, and community-based initiatives. Through creating access to quality training environments and fields, we give our players a safe and consistent environment where they can connect and grow as individuals.</p>
@@ -310,8 +312,8 @@ $main = @"
 
 <section class="dark">
   <div class="w pad-l">
-    <p class="eyebrow">Our initiatives</p>
-    <h2 class="h mb48">Three ways we open the game</h2>
+    <p class="eyebrow" data-t="home.initsEyebrow">Our initiatives</p>
+    <h2 class="h mb48" data-t="home.initsTitle">Three ways we open the game</h2>
     <div class="grid">
 $(InitCards ' d')
     </div>
@@ -332,14 +334,14 @@ $board = @(
 )
 $cards = ''
 foreach ($d in $board) {
-  $cards += "    <button class=`"dir`" type=`"button`" aria-expanded=`"false`" aria-controls=`"profile`" data-name=`"$($d.name)`" data-role=`"$($d.role)`" data-bio=`"$($d.bio)`"><img data-slot=`"$($d.photo -replace '\.jpg$','')`" src=`"$($d.photo)`" alt=`"`" width=`"120`" height=`"120`" loading=`"lazy`"><span class=`"h`">$($d.name)</span><span class=`"red`">$($d.role)</span></button>`r`n"
+  $cards += "    <button class=`"dir`" type=`"button`" aria-expanded=`"false`" aria-controls=`"profile`" data-name=`"$($d.name)`" data-role=`"$($d.role)`" data-bio=`"$($d.bio)`"><img src=`"$($d.photo)`" alt=`"`" width=`"120`" height=`"120`" loading=`"lazy`"><span class=`"h`">$($d.name)</span><span class=`"red`">$($d.role)</span></button>`r`n"
 }
 $main = @"
 <section class="w pad">
   <p class="eyebrow">Leadership</p>
   <h1 class="h">Board of Directors</h1>
-  <p class="lead">Our Board of Directors is made up of caring community members who believe in the power of sports to bring kids together. They guide our mission with heart and commitment, ensuring every child has the opportunity to learn, grow, and thrive. Select a director to read their profile.</p>
-  <div class="grid">
+  <p class="lead" data-t="board.intro">Our Board of Directors is made up of caring community members who believe in the power of sports to bring kids together. They guide our mission with heart and commitment, ensuring every child has the opportunity to learn, grow, and thrive. Select a director to read their profile.</p>
+  <div class="grid" data-list="board.members">
 $($cards.TrimEnd())
   </div>
   <div class="profile" id="profile" hidden aria-live="polite">
@@ -348,7 +350,7 @@ $($cards.TrimEnd())
     <p class="prole"></p>
     <p class="pbio"></p>
   </div>
-  <div class="cta-row"><p>Interested in serving or partnering with us?</p><a class="btn s" href="contact.html">Contact us</a></div>
+  <div class="cta-row"><p data-t="board.cta">Interested in serving or partnering with us?</p><a class="btn s" href="contact.html">Contact us</a></div>
 </section>
 "@
 Page 'board.html' 'Board of Directors' 'Meet the board of directors guiding Dnamo Football Foundation.' 'board' $main 'dark' ''
@@ -357,8 +359,8 @@ Page 'board.html' 'Board of Directors' 'Meet the board of directors guiding Dnam
 $main = @"
 $(Subnav 'initiatives.html')
 <section class="w pad-after-sub">
-  <h1 class="h">Three ways we open the game</h1>
-  <p class="lead">Each initiative has its own page and its own ways to give.</p>
+  <h1 class="h" data-t="inits.overviewTitle">Three ways we open the game</h1>
+  <p class="lead" data-t="inits.overviewLead">Each initiative has its own page and its own ways to give.</p>
   <div class="grid tray">
 $(InitCards '')
   </div>
@@ -370,8 +372,8 @@ $main += @'
   <div class="w pad-l">
     <p class="eyebrow">For businesses</p>
     <h2 class="h">Kit sponsorship</h2>
-    <p class="lead">Put your logo on the kit worn by the 900 kids in our club. Each sponsorship runs for a two-year term, in line with our kit renewal policy.</p>
-    <div class="grid">
+    <p class="lead" data-t="inits.kitLead">Put your logo on the kit worn by the 900 kids in our club. Each sponsorship runs for a two-year term, in line with our kit renewal policy.</p>
+    <div class="grid" data-list="inits.kit">
       <div class="card d static"><span class="price">$20,000</span><h3 class="h">Chest logo</h3><p>Two-year term</p></div>
       <div class="card d static"><span class="price">$15,000</span><h3 class="h">Backpack logo</h3><p>Two-year term</p></div>
       <div class="card d static"><span class="price">$10,000</span><h3 class="h">Arm logo</h3><p>Two-year term</p></div>
@@ -388,10 +390,10 @@ foreach ($i in $inits) {
 $(Subnav $i.file)
 <section class="w split2 pad-after-sub">
   <div>
-    <h1 class="h init-title">$($i.title)</h1>
-    <p class="init-lead">$($i.lead)</p>
+    <h1 class="h init-title" data-t="inits.$($i.id).title">$($i.title)</h1>
+    <p class="init-lead" data-t="inits.$($i.id).lead">$($i.lead)</p>
 $($intro[$i.id].TrimEnd())
-    <a class="btn" href="donate.html?fund=$($i.id)">Donate to $($i.title)</a>
+    <a class="btn" href="donate.html?fund=$($i.id)">Donate to <span data-t="inits.$($i.id).title">$($i.title)</span></a>
   </div>
   <img class="shot" data-slot="init-$($i.id)" src="$($i.photo)" alt="$($i.alt)" width="2000" height="1125" loading="lazy">
 </section>
@@ -410,10 +412,10 @@ foreach ($n in 1..3) {
 $main = @"
 <section class="w pad">
   <p class="eyebrow">Testimonials</p>
-  <h1 class="h">In their words</h1>
-  <p class="lead">Players, parents, coaches and partners on what Dnamo means to them.</p>
+  <h1 class="h" data-t="testimonials.title">In their words</h1>
+  <p class="lead" data-t="testimonials.intro">Players, parents, coaches and partners on what Dnamo means to them.</p>
   <!-- TODO: real testimonials -->
-  <div class="grid tray">
+  <div class="grid tray" data-list="testimonials.items">
 $($cards.TrimEnd())
   </div>
   <div class="mt48"><a class="btn s" href="contact.html">Share your story</a></div>
@@ -463,7 +465,7 @@ $fundCards = "        <button class=`"card on`" type=`"button`" data-fund=`"gene
 foreach ($i in $inits) {
   $amts = ''
   if ($i.id -eq 'club') { $amts = ' data-amts="50,100,250,500" data-def="100"' }
-  $fundCards += "        <button class=`"card`" type=`"button`" data-fund=`"$($i.id)`"$amts aria-pressed=`"false`"><span class=`"h ft`">$($i.title)</span><span class=`"dsc`">$($i.lead)</span></button>`r`n"
+  $fundCards += "        <button class=`"card`" type=`"button`" data-fund=`"$($i.id)`"$amts aria-pressed=`"false`"><span class=`"h ft`" data-t=`"inits.$($i.id).title`">$($i.title)</span><span class=`"dsc`" data-t=`"inits.$($i.id).lead`">$($i.lead)</span></button>`r`n"
 }
 # Gifts within a fund. data-amts lists the amounts; a single amount is a fixed price.
 $optGroups = @'

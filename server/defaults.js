@@ -1,3 +1,6 @@
+import { PAGE_CLEAN, PAGE_DEFAULTS } from './pages.js';
+import { href, link, list, text } from './valid.js';
+
 // What the site shows when nothing has been changed in the admin center, and the
 // rules for what may be saved. These defaults mirror tools/build.ps1.
 
@@ -33,6 +36,7 @@ export const DEFAULTS = {
     instagram: 'https://www.instagram.com/dnamoacademy/',
   },
   photos: {},
+  ...PAGE_DEFAULTS,
 };
 
 // Pages offered as suggestions when typing a link in the admin.
@@ -51,47 +55,11 @@ export const SLOTS = [
   { id: 'init-schol', group: 'Initiative pages', label: 'Scholarships', src: 'hero-3.jpg', max: 2000 },
   { id: 'init-coach', group: 'Initiative pages', label: 'Coach Recruitment & Support', src: 'hero-2.jpg', max: 2000 },
   { id: 'init-club', group: 'Initiative pages', label: 'Club House & Field', src: 'hero-4.jpg', max: 2000 },
-  { id: 'board-elizabeth-estrada', group: 'Board of Directors', label: 'Elizabeth Estrada', src: 'board-elizabeth-estrada.jpg', max: 600 },
-  { id: 'board-ika-kvavilashvili', group: 'Board of Directors', label: 'Ika Kvavilashvili', src: 'board-ika-kvavilashvili.jpg', max: 600 },
-  { id: 'board-paulo-romero', group: 'Board of Directors', label: 'Paulo Romero', src: 'board-paulo-romero.jpg', max: 600 },
 ];
 
 // --- Validation -----------------------------------------------------------
 // Each cleaner returns a tidy copy of what was sent, or throws an Error whose
 // message is shown to the admin.
-
-function text(v, max, what, required = true) {
-  const s = String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
-  if (required && !s) throw new Error(`${what} cannot be empty.`);
-  if (s.length > max) throw new Error(`${what} is too long (max ${max} characters).`);
-  return s;
-}
-
-// Links may point to a page on the site, a full web address, an email or a phone number.
-function href(v, what, required = true) {
-  const s = String(v == null ? '' : v).trim();
-  if (!s) {
-    if (required) throw new Error(`${what} needs a link.`);
-    return '';
-  }
-  if (s.length > 500) throw new Error(`${what}: that link is too long.`);
-  const ok = /^https?:\/\/[^\s<>"']+$/i.test(s) || /^mailto:[^\s<>"']+$/i.test(s) || /^tel:[+\d\s().-]+$/i.test(s)
-    || /^\/?[A-Za-z0-9][A-Za-z0-9._\/-]*(\?[^\s<>"'#]*)?(#[A-Za-z0-9_-]*)?$/.test(s) || /^#[A-Za-z0-9_-]*$/.test(s) || s === '/';
-  if (!ok) throw new Error(`${what}: "${s}" is not a link we can use. Use a page like board.html or a full https:// address.`);
-  return s;
-}
-
-function link(v, what) {
-  const o = v && typeof v === 'object' ? v : {};
-  const label = text(o.label, 60, `${what} label`);
-  return { label, href: href(o.href, `"${label}"`) };
-}
-
-function list(v, max, what) {
-  if (!Array.isArray(v)) throw new Error(`${what} is missing.`);
-  if (v.length > max) throw new Error(`${what}: no more than ${max}.`);
-  return v;
-}
 
 const CLEAN = {
   identity(v) {
@@ -127,6 +95,7 @@ const CLEAN = {
     }
     return out;
   },
+  ...PAGE_CLEAN,
 };
 
 function socialUrl(v, what) {

@@ -110,6 +110,19 @@ button,input,select{font:inherit}
 .main h1{font-size:32px}
 .top{padding:10px 16px}
 }
+/* Page content: tabs and item lists */
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.tabs button{position:relative;min-height:40px;padding:8px 18px;border:1.5px solid #cfcfcf;border-radius:999px;background:#fff;color:var(--fg);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.dot{display:inline-block;width:8px;height:8px;margin-left:8px;border-radius:50%;background:var(--red);vertical-align:middle}
+.items{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.item{display:flex;gap:12px;align-items:flex-start;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fafafa}
+.item-body{flex:1;min-width:0}
+.item-body .field:last-child{margin-bottom:0}
+.item-tools{display:flex;flex-direction:column;gap:6px}
+.item-photo{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.item-photo img{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#e6e6e6}
+.item-photo .status{display:block;margin-top:6px}
 /* A menu link with no dropdown shows only a small "Add dropdown link" button */
 .kids:has(.links:empty) > p{display:none}
 .kids .links:empty{display:none}

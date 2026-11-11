@@ -99,7 +99,7 @@
     { id: 'identity', label: 'Site settings' },
     { id: 'chrome', label: 'Header & footer' },
     { id: 'photos', label: 'Photos' },
-    { id: 'pages', label: 'Page content', soon: true },
+    { id: 'pages', label: 'Page content' },
     { id: 'popups', label: 'Pop-ups', soon: true },
     { id: 'sites', label: 'Sites', soon: true },
     { id: 'admins', label: 'Admins', soon: true }
@@ -175,7 +175,7 @@
       else b.removeAttribute('aria-current');
     });
     if (!data) return;
-    ({ overview: overview, identity: identity, chrome: chrome, photos: photos }[id] || overview)();
+    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages }[id] || overview)();
     mainEl.scrollTop = 0;
     window.scrollTo(0, 0);
   }
@@ -238,7 +238,8 @@
           h('div', { class: 'stack' },
             h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('identity'); } }, 'Name and logo'),
             h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('chrome'); } }, 'Header & footer'),
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('photos'); } }, 'Photos'))),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('photos'); } }, 'Photos'),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('pages'); } }, 'Page content'))),
         h('section', { class: 'card' },
           h('h2', {}, 'Your account'),
           h('p', {}, session.user.email),
@@ -246,7 +247,6 @@
         h('section', { class: 'card' },
           h('h2', {}, 'Being built next'),
           h('ol', {},
-            h('li', {}, 'Page content'),
             h('li', {}, 'Pop-ups'),
             h('li', {}, 'More sites and admin accounts')))));
   }
@@ -356,6 +356,256 @@
         actions('footer', function () {
           return { links: links.read(), legal: legal.value, copyright: copy.input.value, linkedin: li.input.value, instagram: ig.input.value };
         }, chrome)));
+  }
+
+  /* ---------- Page content ---------- */
+
+  function area(label, value, rows, hint) {
+    var el = h('textarea', { rows: rows || 3 });
+    el.value = value || '';
+    var wrap = h('label', { class: 'field' }, h('span', {}, label), el, hint ? h('small', {}, hint) : null);
+    wrap.input = el;
+    return wrap;
+  }
+  /* Paragraphs are edited in one box, separated by an empty line */
+  function paras(label, arr, rows, hint) {
+    var f = area(label, (arr || []).join('\n\n'), rows, hint || 'Leave an empty line between paragraphs. Put **two stars** around words to make them bold.');
+    f.read = function () {
+      return f.input.value.split(/\n\s*\n/).map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean);
+    };
+    return f;
+  }
+  /* One item per line */
+  function lines(label, arr, rows, hint) {
+    var f = area(label, (arr || []).join('\n'), rows, hint || 'One per line.');
+    f.read = function () { return f.input.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean); };
+    return f;
+  }
+  var amountsText = function (arr) { return (arr || []).join(', '); };
+  var amountsRead = function (str) {
+    return String(str).split(/[,;\s]+/).map(function (x) { return x.replace(/[$]/g, ''); }).filter(Boolean).map(Number);
+  };
+
+  /* An editable list of items with several fields each.
+     spec: { fields: [{ key, label, type: 'text' | 'area' | 'photo' | 'amounts', hint }], addLabel, max, blank, fixed }
+     fixed lists cannot be added to, removed from or reordered. */
+  function itemList(items, spec) {
+    var rows = [];
+    var box = h('div', { class: 'items' });
+    function row(item) {
+      var readers = {};
+      var body = h('div', { class: 'item-body' });
+      spec.fields.forEach(function (f) {
+        var v = item[f.key];
+        if (f.type === 'photo') {
+          var value = v || '';
+          var img = h('img', { alt: '', src: value ? (value.charAt(0) === '/' ? value : '/' + value) : '/person.svg' });
+          var st = h('span', { class: 'status', role: 'status' });
+          var file = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
+            var chosen = file.files[0];
+            if (!chosen) return;
+            st.className = 'status'; st.textContent = 'Uploading...';
+            prepare(chosen, 600).then(function (blob) {
+              return api('POST', '/sites/' + site.id + '/media', blob, { 'X-File-Name': encodeURIComponent(chosen.name) });
+            }).then(function (m) {
+              value = m.url; img.src = m.url;
+              st.className = 'status ok'; st.textContent = 'Uploaded. Save to publish.';
+            }).catch(function (err) { st.className = 'status bad'; st.textContent = err.message; file.value = ''; });
+          } });
+          body.appendChild(h('div', { class: 'item-photo' }, img,
+            h('div', {}, h('button', { class: 'btn ghost small', type: 'button', onclick: function () { file.click(); } }, 'Change photo'), st, file)));
+          readers[f.key] = function () { return value; };
+        } else if (f.type === 'area') {
+          var a = area(f.label, v, f.rows || 4, f.hint);
+          body.appendChild(a);
+          readers[f.key] = function () { return a.input.value; };
+        } else if (f.type === 'amounts') {
+          var am = input(f.label, amountsText(v), { inputmode: 'numeric' }, f.hint || 'Whole dollars, separated by commas.');
+          body.appendChild(am);
+          readers[f.key] = function () { return amountsRead(am.input.value); };
+        } else {
+          var t = input(f.label, v, {}, f.hint);
+          body.appendChild(t);
+          readers[f.key] = function () { return t.input.value; };
+        }
+      });
+      var r = { read: function () {
+        var out = {};
+        if (item.id) out.id = item.id;
+        Object.keys(readers).forEach(function (k) { out[k] = readers[k](); });
+        return out;
+      } };
+      var move = function (d) {
+        var i = rows.indexOf(r), j = i + d;
+        if (j < 0 || j >= rows.length) return;
+        rows.splice(i, 1); rows.splice(j, 0, r);
+        if (d < 0) box.insertBefore(r.el, rows[j + 1].el); else box.insertBefore(rows[i].el, r.el);
+      };
+      r.el = h('div', { class: 'item' }, body, spec.fixed ? null : h('div', { class: 'item-tools' },
+        h('button', { class: 'icon', type: 'button', title: 'Move up', 'aria-label': 'Move up', onclick: function () { move(-1); } }, '\u2191'),
+        h('button', { class: 'icon', type: 'button', title: 'Move down', 'aria-label': 'Move down', onclick: function () { move(1); } }, '\u2193'),
+        h('button', { class: 'icon del', type: 'button', title: 'Remove', 'aria-label': 'Remove', onclick: function () {
+          if (!window.confirm('Remove this item?')) return;
+          rows.splice(rows.indexOf(r), 1); r.el.remove();
+        } }, '\u00d7')));
+      rows.push(r);
+      box.appendChild(r.el);
+    }
+    items.forEach(row);
+    var el = h('div', {}, box, spec.fixed ? null : h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+      if (rows.length >= spec.max) return;
+      row(spec.blank || {});
+      var first = rows[rows.length - 1].el.querySelector('input:not([type=file]), textarea');
+      if (first) first.focus();
+    } }, spec.addLabel));
+    return { el: el, read: function () { return rows.map(function (r) { return r.read(); }); } };
+  }
+
+  var PAGE_TABS = [
+    { id: 'home', label: 'Home' },
+    { id: 'board', label: 'Board' },
+    { id: 'inits', label: 'Initiatives' },
+    { id: 'giving', label: 'Giving options' },
+    { id: 'testimonials', label: 'Testimonials' }
+  ];
+  var pageTab = 'home';
+
+  function pages() {
+    var tabs = h('div', { class: 'tabs', role: 'tablist' }, PAGE_TABS.map(function (t) {
+      return h('button', { type: 'button', role: 'tab', 'aria-selected': String(t.id === pageTab), onclick: function () {
+        pageTab = t.id; pages();
+      } }, t.label, isCustom(t.id) ? h('span', { class: 'dot', title: 'Customised' }) : null);
+    }));
+    var body = ({ home: pageHome, board: pageBoard, inits: pageInits, giving: pageGiving, testimonials: pageTestimonials })[pageTab]();
+    paint(h('h1', {}, 'Page content'),
+      h('p', { class: 'lead' }, 'The words on each page. A red dot marks a page you have changed.'),
+      tabs, body);
+  }
+
+  function pageHome() {
+    var v = data.content.home;
+    var kicker = input('Small line above the headline', v.kicker);
+    var headline = input('Headline', v.headline);
+    var intro = area('Text under the headline', v.intro, 2);
+    var b1l = input('First button label', v.button1.label), b1h = input('First button link', v.button1.href, { list: 'pages' });
+    var b2l = input('Second button label', v.button2.label), b2h = input('Second button link', v.button2.href, { list: 'pages' });
+    var values = lines('Scrolling words', v.values, 8, 'One per line. They scroll across the page under the photo.');
+    var mEye = input('Small label', v.missionEyebrow), mTitle = input('Heading', v.missionTitle);
+    var mission = paras('Text', v.mission, 14);
+    var iEye = input('Small label', v.initsEyebrow), iTitle = input('Heading', v.initsTitle);
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Top of the page'), kicker, headline, intro,
+        h('div', { class: 'two' }, b1l, b1h), h('div', { class: 'two' }, b2l, b2h)),
+      h('section', { class: 'card' }, h('h2', {}, 'Scrolling words'), values),
+      h('section', { class: 'card' }, h('h2', {}, 'Mission'), h('div', { class: 'two' }, mEye, mTitle), mission),
+      h('section', { class: 'card' }, h('h2', {}, 'Initiatives heading'), h('div', { class: 'two' }, iEye, iTitle),
+        h('p', { class: 'muted small' }, 'The three initiative cards are edited under Initiatives.'),
+        actions('home', function () {
+          return { kicker: kicker.input.value, headline: headline.input.value, intro: intro.input.value,
+            button1: { label: b1l.input.value, href: b1h.input.value }, button2: { label: b2l.input.value, href: b2h.input.value },
+            values: values.read(), missionEyebrow: mEye.input.value, missionTitle: mTitle.input.value, mission: mission.read(),
+            initsEyebrow: iEye.input.value, initsTitle: iTitle.input.value };
+        }, pages))
+    ];
+  }
+
+  function pageBoard() {
+    var v = data.content.board;
+    var intro = area('Introduction', v.intro, 4);
+    var members = itemList(v.members, { addLabel: 'Add board member', max: 24, blank: { name: '', role: 'Director', photo: '', bio: '' }, fields: [
+      { key: 'photo', type: 'photo' },
+      { key: 'name', label: 'Name' },
+      { key: 'role', label: 'Role' },
+      { key: 'bio', label: 'Profile', type: 'area', rows: 6, hint: 'Shown when a visitor selects this person.' }
+    ] });
+    var cta = input('Closing line (next to the Contact button)', v.cta);
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Introduction'), intro),
+      h('section', { class: 'card' }, h('h2', {}, 'Board members'), members.el,
+        h('h3', {}, 'Closing line'), cta,
+        actions('board', function () { return { intro: intro.input.value, members: members.read(), cta: cta.input.value }; }, pages))
+    ];
+  }
+
+  function pageInits() {
+    var v = data.content.inits;
+    var oTitle = input('Heading', v.overviewTitle), oLead = input('Introduction', v.overviewLead);
+    var statFields = [{ key: 'amount', label: 'Amount' }, { key: 'label', label: 'Title' }, { key: 'note', label: 'Note' }];
+    var one = function (key, name) {
+      var x = v[key];
+      var f = { title: input('Title', x.title, {}, 'Also used on the home page cards, the tabs and the Donate page.'), lead: input('One-line summary', x.lead), intro: paras('Page text', x.intro, 8) };
+      f.card = h('section', { class: 'card' }, h('h2', {}, name), f.title, f.lead, f.intro);
+      f.read = function () { return { title: f.title.input.value, lead: f.lead.input.value, intro: f.intro.read() }; };
+      return f;
+    };
+    var schol = one('schol', 'Scholarships page'), coach = one('coach', 'Coach page'), club = one('club', 'Club House page');
+    var goals = lines('Bullet points', v.club.goals, 4);
+    var raised = input('Amount raised so far ($)', String(v.club.raised), { inputmode: 'numeric' });
+    var goal = input('Fundraising goal ($)', String(v.club.goal), { inputmode: 'numeric' }, 'The thermometer shows once the goal is above 0.');
+    var match = input('Gift-matching line', v.club.matchText);
+    add(club.card, [goals, h('h3', {}, 'Fund thermometer'), h('div', { class: 'two' }, raised, goal), match]);
+    var contribLead = area('Introduction', v.contribLead, 2);
+    var contrib = itemList(v.contrib, { addLabel: 'Add total', max: 8, blank: { amount: '', label: '', note: '' }, fields: statFields });
+    add(schol.card, [h('h3', {}, 'What Dnamo has contributed'), contribLead, contrib.el]);
+    var kitLead = area('Introduction', v.kitLead, 3);
+    var kit = itemList(v.kit, { addLabel: 'Add sponsorship', max: 8, blank: { amount: '', label: '', note: '' }, fields: statFields });
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Overview page'), oTitle, oLead),
+      schol.card, coach.card, club.card,
+      h('section', { class: 'card' }, h('h2', {}, 'Kit sponsorship'), kitLead, kit.el,
+        h('p', { class: 'muted small' }, 'The names in the top menu dropdown are edited under Header & footer.'),
+        actions('inits', function () {
+          var c = club.read();
+          c.goals = goals.read(); c.raised = raised.input.value; c.goal = goal.input.value; c.matchText = match.input.value;
+          return { overviewTitle: oTitle.input.value, overviewLead: oLead.input.value, schol: schol.read(), coach: coach.read(), club: c,
+            contribLead: contribLead.input.value, contrib: contrib.read(), kitLead: kitLead.input.value, kit: kit.read() };
+        }, pages))
+    ];
+  }
+
+  function pageGiving() {
+    var v = data.content.giving;
+    var fund = function (x) {
+      var f = { amounts: input('Amounts', amountsText(x.amounts), { inputmode: 'numeric' }, 'Whole dollars, separated by commas.'),
+        def: input('Amount selected to start with', String(x.def), { inputmode: 'numeric' }) };
+      f.el = h('div', { class: 'two' }, f.amounts, f.def);
+      f.read = function () { return { amounts: amountsRead(f.amounts.input.value), def: Number(f.def.input.value) }; };
+      return f;
+    };
+    var general = fund(v.general), club = fund(v.club);
+    var giftFields = [
+      { key: 'title', label: 'Title' },
+      { key: 'desc', label: 'Description' },
+      { key: 'amounts', label: 'Amounts', type: 'amounts', hint: 'One amount is shown as a fixed price. Several are shown as choices.' },
+      { key: 'short', label: 'Short name (button on the Donate page)' },
+      { key: 'tag', label: 'Label shown in place of a price when there are several amounts' }
+    ];
+    var schol = itemList(v.schol, { fixed: true, fields: giftFields });
+    var coach = itemList(v.coach, { fixed: true, fields: giftFields });
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Where it is needed most'), general.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Club House & Field fund'), club.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Scholarship gifts'),
+        h('p', { class: 'muted' }, 'Shown on the Scholarships page and on the Donate page.'), schol.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Coach gifts'),
+        h('p', { class: 'muted' }, 'Shown on the Coach page and on the Donate page. Visitors can also enter another amount.'), coach.el,
+        actions('giving', function () { return { general: general.read(), club: club.read(), schol: schol.read(), coach: coach.read() }; }, pages))
+    ];
+  }
+
+  function pageTestimonials() {
+    var v = data.content.testimonials;
+    var title = input('Heading', v.title), intro = input('Introduction', v.intro);
+    var items = itemList(v.items, { addLabel: 'Add testimonial', max: 30, blank: { quote: '', name: '', role: '' }, fields: [
+      { key: 'quote', label: 'What they said', type: 'area', rows: 3 },
+      { key: 'name', label: 'Name' },
+      { key: 'role', label: 'Who they are (player, parent, coach, partner)' }
+    ] });
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Heading'), title, intro),
+      h('section', { class: 'card' }, h('h2', {}, 'Testimonials'), items.el,
+        actions('testimonials', function () { return { title: title.input.value, intro: intro.input.value, items: items.read() }; }, pages))
+    ];
   }
 
   /* ---------- Photos ---------- */

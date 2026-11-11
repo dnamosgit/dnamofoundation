@@ -50,22 +50,22 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
   <p class="eyebrow">Our initiatives</p>
   <nav class="row-wrap g12" aria-label="Initiatives">
     <a class="sub" href="initiatives.html">Overview</a>
-    <a class="sub" href="scholarships.html">Scholarships</a>
-    <a class="sub" href="coaches.html">Coach Recruitment &amp; Support</a>
-    <a class="sub on" href="clubhouse.html" aria-current="page">Club House &amp; Field</a>
+    <a class="sub" href="scholarships.html" data-t="inits.schol.title">Scholarships</a>
+    <a class="sub" href="coaches.html" data-t="inits.coach.title">Coach Recruitment &amp; Support</a>
+    <a class="sub on" href="clubhouse.html" aria-current="page" data-t="inits.club.title">Club House &amp; Field</a>
     <a class="sub" href="initiatives.html#kit">Kit Sponsorship</a>
   </nav>
 </section>
 <section class="w split2 pad-after-sub">
   <div>
-    <h1 class="h init-title">Club House &amp; Field</h1>
-    <p class="init-lead">Help Dnamo find a home: a club house and fields of our own.</p>
-    <div class="prose mb32">
+    <h1 class="h init-title" data-t="inits.club.title">Club House &amp; Field</h1>
+    <p class="init-lead" data-t="inits.club.lead">Help Dnamo find a home: a club house and fields of our own.</p>
+    <div class="prose mb32" data-p="inits.club.intro">
       <p>We are looking for a home. We believe we have created a community, and we are now looking for a multi-field space that can act as a home away from home.</p>
       <p>Dnamo FC is here to stay. Now let&rsquo;s put a <strong>stake in the ground</strong>!</p>
     </div>
-    <ul class="goals"><li>The Club House will be a place for players to study, come together and interact with other age groups.</li><li>One fund covers both the Club House and the fields.</li></ul>
-    <a class="btn" href="donate.html?fund=club">Donate to Club House &amp; Field</a>
+    <ul class="goals" data-list="inits.club.goals"><li>The Club House will be a place for players to study, come together and interact with other age groups.</li><li>One fund covers both the Club House and the fields.</li></ul>
+    <a class="btn" href="donate.html?fund=club">Donate to <span data-t="inits.club.title">Club House &amp; Field</span></a>
   </div>
   <img class="shot" data-slot="init-club" src="hero-4.jpg" alt="A young goalkeeper catching a ball at training" width="2000" height="1125" loading="lazy">
 </section>
@@ -75,10 +75,12 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
     <p class="eyebrow">Fund tracker</p>
     <h2 class="h mb48">How close we are to home</h2>
     <!-- TODO: set clubRaised and clubGoal in the build script (or edit the numbers and the width here) once the goal is agreed -->
+    <div data-list="inits.club.thermo">
     <div class="thermo" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span style="width:0%"></span></div>
     <div class="thermo-nums"><span><strong>[AMOUNT RAISED]</strong> raised</span><span>Goal: <strong>[GOAL]</strong></span></div>
+    </div>
     <a class="btn" href="donate.html?fund=club">Give to the Club House &amp; Field fund</a>
-    <div class="cta-row"><p>Would you or your company match gifts to this fund? We would love to hear from you.</p><a class="btn s" href="contact.html?topic=match">Match a gift</a></div>
+    <div class="cta-row"><p data-t="inits.club.matchText">Would you or your company match gifts to this fund? We would love to hear from you.</p><a class="btn s" href="contact.html?topic=match">Match a gift</a></div>
   </div>
 </section>
 <section class="band dk">

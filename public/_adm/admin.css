@@ -1,0 +1,116 @@
+/* Dnamo admin center. Same brand as the public site: red, black, white;
+   Barlow Condensed headings, Inter for everything else. */
+:root{
+--red:#eb2323;--red-d:#c81a1a;--ink:#0b0b0b;--fg:#111;--muted:#666;--line:#e3e3e3;
+--bg:#f5f5f4;--card:#fff;--r:14px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 15px/1.5 Inter,system-ui,sans-serif}
+h1,h2,h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.02em;line-height:1.05;margin:0}
+a{color:inherit}
+button,input,select{font:inherit}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.nojs{padding:32px;text-align:center}
+
+/* Buttons and fields */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 22px;border:0;border-radius:999px;background:var(--red);color:#fff;font-weight:700;font-size:14px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;text-decoration:none;transition:background-color .2s ease}
+.btn:hover{background:var(--red-d)}
+.btn[disabled]{opacity:.6;cursor:default}
+.btn.ghost{background:transparent;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}
+.btn.ghost:hover{background:rgba(127,127,127,.15)}
+.btn.small{min-height:36px;padding:6px 16px;font-size:12px}
+.field{display:block;margin-bottom:16px}
+.field span{display:block;margin-bottom:6px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.field small{display:block;margin-top:6px;color:var(--muted);font-size:13px}
+.field input{width:100%;min-height:46px;padding:10px 14px;border:1.5px solid #cfcfcf;border-radius:10px;background:#fff;color:#000}
+.field input:focus{border-color:var(--red);outline:0;box-shadow:0 0 0 3px rgba(235,35,35,.15)}
+.msg{margin:0 0 16px;padding:10px 14px;border-radius:10px;background:#fdecec;color:#8f1010;font-size:14px}
+.msg[hidden]{display:none}
+
+/* Sign-in and first-time setup */
+.gate{min-height:100vh;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--ink)}
+.gate-card{width:100%;max-width:420px;background:var(--card);border-radius:20px;padding:36px 32px}
+.gate-card img{display:block;width:72px;height:72px;margin:0 auto 16px}
+.gate-card h1{font-size:32px;text-align:center}
+.gate-card .sub{margin:8px 0 24px;text-align:center;color:var(--muted)}
+.gate-card .btn{width:100%}
+
+/* App frame */
+.frame{min-height:100vh;display:grid;grid-template-columns:240px 1fr;grid-template-rows:auto 1fr}
+.top{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px 20px;padding:10px 24px;background:var(--ink);color:#fff}
+.brand{font:700 24px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.04em;color:var(--red);margin-right:auto}
+.brand b{color:#fff;font-weight:600}
+.pick{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#bbb}
+.pick select{min-height:40px;max-width:260px;padding:6px 12px;border:1px solid #444;border-radius:10px;background:#1b1b1b;color:#fff;text-transform:none;letter-spacing:0;font-weight:500;font-size:14px}
+.who{font-size:14px;color:#ddd}
+.side{background:#fff;border-right:1px solid var(--line);padding:16px 12px}
+.side button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:44px;padding:8px 14px;border:0;border-radius:10px;background:none;color:var(--fg);font-weight:600;font-size:14px;text-align:left;cursor:pointer}
+.side button:hover:not([disabled]){background:#f1f1f1}
+.side button[aria-current="page"]{background:var(--red);color:#fff}
+.side button[disabled]{color:#9a9a9a;cursor:default}
+.tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:#eee;color:#777}
+.main{padding:32px;min-width:0}
+.main h1{font-size:40px;margin-bottom:6px}
+.main .lead{margin:0 0 24px;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px}
+.card h2{font-size:22px;margin-bottom:10px}
+.card p{margin:0 0 6px}
+.card .muted,.card li span{color:var(--muted)}
+.card .btn{margin-top:12px}
+.card ol{margin:0;padding-left:20px}
+.card li{margin-bottom:6px}
+
+/* Editing screens */
+.main > .card{margin-bottom:16px;max-width:980px}
+.card h3{font-size:17px;margin:22px 0 10px;color:var(--muted)}
+.small{font-size:13px}
+.stack{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.stack .btn{margin-top:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:0 16px}
+.field textarea,.links input{width:100%;padding:10px 14px;border:1.5px solid #cfcfcf;border-radius:10px;background:#fff;color:#000;font:inherit}
+.field textarea{resize:vertical}
+.links input{min-height:42px}
+.field textarea:focus,.links input:focus{border-color:var(--red);outline:0;box-shadow:0 0 0 3px rgba(235,35,35,.15)}
+.wordmark{display:inline-block;padding:12px 18px;margin-bottom:4px;border:1px solid var(--line);border-radius:10px;font:500 26px/1 'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.04em}
+.wordmark b{font-weight:700;color:var(--red)}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.actions .btn{margin-top:0}
+.status{font-size:14px;color:var(--muted)}
+.status.ok{color:#1a7a35;font-weight:600}
+.status.bad{color:#b01212;font-weight:600}
+
+/* Link lists (menu and footer) */
+.links{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.link-row{display:grid;grid-template-columns:1fr 1.2fr auto auto auto;gap:8px;align-items:center}
+.top-link{padding:12px;border:1px solid var(--line);border-radius:12px;background:#fafafa}
+.kids{margin:10px 0 0 18px;padding-left:14px;border-left:2px solid var(--red)}
+.kids > p{margin:0 0 8px}
+.icon{width:38px;height:38px;border:1px solid #cfcfcf;border-radius:10px;background:#fff;color:var(--fg);font-size:16px;cursor:pointer}
+.icon:hover{background:#f1f1f1}
+.icon.del:hover{background:var(--red);border-color:var(--red);color:#fff}
+
+/* Photo cards */
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(220px,100%),1fr));gap:14px}
+.photo{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.thumb{aspect-ratio:16/10;background:#eee}
+.thumb img{display:block;width:100%;height:100%;object-fit:cover}
+.thumb.contain{background:#fff}
+.thumb.contain img{object-fit:contain;padding:12px}
+.photo-body{display:flex;flex-direction:column;gap:2px;padding:12px 14px 14px}
+
+@media (max-width:760px){
+.link-row{grid-template-columns:1fr auto auto auto}
+.link-row input:first-child{grid-column:1/-1}
+.frame{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}
+.side{display:flex;gap:6px;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 12px}
+.side button{width:auto;white-space:nowrap}
+.main{padding:20px 16px}
+.main h1{font-size:32px}
+.top{padding:10px 16px}
+}
+/* A menu link with no dropdown shows only a small "Add dropdown link" button */
+.kids:has(.links:empty) > p{display:none}
+.kids .links:empty{display:none}
+.kids .btn{min-height:32px;padding:4px 14px;font-size:11px}

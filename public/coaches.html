@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Testimonials | Dnamo Football Foundation</title>
-<meta name="description" content="Players, parents, coaches and partners on what Dnamo Football Foundation means to them.">
+<title>Coach Recruitment &amp; Support | Dnamo Football Foundation</title>
+<meta name="description" content="Coach Recruitment and Support at Dnamo Football Foundation. Back the coaches who teach, mentor and show up for every player.">
 <meta name="theme-color" content="#ffffff">
 <!-- Browser tab icon and phone home-screen icon -->
 <link rel="icon" type="image/png" href="logo.png">
@@ -19,7 +19,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </head>
 <body>
 <!-- Logo splash: phones and tablets only, once per visit (see styles.css and script.js) -->
-<div class="splash" aria-hidden="true"><img src="logo.png" alt="" width="447" height="447"></div>
+<div class="splash" aria-hidden="true"><img data-slot="logo" src="logo.png" alt="" width="447" height="447"></div>
 <div class="prog"></div>
 
 <header class="site-header solid">
@@ -30,15 +30,15 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
       <a class="nav" href="index.html">Home</a>
       <a class="nav" href="board.html">Board of Directors</a>
       <div class="navdrop">
-        <a class="nav" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
+        <a class="nav on" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
         <div class="dropmenu">
           <a href="scholarships.html">Scholarships</a>
-          <a href="coaches.html">Coach Recruitment &amp; Support</a>
+          <a href="coaches.html" class="on" aria-current="page">Coach Recruitment &amp; Support</a>
           <a href="clubhouse.html">Club House &amp; Field</a>
           <a href="initiatives.html#kit">Kit Sponsorship</a>
         </div>
       </div>
-      <a class="nav on" href="testimonials.html" aria-current="page">Testimonials</a>
+      <a class="nav" href="testimonials.html">Testimonials</a>
       <a class="nav" href="contact.html">Contact Us</a>
       <a class="btn" href="donate.html">Donate</a>
     </nav>
@@ -46,23 +46,45 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </header>
 
 <main>
-<section class="w pad">
-  <p class="eyebrow">Testimonials</p>
-  <h1 class="h">In their words</h1>
-  <p class="lead">Players, parents, coaches and partners on what Dnamo means to them.</p>
-  <!-- TODO: real testimonials -->
-  <div class="grid tray">
-    <figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">[TESTIMONIAL 1: a sentence or two about the experience.]</p></blockquote><figcaption><div class="h who">[NAME]</div><div class="red">[PLAYER / PARENT / COACH / PARTNER]</div></figcaption></figure>
-    <figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">[TESTIMONIAL 2: a sentence or two about the experience.]</p></blockquote><figcaption><div class="h who">[NAME]</div><div class="red">[PLAYER / PARENT / COACH / PARTNER]</div></figcaption></figure>
-    <figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">[TESTIMONIAL 3: a sentence or two about the experience.]</p></blockquote><figcaption><div class="h who">[NAME]</div><div class="red">[PLAYER / PARENT / COACH / PARTNER]</div></figcaption></figure>
+<section class="w pad-sub">
+  <p class="eyebrow">Our initiatives</p>
+  <nav class="row-wrap g12" aria-label="Initiatives">
+    <a class="sub" href="initiatives.html">Overview</a>
+    <a class="sub" href="scholarships.html">Scholarships</a>
+    <a class="sub on" href="coaches.html" aria-current="page">Coach Recruitment &amp; Support</a>
+    <a class="sub" href="clubhouse.html">Club House &amp; Field</a>
+    <a class="sub" href="initiatives.html#kit">Kit Sponsorship</a>
+  </nav>
+</section>
+<section class="w split2 pad-after-sub">
+  <div>
+    <h1 class="h init-title">Coach Recruitment &amp; Support</h1>
+    <p class="init-lead">Back the coaches who teach, mentor and show up for every player.</p>
+    <div class="prose mb32">
+      <p>Our coaches do this because they believe in the mission. They are all young and have day jobs. They are here for the passion of the sport and the relationships they have with the players.</p>
+      <p>Each coach connects with their players and is a consistent source of support, advice and mentorship. Many coaches help with carpools, school problems and social issues when parents ask for help.</p>
+      <p>As players mature, coaches can be a safe place to ask for help.</p>
+    </div>
+    <a class="btn" href="donate.html?fund=coach">Donate to Coach Recruitment &amp; Support</a>
   </div>
-  <div class="mt48"><a class="btn s" href="contact.html">Share your story</a></div>
+  <img class="shot" data-slot="init-coach" src="hero-2.jpg" alt="A Dnamo coach talking with players at training" width="2000" height="1125" loading="lazy">
+</section>
+
+<section class="dark">
+  <div class="w pad-l">
+    <p class="eyebrow">Ways to give</p>
+    <h2 class="h mb48">Two funds for our coaches</h2>
+    <div class="grid">
+    <div class="card d static tier"><span class="price">Education</span><h3 class="h">Coach Development Fund</h3><p>Contributes to coaching education programs and licensing.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=1000">$1,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=2500">$2,500</a><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=5000">$5,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=other">Other</a></div></div>
+    <div class="card d static tier"><span class="price">Support</span><h3 class="h">The Coaches Fund</h3><p>Helps cover the cost of travel, specialty equipment and leadership seminars.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=1000">$1,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=2500">$2,500</a><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=5000">$5,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=other">Other</a></div></div>
+    </div>
+  </div>
 </section>
 <section class="band dk">
   <div class="w">
     <h2 class="h">No child turned away.</h2>
     <p>Your gift funds scholarships, coaching and safe fields for young players.</p>
-    <a class="btn" href="donate.html">Donate now</a>
+    <a class="btn" href="donate.html?fund=coach">Donate now</a>
   </div>
 </section>
 </main>

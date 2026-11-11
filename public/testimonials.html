@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Donate | Dnamo Football Foundation</title>
-<meta name="description" content="Support a young player. Choose a fund and an amount to give to Dnamo Football Foundation.">
+<title>Testimonials | Dnamo Football Foundation</title>
+<meta name="description" content="Players, parents, coaches and partners on what Dnamo Football Foundation means to them.">
 <meta name="theme-color" content="#ffffff">
 <!-- Browser tab icon and phone home-screen icon -->
 <link rel="icon" type="image/png" href="logo.png">
@@ -19,7 +19,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </head>
 <body>
 <!-- Logo splash: phones and tablets only, once per visit (see styles.css and script.js) -->
-<div class="splash" aria-hidden="true"><img src="logo.png" alt="" width="447" height="447"></div>
+<div class="splash" aria-hidden="true"><img data-slot="logo" src="logo.png" alt="" width="447" height="447"></div>
 <div class="prog"></div>
 
 <header class="site-header solid">
@@ -38,7 +38,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
           <a href="initiatives.html#kit">Kit Sponsorship</a>
         </div>
       </div>
-      <a class="nav" href="testimonials.html">Testimonials</a>
+      <a class="nav on" href="testimonials.html" aria-current="page">Testimonials</a>
       <a class="nav" href="contact.html">Contact Us</a>
       <a class="btn" href="donate.html">Donate</a>
     </nav>
@@ -46,53 +46,25 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </header>
 
 <main>
-<section class="w pad" id="donate">
-  <p class="eyebrow">Donate</p>
-  <h1 class="h">Support a young player</h1>
-  <p class="lead l48">Choose where your gift goes and how much to give.</p>
-  <div class="split2">
-    <div>
-      <span class="lab" id="fund-lab">Where should your gift go?</span>
-      <div class="grid mb48" role="group" aria-labelledby="fund-lab">
-        <button class="card on" type="button" data-fund="general" data-amts="25,50,100,250" data-def="50" aria-pressed="true"><span class="h ft">Where it is needed most</span><span class="dsc">Flexible support across all three initiatives.</span></button>
-        <button class="card" type="button" data-fund="schol" aria-pressed="false"><span class="h ft">Scholarships</span><span class="dsc">Sponsor a player so cost never keeps a child off the field.</span></button>
-        <button class="card" type="button" data-fund="coach" aria-pressed="false"><span class="h ft">Coach Recruitment &amp; Support</span><span class="dsc">Back the coaches who teach, mentor and show up for every player.</span></button>
-        <button class="card" type="button" data-fund="club" data-amts="50,100,250,500" data-def="100" aria-pressed="false"><span class="h ft">Club House &amp; Field</span><span class="dsc">Help Dnamo find a home: a club house and fields of our own.</span></button>
-      </div>
-      <div id="opt-step" hidden>
-        <span class="lab" id="opt-lab">Choose a gift</span>
-        <div class="row-wrap mb48" role="group" aria-labelledby="opt-lab" data-opts="schol" hidden>
-          <button class="sub" type="button" data-opt="year" data-label="Sponsor a player for the year" data-amts="5000" aria-pressed="false">Player for the year</button>
-          <button class="sub" type="button" data-opt="season" data-label="Seasonal sponsorship" data-amts="2500" aria-pressed="false">One season</button>
-          <button class="sub" type="button" data-opt="two" data-label="Multiyear sponsorship (two years)" data-amts="10000" aria-pressed="false">Two years</button>
-          <button class="sub" type="button" data-opt="monthly" data-label="Sponsor a player per month" data-amts="50,100,250,500" data-per="month" data-fixed="1" aria-pressed="false">Monthly</button>
-          <button class="sub" type="button" data-opt="tourn" data-label="Tournament scholarship" data-amts="50,100,250,500" data-fixed="1" aria-pressed="false">Tournament</button>
-        </div>
-        <div class="row-wrap mb48" role="group" aria-labelledby="opt-lab" data-opts="coach" hidden>
-          <button class="sub" type="button" data-opt="dev" data-label="Coach Development Fund" data-amts="1000,2500,5000" aria-pressed="false">Coach Development Fund</button>
-          <button class="sub" type="button" data-opt="fund" data-label="The Coaches Fund" data-amts="1000,2500,5000" aria-pressed="false">The Coaches Fund</button>
-        </div>
-      </div>
-      <span class="lab" id="amt-lab">Choose an amount</span>
-      <!-- script.js fills this with the amounts for the chosen fund or gift -->
-      <div class="row-wrap mb24" id="amt-box" role="group" aria-labelledby="amt-lab"></div>
-      <div id="other-wrap">
-        <label class="lab" for="other-amount">Or enter another amount ($)</label>
-        <input class="field short" id="other-amount" inputmode="numeric" autocomplete="off">
-      </div>
-    </div>
-    <div class="sum" aria-live="polite">
-      <h2 class="h">Your gift</h2>
-      <div class="row"><span>Fund</span><span class="right" id="sum-fund">Where it is needed most</span></div>
-      <div class="row" id="sum-gift-row" hidden><span>Gift</span><span class="right" id="sum-gift"></span></div>
-      <div class="row"><span>Amount</span><span class="bold" id="sum-amount">$50</span></div>
-      <!-- TODO: no payment provider yet. Point this at Wix donations, PayPal or Stripe. -->
-      <a class="btn block" href="#">Continue to payment</a>
-      <p class="fine">The Dnamo Football Academy Foundation has a nonprofit tax exempt status with the IRS (EIN 39-2786889).</p>
-    </div>
+<section class="w pad">
+  <p class="eyebrow">Testimonials</p>
+  <h1 class="h">In their words</h1>
+  <p class="lead">Players, parents, coaches and partners on what Dnamo means to them.</p>
+  <!-- TODO: real testimonials -->
+  <div class="grid tray">
+    <figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">[TESTIMONIAL 1: a sentence or two about the experience.]</p></blockquote><figcaption><div class="h who">[NAME]</div><div class="red">[PLAYER / PARENT / COACH / PARTNER]</div></figcaption></figure>
+    <figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">[TESTIMONIAL 2: a sentence or two about the experience.]</p></blockquote><figcaption><div class="h who">[NAME]</div><div class="red">[PLAYER / PARENT / COACH / PARTNER]</div></figcaption></figure>
+    <figure class="card static" style="margin:0"><blockquote style="margin:0"><p class="quote">[TESTIMONIAL 3: a sentence or two about the experience.]</p></blockquote><figcaption><div class="h who">[NAME]</div><div class="red">[PLAYER / PARENT / COACH / PARTNER]</div></figcaption></figure>
+  </div>
+  <div class="mt48"><a class="btn s" href="contact.html">Share your story</a></div>
+</section>
+<section class="band dk">
+  <div class="w">
+    <h2 class="h">No child turned away.</h2>
+    <p>Your gift funds scholarships, coaching and safe fields for young players.</p>
+    <a class="btn" href="donate.html">Donate now</a>
   </div>
 </section>
-
 </main>
 
 <footer class="site-footer">

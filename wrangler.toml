@@ -1,0 +1,12 @@
+# Cloudflare Pages project: the public site, the admin center and its database.
+name = "dnamo-foundation"
+pages_build_output_dir = "public"
+compatibility_date = "2026-10-01"
+
+# Database for admin accounts, sessions and editable site content.
+# database_id is filled in once the database exists in the Cloudflare account.
+[[d1_databases]]
+binding = "DB"
+database_name = "dnamo-admin"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"

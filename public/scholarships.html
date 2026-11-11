@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Club House &amp; Field | Dnamo Football Foundation</title>
-<meta name="description" content="Club House and Field at Dnamo Football Foundation. Help Dnamo find a home: a club house and fields of our own.">
+<title>Scholarships | Dnamo Football Foundation</title>
+<meta name="description" content="Scholarships at Dnamo Football Foundation. Sponsor a player so cost never keeps a child off the field.">
 <meta name="theme-color" content="#ffffff">
 <!-- Browser tab icon and phone home-screen icon -->
 <link rel="icon" type="image/png" href="logo.png">
@@ -19,7 +19,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </head>
 <body>
 <!-- Logo splash: phones and tablets only, once per visit (see styles.css and script.js) -->
-<div class="splash" aria-hidden="true"><img src="logo.png" alt="" width="447" height="447"></div>
+<div class="splash" aria-hidden="true"><img data-slot="logo" src="logo.png" alt="" width="447" height="447"></div>
 <div class="prog"></div>
 
 <header class="site-header solid">
@@ -32,9 +32,9 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
       <div class="navdrop">
         <a class="nav on" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
         <div class="dropmenu">
-          <a href="scholarships.html">Scholarships</a>
+          <a href="scholarships.html" class="on" aria-current="page">Scholarships</a>
           <a href="coaches.html">Coach Recruitment &amp; Support</a>
-          <a href="clubhouse.html" class="on" aria-current="page">Club House &amp; Field</a>
+          <a href="clubhouse.html">Club House &amp; Field</a>
           <a href="initiatives.html#kit">Kit Sponsorship</a>
         </div>
       </div>
@@ -50,42 +50,55 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
   <p class="eyebrow">Our initiatives</p>
   <nav class="row-wrap g12" aria-label="Initiatives">
     <a class="sub" href="initiatives.html">Overview</a>
-    <a class="sub" href="scholarships.html">Scholarships</a>
+    <a class="sub on" href="scholarships.html" aria-current="page">Scholarships</a>
     <a class="sub" href="coaches.html">Coach Recruitment &amp; Support</a>
-    <a class="sub on" href="clubhouse.html" aria-current="page">Club House &amp; Field</a>
+    <a class="sub" href="clubhouse.html">Club House &amp; Field</a>
     <a class="sub" href="initiatives.html#kit">Kit Sponsorship</a>
   </nav>
 </section>
 <section class="w split2 pad-after-sub">
   <div>
-    <h1 class="h init-title">Club House &amp; Field</h1>
-    <p class="init-lead">Help Dnamo find a home: a club house and fields of our own.</p>
+    <h1 class="h init-title">Scholarships</h1>
+    <p class="init-lead">Sponsor a player so cost never keeps a child off the field.</p>
     <div class="prose mb32">
-      <p>We are looking for a home. We believe we have created a community, and we are now looking for a multi-field space that can act as a home away from home.</p>
-      <p>Dnamo FC is here to stay. Now let&rsquo;s put a <strong>stake in the ground</strong>!</p>
+      <p>A scholarship covers what a family cannot, so a player can train, compete and travel with their team. Choose a full sponsorship, a monthly gift or help with tournament costs.</p>
     </div>
-    <ul class="goals"><li>The Club House will be a place for players to study, come together and interact with other age groups.</li><li>One fund covers both the Club House and the fields.</li></ul>
-    <a class="btn" href="donate.html?fund=club">Donate to Club House &amp; Field</a>
+    <a class="btn" href="donate.html?fund=schol">Donate to Scholarships</a>
   </div>
-  <img class="shot" src="hero-4.jpg" alt="A young goalkeeper catching a ball at training" width="2000" height="1125" loading="lazy">
+  <img class="shot" data-slot="init-schol" src="hero-3.jpg" alt="A Dnamo coach with a huddle of young players" width="2000" height="1125" loading="lazy">
 </section>
 
 <section class="dark">
   <div class="w pad-l">
-    <p class="eyebrow">Fund tracker</p>
-    <h2 class="h mb48">How close we are to home</h2>
-    <!-- TODO: set clubRaised and clubGoal in the build script (or edit the numbers and the width here) once the goal is agreed -->
-    <div class="thermo" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span style="width:0%"></span></div>
-    <div class="thermo-nums"><span><strong>[AMOUNT RAISED]</strong> raised</span><span>Goal: <strong>[GOAL]</strong></span></div>
-    <a class="btn" href="donate.html?fund=club">Give to the Club House &amp; Field fund</a>
-    <div class="cta-row"><p>Would you or your company match gifts to this fund? We would love to hear from you.</p><a class="btn s" href="contact.html?topic=match">Match a gift</a></div>
+    <p class="eyebrow">Ways to give</p>
+    <h2 class="h mb48">Sponsor a player</h2>
+    <div class="grid">
+    <div class="card d static tier"><span class="price">$5,000</span><h3 class="h">Sponsor a player for the year</h3><p>Includes all fees and kit requirements for one player.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=schol&amp;opt=year">Give $5,000</a></div></div>
+    <div class="card d static tier"><span class="price">$2,500</span><h3 class="h">Seasonal sponsorship</h3><p>Sponsor one player for a season.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=schol&amp;opt=season">Give $2,500</a></div></div>
+    <div class="card d static tier"><span class="price">$10,000</span><h3 class="h">Multiyear sponsorship</h3><p>Sponsor one player for two years.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=schol&amp;opt=two">Give $10,000</a></div></div>
+    <div class="card d static tier"><span class="price">Monthly</span><h3 class="h">Sponsor a player per month</h3><p>A smaller amount each month. Comes with a thank-you letter written by a player.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=schol&amp;opt=monthly&amp;amt=50">$50</a><a class="sub" href="donate.html?fund=schol&amp;opt=monthly&amp;amt=100">$100</a><a class="sub" href="donate.html?fund=schol&amp;opt=monthly&amp;amt=250">$250</a><a class="sub" href="donate.html?fund=schol&amp;opt=monthly&amp;amt=500">$500</a></div></div>
+    <div class="card d static tier"><span class="price">Tournaments</span><h3 class="h">Tournament scholarship</h3><p>Covers travel expenses, tournament fees and lodging.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=schol&amp;opt=tourn&amp;amt=50">$50</a><a class="sub" href="donate.html?fund=schol&amp;opt=tourn&amp;amt=100">$100</a><a class="sub" href="donate.html?fund=schol&amp;opt=tourn&amp;amt=250">$250</a><a class="sub" href="donate.html?fund=schol&amp;opt=tourn&amp;amt=500">$500</a></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="w pad-l">
+  <p class="eyebrow">Our own commitment</p>
+  <h2 class="h">What Dnamo has contributed</h2>
+  <p class="lead">Dnamo funds scholarships for its own players every year. These are the totals for the last three years.</p>
+  <!-- TODO: fill in the three yearly totals and the three-year total -->
+  <div class="grid">
+    <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">[YEAR 1]</h3><p>Scholarships funded by Dnamo</p></div>
+    <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">[YEAR 2]</h3><p>Scholarships funded by Dnamo</p></div>
+    <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">[YEAR 3]</h3><p>Scholarships funded by Dnamo</p></div>
+    <div class="card static"><span class="price">[TOTAL]</span><h3 class="h">Three-year total</h3><p>Given by Dnamo to its players</p></div>
   </div>
 </section>
 <section class="band dk">
   <div class="w">
     <h2 class="h">No child turned away.</h2>
     <p>Your gift funds scholarships, coaching and safe fields for young players.</p>
-    <a class="btn" href="donate.html?fund=club">Donate now</a>
+    <a class="btn" href="donate.html?fund=schol">Donate now</a>
   </div>
 </section>
 </main>

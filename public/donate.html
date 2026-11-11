@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Board of Directors | Dnamo Football Foundation</title>
-<meta name="description" content="Meet the board of directors guiding Dnamo Football Foundation.">
+<title>Donate | Dnamo Football Foundation</title>
+<meta name="description" content="Support a young player. Choose a fund and an amount to give to Dnamo Football Foundation.">
 <meta name="theme-color" content="#ffffff">
 <!-- Browser tab icon and phone home-screen icon -->
 <link rel="icon" type="image/png" href="logo.png">
@@ -19,7 +19,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </head>
 <body>
 <!-- Logo splash: phones and tablets only, once per visit (see styles.css and script.js) -->
-<div class="splash" aria-hidden="true"><img src="logo.png" alt="" width="447" height="447"></div>
+<div class="splash" aria-hidden="true"><img data-slot="logo" src="logo.png" alt="" width="447" height="447"></div>
 <div class="prog"></div>
 
 <header class="site-header solid">
@@ -28,7 +28,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
     <button class="nav burger" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav class="navbox" id="site-nav" aria-label="Main">
       <a class="nav" href="index.html">Home</a>
-      <a class="nav on" href="board.html" aria-current="page">Board of Directors</a>
+      <a class="nav" href="board.html">Board of Directors</a>
       <div class="navdrop">
         <a class="nav" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
         <div class="dropmenu">
@@ -46,30 +46,53 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </header>
 
 <main>
-<section class="w pad">
-  <p class="eyebrow">Leadership</p>
-  <h1 class="h">Board of Directors</h1>
-  <p class="lead">Our Board of Directors is made up of caring community members who believe in the power of sports to bring kids together. They guide our mission with heart and commitment, ensuring every child has the opportunity to learn, grow, and thrive. Select a director to read their profile.</p>
-  <div class="grid">
-    <button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="Elizabeth Estrada" data-role="Director" data-bio="Ellie's lifelong love for soccer opened doors that changed the course of her life. Her dedication and talent on the field earned her the opportunity to play at the collegiate level, where the sport not only fueled her passion but helped pay for her education. Grateful for the doors soccer opened, Ellie is committed to helping the next generation players access the same opportunities. Leveraging her experiences as both a student-athlete and mentor, she works to ensure that programs at Dnamo Football Academy Foundation provide meaningful opportunities for growth. Her efforts supports Dnamo's mission to empower young athletes, strengthen families, and give back to the community through soccer."><img src="board-elizabeth-estrada.jpg" alt="" width="120" height="120" loading="lazy"><span class="h">Elizabeth Estrada</span><span class="red">Director</span></button>
-    <button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="Ika Kvavilashvili" data-role="Director" data-bio="Ika Kvavilashvili founded Dnamo FC to create opportunities for every child to experience the mentorship, discipline, and joy that shaped his own soccer journey. What began as a small local club has grown into a community built on passion, inclusivity, and the belief that soccer can change lives. With international playing and coaching experience across Georgia, the United States, and Europe, Ika brings a global perspective and a deep understanding of what it takes to develop both great players and great people. His vision extends far beyond the field. He sees soccer as a powerful tool to inspire confidence, build leadership, and unite diverse communities through shared purpose.&#10;&#10;Through the Dnamo Football Academy Foundation, Ika continues his lifelong mission to break down barriers and open doors for young athletes. His commitment is to ensure that every child, regardless of background, has the opportunity to learn, grow, and find belonging through the beautiful game."><img src="board-ika-kvavilashvili.jpg" alt="" width="120" height="120" loading="lazy"><span class="h">Ika Kvavilashvili</span><span class="red">Director</span></button>
-    <button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="Paulo Romero" data-role="Director" data-bio="Paulo's competitive soccer background as a player and coach instilled discipline, teamwork, and leadership that continue at Dnamo Football Academy. Leveraging leadership experience as a Chief Information Officer, he helps ensure programs run smoothly and resources are used effectively. His efforts support Dnamo's mission to empower young athletes and strengthen the community through soccer."><img src="board-paulo-romero.jpg" alt="" width="120" height="120" loading="lazy"><span class="h">Paulo Romero</span><span class="red">Director</span></button>
+<section class="w pad" id="donate">
+  <p class="eyebrow">Donate</p>
+  <h1 class="h">Support a young player</h1>
+  <p class="lead l48">Choose where your gift goes and how much to give.</p>
+  <div class="split2">
+    <div>
+      <span class="lab" id="fund-lab">Where should your gift go?</span>
+      <div class="grid mb48" role="group" aria-labelledby="fund-lab">
+        <button class="card on" type="button" data-fund="general" data-amts="25,50,100,250" data-def="50" aria-pressed="true"><span class="h ft">Where it is needed most</span><span class="dsc">Flexible support across all three initiatives.</span></button>
+        <button class="card" type="button" data-fund="schol" aria-pressed="false"><span class="h ft">Scholarships</span><span class="dsc">Sponsor a player so cost never keeps a child off the field.</span></button>
+        <button class="card" type="button" data-fund="coach" aria-pressed="false"><span class="h ft">Coach Recruitment &amp; Support</span><span class="dsc">Back the coaches who teach, mentor and show up for every player.</span></button>
+        <button class="card" type="button" data-fund="club" data-amts="50,100,250,500" data-def="100" aria-pressed="false"><span class="h ft">Club House &amp; Field</span><span class="dsc">Help Dnamo find a home: a club house and fields of our own.</span></button>
+      </div>
+      <div id="opt-step" hidden>
+        <span class="lab" id="opt-lab">Choose a gift</span>
+        <div class="row-wrap mb48" role="group" aria-labelledby="opt-lab" data-opts="schol" hidden>
+          <button class="sub" type="button" data-opt="year" data-label="Sponsor a player for the year" data-amts="5000" aria-pressed="false">Player for the year</button>
+          <button class="sub" type="button" data-opt="season" data-label="Seasonal sponsorship" data-amts="2500" aria-pressed="false">One season</button>
+          <button class="sub" type="button" data-opt="two" data-label="Multiyear sponsorship (two years)" data-amts="10000" aria-pressed="false">Two years</button>
+          <button class="sub" type="button" data-opt="monthly" data-label="Sponsor a player per month" data-amts="50,100,250,500" data-per="month" data-fixed="1" aria-pressed="false">Monthly</button>
+          <button class="sub" type="button" data-opt="tourn" data-label="Tournament scholarship" data-amts="50,100,250,500" data-fixed="1" aria-pressed="false">Tournament</button>
+        </div>
+        <div class="row-wrap mb48" role="group" aria-labelledby="opt-lab" data-opts="coach" hidden>
+          <button class="sub" type="button" data-opt="dev" data-label="Coach Development Fund" data-amts="1000,2500,5000" aria-pressed="false">Coach Development Fund</button>
+          <button class="sub" type="button" data-opt="fund" data-label="The Coaches Fund" data-amts="1000,2500,5000" aria-pressed="false">The Coaches Fund</button>
+        </div>
+      </div>
+      <span class="lab" id="amt-lab">Choose an amount</span>
+      <!-- script.js fills this with the amounts for the chosen fund or gift -->
+      <div class="row-wrap mb24" id="amt-box" role="group" aria-labelledby="amt-lab"></div>
+      <div id="other-wrap">
+        <label class="lab" for="other-amount">Or enter another amount ($)</label>
+        <input class="field short" id="other-amount" inputmode="numeric" autocomplete="off">
+      </div>
+    </div>
+    <div class="sum" aria-live="polite">
+      <h2 class="h">Your gift</h2>
+      <div class="row"><span>Fund</span><span class="right" id="sum-fund">Where it is needed most</span></div>
+      <div class="row" id="sum-gift-row" hidden><span>Gift</span><span class="right" id="sum-gift"></span></div>
+      <div class="row"><span>Amount</span><span class="bold" id="sum-amount">$50</span></div>
+      <!-- TODO: no payment provider yet. Point this at Wix donations, PayPal or Stripe. -->
+      <a class="btn block" href="#">Continue to payment</a>
+      <p class="fine">The Dnamo Football Academy Foundation has a nonprofit tax exempt status with the IRS (EIN 39-2786889).</p>
+    </div>
   </div>
-  <div class="profile" id="profile" hidden aria-live="polite">
-    <button class="pclose" type="button" aria-label="Close profile" title="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    <h2 class="h pname"></h2>
-    <p class="prole"></p>
-    <p class="pbio"></p>
-  </div>
-  <div class="cta-row"><p>Interested in serving or partnering with us?</p><a class="btn s" href="contact.html">Contact us</a></div>
 </section>
-<section class="band dk">
-  <div class="w">
-    <h2 class="h">No child turned away.</h2>
-    <p>Your gift funds scholarships, coaching and safe fields for young players.</p>
-    <a class="btn" href="donate.html">Donate now</a>
-  </div>
-</section>
+
 </main>
 
 <footer class="site-footer">

@@ -1,0 +1,9 @@
+# Copy to .dev.vars for local development. In production these are set as
+# encrypted secrets in the Cloudflare dashboard, never committed.
+
+# The hidden address of the admin center, without slashes. At least 8 characters.
+# The admin opens at https://your-site/<ADMIN_PATH>/ and nowhere else.
+ADMIN_PATH=choose-a-secret-address
+
+# One-time code needed to create the first (owner) account. Long and random.
+SETUP_TOKEN=choose-a-long-random-code

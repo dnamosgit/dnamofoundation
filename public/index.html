@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Coach Recruitment &amp; Support | Dnamo Football Foundation</title>
-<meta name="description" content="Coach Recruitment and Support at Dnamo Football Foundation. Back the coaches who teach, mentor and show up for every player.">
+<title>Dnamo Football Foundation</title>
+<meta name="description" content="Dnamo Football Foundation is a San Francisco nonprofit giving youth of all backgrounds access to high-quality soccer training, development and facilities.">
 <meta name="theme-color" content="#ffffff">
 <!-- Browser tab icon and phone home-screen icon -->
 <link rel="icon" type="image/png" href="logo.png">
@@ -17,23 +17,23 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="home">
 <!-- Logo splash: phones and tablets only, once per visit (see styles.css and script.js) -->
-<div class="splash" aria-hidden="true"><img src="logo.png" alt="" width="447" height="447"></div>
+<div class="splash" aria-hidden="true"><img data-slot="logo" src="logo.png" alt="" width="447" height="447"></div>
 <div class="prog"></div>
 
-<header class="site-header solid">
+<header class="site-header">
   <div class="w">
     <a class="nav brand" href="index.html">Dnamo <span>Football Foundation</span></a>
     <button class="nav burger" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav class="navbox" id="site-nav" aria-label="Main">
-      <a class="nav" href="index.html">Home</a>
+      <a class="nav on" href="index.html" aria-current="page">Home</a>
       <a class="nav" href="board.html">Board of Directors</a>
       <div class="navdrop">
-        <a class="nav on" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
+        <a class="nav" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
         <div class="dropmenu">
           <a href="scholarships.html">Scholarships</a>
-          <a href="coaches.html" class="on" aria-current="page">Coach Recruitment &amp; Support</a>
+          <a href="coaches.html">Coach Recruitment &amp; Support</a>
           <a href="clubhouse.html">Club House &amp; Field</a>
           <a href="initiatives.html#kit">Kit Sponsorship</a>
         </div>
@@ -46,45 +46,54 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 </header>
 
 <main>
-<section class="w pad-sub">
-  <p class="eyebrow">Our initiatives</p>
-  <nav class="row-wrap g12" aria-label="Initiatives">
-    <a class="sub" href="initiatives.html">Overview</a>
-    <a class="sub" href="scholarships.html">Scholarships</a>
-    <a class="sub on" href="coaches.html" aria-current="page">Coach Recruitment &amp; Support</a>
-    <a class="sub" href="clubhouse.html">Club House &amp; Field</a>
-    <a class="sub" href="initiatives.html#kit">Kit Sponsorship</a>
-  </nav>
-</section>
-<section class="w split2 pad-after-sub">
-  <div>
-    <h1 class="h init-title">Coach Recruitment &amp; Support</h1>
-    <p class="init-lead">Back the coaches who teach, mentor and show up for every player.</p>
-    <div class="prose mb32">
-      <p>Our coaches do this because they believe in the mission. They are all young and have day jobs. They are here for the passion of the sport and the relationships they have with the players.</p>
-      <p>Each coach connects with their players and is a consistent source of support, advice and mentorship. Many coaches help with carpools, school problems and social issues when parents ask for help.</p>
-      <p>As players mature, coaches can be a safe place to ask for help.</p>
+<section class="dark">
+  <div class="hero2">
+    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css) -->
+    <div class="heromedia" role="img" aria-label="Dnamo players and coaches training on pitches in San Francisco">
+      <img data-slot="hero1" src="hero-1.jpg" alt="" fetchpriority="high">
+      <img data-slot="hero2" src="hero-2.jpg" alt="">
+      <img data-slot="hero3" src="hero-3.jpg" alt="">
+      <img data-slot="hero4" src="hero-4.jpg" alt="">
     </div>
-    <a class="btn" href="donate.html?fund=coach">Donate to Coach Recruitment &amp; Support</a>
+    <div class="herotx">
+      <p class="kicker">An offshoot of Dnamo Football Club</p>
+      <h1 class="h">Where talent meets possibility.</h1>
+      <p class="intro">Youth of all backgrounds deserve high-quality soccer training, development and facilities.</p>
+      <div class="row-wrap g16"><a class="btn" href="donate.html">Support a player</a><a class="btn o" href="initiatives.html">Our initiatives</a></div>
+    </div>
+    <span class="herocue" aria-hidden="true"></span>
   </div>
-  <img class="shot" src="hero-2.jpg" alt="A Dnamo coach talking with players at training" width="2000" height="1125" loading="lazy">
+</section>
+
+<!-- Decorative ticker of the values named in the mission text; hidden from screen readers -->
+<div class="marquee" aria-hidden="true"><div class="mq-track"><span>Teamwork</span><span>Perseverance</span><span>Sportsmanship</span><span>Technical mastery</span><span>Tactical awareness</span><span>Love for the game</span><span>Confidence</span><span>Leadership</span><span>Teamwork</span><span>Perseverance</span><span>Sportsmanship</span><span>Technical mastery</span><span>Tactical awareness</span><span>Love for the game</span><span>Confidence</span><span>Leadership</span></div></div>
+
+<section class="w split pad-l">
+  <div><p class="eyebrow">Our mission</p><h2 class="h">Soccer excellence, on and off the pitch.</h2></div>
+  <div class="prose">
+    <p>Dnamo Football Academy Foundation, founded in 2025, is a nonprofit organization dedicated to providing youth of all backgrounds with access to high-quality soccer training, development, and facilities. We are an offshoot of Dnamo Football Club.</p>
+    <p>Our mission is to deliver soccer excellence on and off the pitch by developing not only skilled athletes but also disciplined, respectful, and motivated individuals. Soccer excellence means fostering technical mastery, tactical awareness, and a genuine love for the game while promoting teamwork, perseverance, and sportsmanship.</p>
+    <p>We are committed to breaking down financial and social barriers by offering affordable programs, scholarships, and community-based initiatives. Through creating access to quality training environments and fields, we give our players a safe and consistent environment where they can connect and grow as individuals.</p>
+    <p>Beyond athletic training, we emphasize academic support and leadership development to help young athletes build confidence, pursue higher education, and make a lasting positive impact in their communities.</p>
+  </div>
 </section>
 
 <section class="dark">
   <div class="w pad-l">
-    <p class="eyebrow">Ways to give</p>
-    <h2 class="h mb48">Two funds for our coaches</h2>
+    <p class="eyebrow">Our initiatives</p>
+    <h2 class="h mb48">Three ways we open the game</h2>
     <div class="grid">
-    <div class="card d static tier"><span class="price">Education</span><h3 class="h">Coach Development Fund</h3><p>Contributes to coaching education programs and licensing.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=1000">$1,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=2500">$2,500</a><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=5000">$5,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=dev&amp;amt=other">Other</a></div></div>
-    <div class="card d static tier"><span class="price">Support</span><h3 class="h">The Coaches Fund</h3><p>Helps cover the cost of travel, specialty equipment and leadership seminars.</p><div class="row-wrap"><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=1000">$1,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=2500">$2,500</a><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=5000">$5,000</a><a class="sub" href="donate.html?fund=coach&amp;opt=fund&amp;amt=other">Other</a></div></div>
+    <a class="card d" href="scholarships.html"><span class="num">01</span><h3 class="h">Scholarships</h3><p>Sponsor a player so cost never keeps a child off the field.</p><span class="more">Learn more <span class="arr" aria-hidden="true">&rarr;</span></span></a>
+    <a class="card d" href="coaches.html"><span class="num">02</span><h3 class="h">Coach Recruitment &amp; Support</h3><p>Back the coaches who teach, mentor and show up for every player.</p><span class="more">Learn more <span class="arr" aria-hidden="true">&rarr;</span></span></a>
+    <a class="card d" href="clubhouse.html"><span class="num">03</span><h3 class="h">Club House &amp; Field</h3><p>Help Dnamo find a home: a club house and fields of our own.</p><span class="more">Learn more <span class="arr" aria-hidden="true">&rarr;</span></span></a>
     </div>
   </div>
 </section>
-<section class="band dk">
+<section class="band">
   <div class="w">
     <h2 class="h">No child turned away.</h2>
     <p>Your gift funds scholarships, coaching and safe fields for young players.</p>
-    <a class="btn" href="donate.html?fund=coach">Donate now</a>
+    <a class="btn" href="donate.html">Donate now</a>
   </div>
 </section>
 </main>

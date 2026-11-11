@@ -1,0 +1,14 @@
+{
+  "name": "dnamo-site",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev --port 8788 --ip 127.0.0.1",
+    "db:local": "wrangler d1 migrations apply dnamo-admin --local",
+    "db:remote": "wrangler d1 migrations apply dnamo-admin --remote",
+    "deploy": "wrangler pages deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

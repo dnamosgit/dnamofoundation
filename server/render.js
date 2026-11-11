@@ -13,7 +13,7 @@ const get = (o, path) => path.split('.').reduce((v, k) => (v == null ? undefined
 const CARET = '<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>';
 
 // "/board" and "/board.html" are both board.html; "/" is index.html
-function pageFile(pathname) {
+export function pageFile(pathname) {
   const last = pathname.split('/').pop();
   if (!last) return 'index.html';
   return last.includes('.') ? last : last + '.html';
@@ -95,9 +95,9 @@ const LISTS = {
 // An initiative page takes its browser-tab title from the saved title of that initiative
 const INIT_PAGES = { 'scholarships.html': ['schol', 'Scholarships'], 'coaches.html': ['coach', 'Coach Recruitment &amp; Support'], 'clubhouse.html': ['club', 'Club House &amp; Field'] };
 
-export function render(response, saved, pathname) {
+export function render(response, saved, pathname, popups = []) {
   const { identity, header, footer, photos, inits, giving } = saved;
-  if (!Object.keys(saved).length) return response;
+  if (!Object.keys(saved).length && !popups.length) return response;
 
   const rw = new HTMLRewriter();
   const page = pageFile(pathname);
@@ -189,6 +189,15 @@ export function render(response, saved, pathname) {
       el.setAttribute('data-label', g.title);
       el.setAttribute('data-amts', g.amounts.join(','));
       el.setInnerContent(g.short);
+    } });
+  }
+
+  // Pop-ups that are live for this page travel with it as data; popup.js shows one.
+  if (popups.length) {
+    const data = JSON.stringify(popups).replace(/</g, '\\u003c');
+    rw.on('body', { element(el) {
+      el.append(`<script type="application/json" id="dn-popups">${data}</script><script src="/popup.js" defer></script>
+`, { html: true });
     } });
   }
 

@@ -6,6 +6,7 @@ import {
 } from './auth.js';
 import { saveContent, saveMedia, savedContent } from './content.js';
 import { DEFAULTS, KEYS, PAGES, SLOTS } from './defaults.js';
+import { FREQUENCIES, POPUP_PAGES, createPopup, deletePopup, listPopups, updatePopup } from './popups.js';
 
 const MIN_PASSWORD = 12;
 const FILES = { '/admin.css': '/_adm/admin.css', '/admin.js': '/_adm/admin.js' };
@@ -126,7 +127,7 @@ export async function handleAdmin(context, base, sub) {
   if (!user) return fail(401, 'Sign in first.');
 
   // Per-site routes: /api/sites/<id>/...
-  const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media)(?:\/([a-z]+))?$/);
+  const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media|popups)(?:\/([a-z0-9]+))?$/);
   if (!m) return fail(404, 'Not found.');
   const site = await env.DB.prepare('SELECT id, name FROM sites WHERE id = ?').bind(Number(m[1])).first();
   if (!site) return fail(404, 'That site does not exist.');
@@ -144,6 +145,21 @@ export async function handleAdmin(context, base, sub) {
     }
     if (upload && m[2] === 'media' && !m[3]) {
       return json(await saveMedia(env, site.id, request, user.id));
+    }
+    // Pop-ups: list, add, change, delete
+    if (m[2] === 'popups') {
+      const pid = /^\d+$/.test(m[3] || '') ? Number(m[3]) : null;
+      if (method === 'GET' && !m[3]) {
+        return json({ popups: await listPopups(env, site.id), pages: POPUP_PAGES, frequencies: FREQUENCIES, now: now() });
+      }
+      if (method === 'POST' && !m[3]) return json({ popup: await createPopup(env, site.id, body.popup, user.id) });
+      if (method === 'PUT' && pid) {
+        const popup = await updatePopup(env, site.id, pid, body.popup, user.id);
+        return popup ? json({ popup }) : fail(404, 'That pop-up no longer exists.');
+      }
+      if (method === 'DELETE' && pid) {
+        return (await deletePopup(env, site.id, pid)) ? json({ ok: true }) : fail(404, 'That pop-up no longer exists.');
+      }
     }
   } catch (e) {
     // Validation messages are written for the admin; anything else is a real fault.

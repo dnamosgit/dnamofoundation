@@ -100,7 +100,7 @@
     { id: 'chrome', label: 'Header & footer' },
     { id: 'photos', label: 'Photos' },
     { id: 'pages', label: 'Page content' },
-    { id: 'popups', label: 'Pop-ups', soon: true },
+    { id: 'popups', label: 'Pop-ups' },
     { id: 'sites', label: 'Sites', soon: true },
     { id: 'admins', label: 'Admins', soon: true }
   ];
@@ -175,7 +175,7 @@
       else b.removeAttribute('aria-current');
     });
     if (!data) return;
-    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages }[id] || overview)();
+    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages, popups: popups }[id] || overview)();
     mainEl.scrollTop = 0;
     window.scrollTo(0, 0);
   }
@@ -239,7 +239,8 @@
             h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('identity'); } }, 'Name and logo'),
             h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('chrome'); } }, 'Header & footer'),
             h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('photos'); } }, 'Photos'),
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('pages'); } }, 'Page content'))),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('pages'); } }, 'Page content'),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('popups'); } }, 'Pop-ups'))),
         h('section', { class: 'card' },
           h('h2', {}, 'Your account'),
           h('p', {}, session.user.email),
@@ -247,7 +248,6 @@
         h('section', { class: 'card' },
           h('h2', {}, 'Being built next'),
           h('ol', {},
-            h('li', {}, 'Pop-ups'),
             h('li', {}, 'More sites and admin accounts')))));
   }
 
@@ -606,6 +606,200 @@
       h('section', { class: 'card' }, h('h2', {}, 'Testimonials'), items.el,
         actions('testimonials', function () { return { title: title.input.value, intro: intro.input.value, items: items.read() }; }, pages))
     ];
+  }
+
+  /* ---------- Pop-ups ---------- */
+
+  var pop = null;   // { popups, pages, frequencies } for the site being edited
+
+  function popups() {
+    paint(h('h1', {}, 'Pop-ups'), h('p', { class: 'lead' }, 'Loading...'));
+    api('GET', '/sites/' + site.id + '/popups').then(function (d) {
+      pop = d;
+      if (section === 'popups') popupList();
+    }).catch(function (err) { paint(h('h1', {}, 'Pop-ups'), h('p', { class: 'msg' }, err.message)); });
+  }
+
+  /* Where a pop-up stands right now: off, waiting for its start date, finished, or live */
+  function popupState(p) {
+    var t = Date.now() / 1000;
+    if (!p.enabled) return { id: 'off', label: 'Off' };
+    if (p.startsAt && p.startsAt > t) return { id: 'wait', label: 'Scheduled' };
+    if (p.endsAt && p.endsAt <= t) return { id: 'done', label: 'Ended' };
+    return { id: 'live', label: 'Live now' };
+  }
+
+  var two = function (n) { return (n < 10 ? '0' : '') + n; };
+  /* Dates are stored as seconds; the date-and-time boxes work in the admin's own time zone */
+  function toLocal(sec) {
+    if (!sec) return '';
+    var d = new Date(sec * 1000);
+    return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate()) + 'T' + two(d.getHours()) + ':' + two(d.getMinutes());
+  }
+  function fromLocal(str) {
+    if (!str) return null;
+    var ms = new Date(str).getTime();
+    return isNaN(ms) ? null : Math.floor(ms / 1000);
+  }
+  function niceDate(sec) {
+    return new Date(sec * 1000).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  }
+
+  function popupSummary(p) {
+    var where = p.pages === 'all' ? 'All pages' : pop.pages.filter(function (x) { return p.pages.indexOf(x.file) > -1; })
+      .map(function (x) { return x.label; }).join(', ');
+    var freq = (pop.frequencies.filter(function (f) { return f.id === p.frequency; })[0] || {}).label || '';
+    var dates = p.startsAt && p.endsAt ? niceDate(p.startsAt) + ' to ' + niceDate(p.endsAt)
+      : p.startsAt ? 'From ' + niceDate(p.startsAt)
+      : p.endsAt ? 'Until ' + niceDate(p.endsAt) : 'No end date';
+    return [where, freq, dates];
+  }
+
+  function popupList() {
+    var status = h('span', { class: 'status', role: 'status' });
+    var fail = function (err) { status.className = 'status bad'; status.textContent = err.message; };
+    var rows = pop.popups.map(function (p) {
+      var st = popupState(p);
+      return h('div', { class: 'pop' },
+        p.image ? h('img', { class: 'pop-img', src: p.image, alt: '' }) : h('div', { class: 'pop-img none', 'aria-hidden': 'true' }, 'No photo'),
+        h('div', { class: 'pop-body' },
+          h('div', { class: 'pop-head' }, h('strong', {}, p.title), h('span', { class: 'chip ' + st.id }, st.label)),
+          h('p', { class: 'muted small' }, popupSummary(p).join(' · ')),
+          h('div', { class: 'stack' },
+            h('button', { class: 'btn small', type: 'button', onclick: function () { popupEdit(p); } }, 'Edit'),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { window.DnamoPopup.show(p, { preview: true }); } }, 'Preview'),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+              var next = Object.assign({}, p, { enabled: !p.enabled });
+              api('PUT', '/sites/' + site.id + '/popups/' + p.id, { popup: next }).then(popups, fail);
+            } }, p.enabled ? 'Turn off' : 'Turn on'),
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+              if (!window.confirm('Delete the pop-up "' + p.title + '"? This cannot be undone.')) return;
+              api('DELETE', '/sites/' + site.id + '/popups/' + p.id, {}).then(popups, fail);
+            } }, 'Delete'))));
+    });
+    paint(
+      h('h1', {}, 'Pop-ups'),
+      h('p', { class: 'lead' }, 'Announcements that open over a page, so visitors see what is coming. A visitor sees one pop-up at a time: the newest that is live.'),
+      h('div', { class: 'actions flat' },
+        h('button', { class: 'btn', type: 'button', onclick: function () { popupEdit(null); } }, 'New pop-up'), status),
+      rows.length ? h('div', { class: 'pops' }, rows)
+        : h('section', { class: 'card' }, h('p', { class: 'muted' }, 'No pop-ups yet. Create one to announce an event, a tryout date or a fundraiser.')));
+  }
+
+  function popupEdit(p) {
+    var isNew = !p;
+    p = p || { title: '', text: '', image: '', button: { label: '', href: '' }, pages: 'all', frequency: 'once', delay: 2, startsAt: null, endsAt: null, enabled: true };
+
+    var title = input('Title', p.title, { maxlength: 80 });
+    var text = area('Text', p.text, 4, 'Keep it short. Each new line starts a new paragraph.');
+    text.input.setAttribute('maxlength', '600');
+
+    var image = p.image || '';
+    var thumb = h('div', { class: 'pop-photo' });
+    var imgStatus = h('span', { class: 'status', role: 'status' });
+    var drawThumb = function () {
+      thumb.textContent = '';
+      add(thumb, image ? h('img', { src: image, alt: '' }) : h('span', { class: 'muted small' }, 'No photo'));
+      removeBtn.hidden = !image;
+    };
+    var file = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
+      var chosen = file.files[0];
+      if (!chosen) return;
+      imgStatus.className = 'status'; imgStatus.textContent = 'Uploading...';
+      prepare(chosen, 1200).then(function (blob) {
+        return api('POST', '/sites/' + site.id + '/media', blob, { 'X-File-Name': encodeURIComponent(chosen.name) });
+      }).then(function (m) {
+        image = m.url; drawThumb();
+        imgStatus.className = 'status ok'; imgStatus.textContent = 'Uploaded. Save to keep it.';
+      }).catch(function (err) { imgStatus.className = 'status bad'; imgStatus.textContent = err.message; }).then(function () { file.value = ''; });
+    } });
+    var removeBtn = h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+      image = ''; imgStatus.textContent = ''; drawThumb();
+    } }, 'Remove photo');
+    drawThumb();
+
+    var bLabel = input('Button label', p.button.label, { maxlength: 40 }, 'Leave empty for no button.');
+    var bHref = input('Button link', p.button.href, { list: 'pages' }, 'A page on this site or a full https:// address.');
+
+    var all = h('input', { type: 'radio', name: 'where', checked: p.pages === 'all' });
+    var some = h('input', { type: 'radio', name: 'where', checked: p.pages !== 'all' });
+    var boxes = pop.pages.map(function (x) {
+      var box = h('input', { type: 'checkbox', value: x.file, checked: p.pages !== 'all' && p.pages.indexOf(x.file) > -1 });
+      return { box: box, el: h('label', { class: 'check' }, box, x.label) };
+    });
+    var pageBox = h('div', { class: 'checks' }, boxes.map(function (b) { return b.el; }));
+    var syncWhere = function () { pageBox.hidden = all.checked; };
+    all.addEventListener('change', syncWhere);
+    some.addEventListener('change', syncWhere);
+    syncWhere();
+
+    var freq = h('select', {}, pop.frequencies.map(function (f) {
+      return h('option', { value: f.id, selected: f.id === p.frequency }, f.label);
+    }));
+    var delay = input('Wait before showing (seconds)', String(p.delay), { type: 'number', min: 0, max: 60, step: 1 });
+    var start = input('Start showing', toLocal(p.startsAt), { type: 'datetime-local' }, 'Leave empty to start right away.');
+    var end = input('Stop showing', toLocal(p.endsAt), { type: 'datetime-local' }, 'Leave empty to keep it until you turn it off.');
+    var enabled = h('input', { type: 'checkbox', checked: !!p.enabled });
+
+    var read = function () {
+      return {
+        title: title.input.value, text: text.input.value, image: image,
+        button: { label: bLabel.input.value, href: bHref.input.value },
+        pages: all.checked ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
+        frequency: freq.value, delay: Number(delay.input.value || 0),
+        startsAt: fromLocal(start.input.value), endsAt: fromLocal(end.input.value), enabled: enabled.checked
+      };
+    };
+
+    var status = h('span', { class: 'status', role: 'status' });
+    var saveBtn = h('button', { class: 'btn', type: 'button', onclick: function () {
+      status.className = 'status'; status.textContent = 'Saving...';
+      saveBtn.disabled = true;
+      (isNew ? api('POST', '/sites/' + site.id + '/popups', { popup: read() })
+        : api('PUT', '/sites/' + site.id + '/popups/' + p.id, { popup: read() })).then(popups, function (err) {
+        status.className = 'status bad'; status.textContent = err.message;
+        saveBtn.disabled = false;
+      });
+    } }, isNew ? 'Create pop-up' : 'Save changes');
+
+    paint(
+      h('h1', {}, isNew ? 'New pop-up' : 'Edit pop-up'),
+      h('p', { class: 'lead' }, 'Use Preview to see it exactly as visitors will.'),
+      h('section', { class: 'card' },
+        h('h2', {}, 'What it says'),
+        title, text,
+        h('h3', {}, 'Photo (optional)'),
+        h('div', { class: 'pop-photo-row' }, thumb,
+          h('div', { class: 'stack' },
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { file.click(); } }, 'Choose photo'),
+            removeBtn),
+          imgStatus, file),
+        h('h3', {}, 'Button (optional)'),
+        h('div', { class: 'two' }, bLabel, bHref)),
+      h('section', { class: 'card' },
+        h('h2', {}, 'Where and how often'),
+        h('div', { class: 'checks' },
+          h('label', { class: 'check' }, all, 'All pages'),
+          h('label', { class: 'check' }, some, 'Only the pages I choose')),
+        pageBox,
+        h('div', { class: 'two', style: 'margin-top:16px' },
+          h('label', { class: 'field' }, h('span', {}, 'How often a visitor sees it'), freq),
+          delay)),
+      h('section', { class: 'card' },
+        h('h2', {}, 'When'),
+        h('div', { class: 'two' }, start, end),
+        h('p', { class: 'muted small' }, 'Times are in your own time zone.'),
+        h('label', { class: 'check switch' }, enabled, 'Turned on'),
+        h('div', { class: 'actions' },
+          saveBtn,
+          h('button', { class: 'btn ghost', type: 'button', onclick: function () {
+            var v = read();
+            if (!v.title.trim()) { status.className = 'status bad'; status.textContent = 'Add a title first.'; return; }
+            window.DnamoPopup.show(v, { preview: true });
+          } }, 'Preview'),
+          h('button', { class: 'btn ghost', type: 'button', onclick: popupList }, 'Cancel'),
+          status)));
+    title.input.focus();
   }
 
   /* ---------- Photos ---------- */

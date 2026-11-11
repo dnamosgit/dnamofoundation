@@ -6,7 +6,8 @@
 import { handleAdmin } from '../server/admin.js';
 import { notFound } from '../server/assets.js';
 import { savedContent, serveMedia, siteForHost } from '../server/content.js';
-import { render } from '../server/render.js';
+import { activePopups } from '../server/popups.js';
+import { pageFile, render } from '../server/render.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -50,7 +51,12 @@ async function page(context, url, response) {
   try {
     const siteId = await siteForHost(env, url.hostname);
     if (!siteId) return response;
-    return render(response, await savedContent(env, siteId), url.pathname);
+    // Pop-ups are for real pages only, never the "page not found" page.
+    const [saved, popups] = await Promise.all([
+      savedContent(env, siteId),
+      response.status === 200 ? activePopups(env, siteId, pageFile(url.pathname)).catch(() => []) : [],
+    ]);
+    return render(response, saved, url.pathname, popups);
   } catch (e) {
     console.error('render failed', e);
     return response;

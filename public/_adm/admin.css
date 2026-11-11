@@ -127,3 +127,32 @@ button,input,select{font:inherit}
 .kids:has(.links:empty) > p{display:none}
 .kids .links:empty{display:none}
 .kids .btn{min-height:32px;padding:4px 14px;font-size:11px}
+/* Pop-ups */
+.actions.flat{margin:0 0 18px;padding:0;border:0}
+.pops{display:flex;flex-direction:column;gap:12px;max-width:980px}
+.pop{display:flex;gap:16px;align-items:flex-start;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+.pop-img{flex:none;width:132px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#eee}
+.pop-img.none{display:flex;align-items:center;justify-content:center;color:#999;font-size:12px}
+.pop-body{flex:1;min-width:0}
+.pop-body p{margin:4px 0 0}
+.pop-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.pop-head strong{font-size:17px}
+.chip{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:#eee;color:#666}
+.chip.live{background:#e3f4e8;color:#17692e}
+.chip.wait{background:#fff1d6;color:#8a5a00}
+.chip.done{background:#eee;color:#666}
+.pop-photo-row{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px}
+.pop-photo-row .stack{margin-top:0}
+.pop-photo{display:flex;align-items:center;justify-content:center;width:176px;aspect-ratio:16/9;border:1px dashed #cfcfcf;border-radius:10px;overflow:hidden;background:#fafafa}
+.pop-photo img{display:block;width:100%;height:100%;object-fit:cover}
+.checks{display:flex;flex-wrap:wrap;gap:8px 22px}
+.checks[hidden]{display:none}
+.checks + .checks{margin-top:12px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fafafa}
+.check{display:inline-flex;align-items:center;gap:8px;min-height:32px;font-weight:500;cursor:pointer}
+.check input{width:18px;height:18px;margin:0;accent-color:var(--red)}
+.check.switch{margin-top:14px;font-weight:700}
+.field select{width:100%;min-height:46px;padding:10px 14px;border:1.5px solid #cfcfcf;border-radius:10px;background:#fff;color:#000}
+.field select:focus{border-color:var(--red);outline:0;box-shadow:0 0 0 3px rgba(235,35,35,.15)}
+@media (max-width:560px){.pop{flex-direction:column}.pop-img{width:100%}.pop-img.none{display:none}}
+.btn[hidden]{display:none}
+.side button[aria-current="page"]:hover:not([disabled]){background:var(--red)}

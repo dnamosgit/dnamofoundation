@@ -188,6 +188,15 @@
   }
 
   var isCustom = function (key) { return data.customised.indexOf(key) > -1; };
+  /* Keep the red "changed" dots on the Page content tabs in step with what is saved */
+  function marks() {
+    Array.prototype.forEach.call(document.querySelectorAll('.tabs button[data-tab]'), function (b) {
+      var dot = b.querySelector('.dot');
+      var on = isCustom(b.getAttribute('data-tab'));
+      if (on && !dot) b.appendChild(h('span', { class: 'dot', title: 'Customised' }));
+      if (!on && dot) dot.remove();
+    });
+  }
 
   /* Save one section; value null puts it back to the original. Shows the result next to the button. */
   function save(key, value, status, btn) {
@@ -214,12 +223,13 @@
   function actions(key, read, redraw) {
     var status = h('span', { class: 'status', role: 'status' });
     var saveBtn = h('button', { class: 'btn', type: 'button', onclick: function () {
-      save(key, read(), status, saveBtn).catch(function () {});
+      // Once a section is saved it can be reset, and its tab gets the red dot
+      save(key, read(), status, saveBtn).then(function () { reset.hidden = false; marks(); }, function () {});
     } }, 'Save changes');
-    var reset = isCustom(key) ? h('button', { class: 'btn ghost', type: 'button', onclick: function () {
+    var reset = h('button', { class: 'btn ghost', type: 'button', hidden: !isCustom(key), onclick: function () {
       if (!window.confirm('Put this section back to the original? Your changes to it will be removed.')) return;
       save(key, null, status, reset).then(redraw, function () {});
-    } }, 'Reset to original') : null;
+    } }, 'Reset to original');
     return h('div', { class: 'actions' }, saveBtn, reset, status);
   }
 
@@ -486,7 +496,7 @@
 
   function pages() {
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, PAGE_TABS.map(function (t) {
-      return h('button', { type: 'button', role: 'tab', 'aria-selected': String(t.id === pageTab), onclick: function () {
+      return h('button', { type: 'button', role: 'tab', 'data-tab': t.id, 'aria-selected': String(t.id === pageTab), onclick: function () {
         pageTab = t.id; pages();
       } }, t.label, isCustom(t.id) ? h('span', { class: 'dot', title: 'Customised' }) : null);
     }));
@@ -501,6 +511,8 @@
     var kicker = input('Small line above the headline', v.kicker);
     var headline = input('Headline', v.headline);
     var intro = area('Text under the headline', v.intro, 2);
+    var video = input('Background video link (optional)', v.video, { placeholder: 'https://' },
+      'Paste a YouTube or Vimeo link, or a link to an .mp4 file. It plays silently on a loop behind the headline, in place of the photo slideshow. Leave empty to show the photos.');
     var b1l = input('First button label', v.button1.label), b1h = input('First button link', v.button1.href, { list: 'pages' });
     var b2l = input('Second button label', v.button2.label), b2h = input('Second button link', v.button2.href, { list: 'pages' });
     var values = lines('Scrolling words', v.values, 8, 'One per line. They scroll across the page under the photo.');
@@ -509,13 +521,14 @@
     var iEye = input('Small label', v.initsEyebrow), iTitle = input('Heading', v.initsTitle);
     return [
       h('section', { class: 'card' }, h('h2', {}, 'Top of the page'), kicker, headline, intro,
-        h('div', { class: 'two' }, b1l, b1h), h('div', { class: 'two' }, b2l, b2h)),
+        h('div', { class: 'two' }, b1l, b1h), h('div', { class: 'two' }, b2l, b2h), video,
+        h('p', { class: 'muted small' }, 'The slideshow photos and the photo beside the mission text are changed under Photos.')),
       h('section', { class: 'card' }, h('h2', {}, 'Scrolling words'), values),
       h('section', { class: 'card' }, h('h2', {}, 'Mission'), h('div', { class: 'two' }, mEye, mTitle), mission),
       h('section', { class: 'card' }, h('h2', {}, 'Initiatives heading'), h('div', { class: 'two' }, iEye, iTitle),
         h('p', { class: 'muted small' }, 'The three initiative cards are edited under Initiatives.'),
         actions('home', function () {
-          return { kicker: kicker.input.value, headline: headline.input.value, intro: intro.input.value,
+          return { kicker: kicker.input.value, headline: headline.input.value, intro: intro.input.value, video: video.input.value,
             button1: { label: b1l.input.value, href: b1h.input.value }, button2: { label: b2l.input.value, href: b2h.input.value },
             values: values.read(), missionEyebrow: mEye.input.value, missionTitle: mTitle.input.value, mission: mission.read(),
             initsEyebrow: iEye.input.value, initsTitle: iTitle.input.value };
@@ -555,9 +568,9 @@
     var schol = one('schol', 'Scholarships page'), coach = one('coach', 'Coach page'), club = one('club', 'Club House page');
     var goals = lines('Bullet points', v.club.goals, 4);
     var raised = input('Amount raised so far ($)', String(v.club.raised), { inputmode: 'numeric' });
-    var goal = input('Fundraising goal ($)', String(v.club.goal), { inputmode: 'numeric' }, 'The thermometer shows once the goal is above 0.');
+    var goal = input('Fundraising goal ($)', String(v.club.goal), { inputmode: 'numeric' }, 'The tracker fills in once the goal is above 0.');
     var match = input('Gift-matching line', v.club.matchText);
-    add(club.card, [goals, h('h3', {}, 'Fund thermometer'), h('div', { class: 'two' }, raised, goal), match]);
+    add(club.card, [goals, h('h3', {}, 'Fund tracker'), h('div', { class: 'two' }, raised, goal), match]);
     var contribLead = area('Introduction', v.contribLead, 2);
     var contrib = itemList(v.contrib, { addLabel: 'Add total', max: 8, blank: { amount: '', label: '', note: '' }, fields: statFields });
     add(schol.card, [h('h3', {}, 'What Dnamo has contributed'), contribLead, contrib.el]);

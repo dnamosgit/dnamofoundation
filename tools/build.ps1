@@ -5,7 +5,7 @@ $enc = New-Object System.Text.UTF8Encoding($false)
 $legal = 'The Dnamo Football Academy Foundation has a nonprofit tax exempt status with the IRS (EIN 39-2786889).'
 
 $navItems = @(
-  @('Home','index.html','home'),
+  @('Home','/','home'),
   @('Board of Directors','board.html','board'),
   @('Our Initiatives','initiatives.html','inits'),
   @('Testimonials','testimonials.html','tests'),
@@ -21,7 +21,7 @@ $inits = @(
      photo='hero-4.jpg'; alt='A young goalkeeper catching a ball at training' }
 )
 
-# Club House / Field fund tracker. Set both numbers (whole dollars) to switch the thermometer on.
+# Club House / Field fund tracker. Set both numbers (whole dollars) to switch the tracker on.
 $clubRaised = 0
 $clubGoal = 0
 
@@ -122,8 +122,7 @@ $more['club'] = @'
     <h2 class="h mb48">How close we are to home</h2>
     <!-- TODO: set clubRaised and clubGoal in the build script (or edit the numbers and the width here) once the goal is agreed -->
     <div data-list="inits.club.thermo">
-    <div class="thermo" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{PCT}}"><span style="width:{{PCT}}%"></span></div>
-    <div class="thermo-nums"><span><strong>{{RAISED}}</strong> raised</span><span>Goal: <strong>{{GOAL}}</strong></span></div>
+    <div class="fund"><div class="fund-top"><span class="fund-pct">{{PCT}}%</span><span><strong>{{RAISED}}</strong> raised</span><span class="fund-goal">Goal: <strong>{{GOAL}}</strong></span></div><div class="fund-bar" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{PCT}}"><span style="width:{{PCT}}%"></span></div></div>
     </div>
     <a class="btn" href="donate.html?fund=club">Give to the Club House &amp; Field fund</a>
     <div class="cta-row"><p data-t="inits.club.matchText">Would you or your company match gifts to this fund? We would love to hear from you.</p><a class="btn s" href="contact.html?topic=match">Match a gift</a></div>
@@ -158,7 +157,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 
 <header class="site-header{{SOLID}}">
   <div class="w">
-    <a class="nav brand" href="index.html">Dnamo <span>Football Foundation</span></a>
+    <a class="nav brand" href="/">Dnamo <span>Football Foundation</span></a>
     <button class="nav burger" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav class="navbox" id="site-nav" aria-label="Main">
 {{NAV}}
@@ -280,7 +279,7 @@ foreach ($v in @('Teamwork','Perseverance','Sportsmanship','Technical mastery','
 $main = @"
 <section class="dark">
   <div class="hero2">
-    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css) -->
+    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css). A video link set in the admin replaces it. -->
     <div class="heromedia" role="img" aria-label="Dnamo players and coaches training on pitches in San Francisco">
       <img data-slot="hero1" src="hero-1.jpg" alt="" fetchpriority="high">
       <img data-slot="hero2" src="hero-2.jpg" alt="">
@@ -301,7 +300,8 @@ $main = @"
 <div class="marquee" aria-hidden="true"><div class="mq-track" data-list="home.values">$mq$mq</div></div>
 
 <section class="w split pad-l">
-  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2></div>
+  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2>
+    <img class="mission-img" data-slot="mission" src="hero-3.jpg" alt="Dnamo players and a coach at training" width="2000" height="1125" loading="lazy"></div>
   <div class="prose" data-p="home.mission">
     <p>Dnamo Football Academy Foundation, founded in 2025, is a nonprofit organization dedicated to providing youth of all backgrounds with access to high-quality soccer training, development, and facilities. We are an offshoot of Dnamo Football Club.</p>
     <p>Our mission is to deliver soccer excellence on and off the pitch by developing not only skilled athletes but also disciplined, respectful, and motivated individuals. Soccer excellence means fostering technical mastery, tactical awareness, and a genuine love for the game while promoting teamwork, perseverance, and sportsmanship.</p>
@@ -326,7 +326,7 @@ Page 'index.html' '' 'Dnamo Football Foundation is a San Francisco nonprofit giv
 # Copied from https://www.dnamoacademy.org/board-members
 $board = @(
   @{ name='Elizabeth Estrada'; role='Director'; photo='board-elizabeth-estrada.jpg';
-     bio='Ellie''s lifelong love for soccer opened doors that changed the course of her life. Her dedication and talent on the field earned her the opportunity to play at the collegiate level, where the sport not only fueled her passion but helped pay for her education. Grateful for the doors soccer opened, Ellie is committed to helping the next generation players access the same opportunities. Leveraging her experiences as both a student-athlete and mentor, she works to ensure that programs at Dnamo Football Academy Foundation provide meaningful opportunities for growth. Her efforts supports Dnamo''s mission to empower young athletes, strengthen families, and give back to the community through soccer.' },
+     bio='Ellie''s lifelong love for soccer opened doors that changed the course of her life. Her dedication and talent on the field earned her the opportunity to play at the collegiate level, where the sport not only fueled her passion but helped pay for her education. Grateful for the doors soccer opened, Ellie is committed to helping the next generation of players access the same opportunities. Leveraging her experiences as both a student-athlete and mentor, she works to ensure that programs at Dnamo Football Academy Foundation provide meaningful opportunities for growth. Her efforts support Dnamo''s mission to empower young athletes, strengthen families, and give back to the community through soccer.' },
   @{ name='Ika Kvavilashvili'; role='Director'; photo='board-ika-kvavilashvili.jpg';
      bio='Ika Kvavilashvili founded Dnamo FC to create opportunities for every child to experience the mentorship, discipline, and joy that shaped his own soccer journey. What began as a small local club has grown into a community built on passion, inclusivity, and the belief that soccer can change lives. With international playing and coaching experience across Georgia, the United States, and Europe, Ika brings a global perspective and a deep understanding of what it takes to develop both great players and great people. His vision extends far beyond the field. He sees soccer as a powerful tool to inspire confidence, build leadership, and unite diverse communities through shared purpose.&#10;&#10;Through the Dnamo Football Academy Foundation, Ika continues his lifelong mission to break down barriers and open doors for young athletes. His commitment is to ensure that every child, regardless of background, has the opportunity to learn, grow, and find belonging through the beautiful game.' },
   @{ name='Paulo Romero'; role='Director'; photo='board-paulo-romero.jpg';
@@ -429,7 +429,7 @@ $main = @'
   <p class="eyebrow">Contact us</p>
   <h1 class="h">Let&rsquo;s talk</h1>
   <p class="lead l48">Questions about programs, scholarships, partnerships or volunteering? Send us a note and we&rsquo;ll get back to you.</p>
-  <div class="split2">
+  <div class="split2 contact">
     <!-- No backend: script.js turns this into a mailto link that opens the visitor's email app -->
     <form id="contact-form" action="mailto:impact@dnamoacademy.com" method="post" enctype="text/plain">
       <span class="lab" id="topic-lab">What is this about?</span>
@@ -526,7 +526,7 @@ $main = @'
   <p class="eyebrow">Error 404</p>
   <h1 class="h">Page not found</h1>
   <p class="lead l48">The page you are looking for does not exist or has moved.</p>
-  <div class="row-wrap g16"><a class="btn" href="index.html">Back to home</a><a class="btn o" href="contact.html">Contact us</a></div>
+  <div class="row-wrap g16"><a class="btn" href="/">Back to home</a><a class="btn o" href="contact.html">Contact us</a></div>
 </section>
 '@
 Page '404.html' 'Page not found' 'Page not found.' 'none' $main 'none' ''

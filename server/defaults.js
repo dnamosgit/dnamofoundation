@@ -8,7 +8,7 @@ export const DEFAULTS = {
   identity: { nameA: 'Dnamo', nameB: 'Football Foundation' },
   header: {
     items: [
-      { label: 'Home', href: 'index.html', children: [] },
+      { label: 'Home', href: '/', children: [] },
       { label: 'Board of Directors', href: 'board.html', children: [] },
       { label: 'Our Initiatives', href: 'initiatives.html', children: [
         { label: 'Scholarships', href: 'scholarships.html' },
@@ -23,7 +23,7 @@ export const DEFAULTS = {
   },
   footer: {
     links: [
-      { label: 'Home', href: 'index.html' },
+      { label: 'Home', href: '/' },
       { label: 'Board of Directors', href: 'board.html' },
       { label: 'Our Initiatives', href: 'initiatives.html' },
       { label: 'Testimonials', href: 'testimonials.html' },
@@ -41,7 +41,7 @@ export const DEFAULTS = {
 
 // Pages offered as suggestions when typing a link in the admin.
 export const PAGES = [
-  'index.html', 'board.html', 'initiatives.html', 'scholarships.html', 'coaches.html',
+  '/', 'board.html', 'initiatives.html', 'scholarships.html', 'coaches.html',
   'clubhouse.html', 'initiatives.html#kit', 'testimonials.html', 'contact.html', 'donate.html',
 ];
 
@@ -52,6 +52,7 @@ export const SLOTS = [
   { id: 'hero2', group: 'Home slideshow', label: 'Slide 2', src: 'hero-2.jpg', max: 2000 },
   { id: 'hero3', group: 'Home slideshow', label: 'Slide 3', src: 'hero-3.jpg', max: 2000 },
   { id: 'hero4', group: 'Home slideshow', label: 'Slide 4', src: 'hero-4.jpg', max: 2000 },
+  { id: 'mission', group: 'Home page', label: 'Our mission photo', src: 'hero-3.jpg', max: 1600 },
   { id: 'init-schol', group: 'Initiative pages', label: 'Scholarships', src: 'hero-3.jpg', max: 2000 },
   { id: 'init-coach', group: 'Initiative pages', label: 'Coach Recruitment & Support', src: 'hero-2.jpg', max: 2000 },
   { id: 'init-club', group: 'Initiative pages', label: 'Club House & Field', src: 'hero-4.jpg', max: 2000 },

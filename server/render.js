@@ -85,12 +85,25 @@ const LISTS = {
     const { raised, goal } = c.inits.club;
     const pct = goal > 0 ? Math.min(100, Math.round((100 * raised) / goal)) : 0;
     const shown = goal > 0 ? [money(raised), money(goal)] : ['[AMOUNT RAISED]', '[GOAL]'];
-    return `<div class="thermo" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div>`
-      + `<div class="thermo-nums"><span><strong>${shown[0]}</strong> raised</span><span>Goal: <strong>${shown[1]}</strong></span></div>`;
+    return `<div class="fund"><div class="fund-top"><span class="fund-pct">${pct}%</span><span><strong>${shown[0]}</strong> raised</span><span class="fund-goal">Goal: <strong>${shown[1]}</strong></span></div>`
+      + `<div class="fund-bar" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div></div>`;
   },
   'tiers.schol': (c) => c.giving && tiers(c.giving.schol, 'schol'),
   'tiers.coach': (c) => c.giving && tiers(c.giving.coach, 'coach'),
 };
+
+// The home page's background video. A YouTube or Vimeo link becomes a muted, looping
+// player; anything else is treated as a video file. The first slide stays underneath
+// as the picture shown while the video loads.
+function videoHtml(url, poster) {
+  const still = `<img src="${esc(poster)}" alt="" style="animation:none;opacity:1">`;
+  const frame = (src) => `${still}<iframe src="${src}" title="Background video" allow="autoplay; encrypted-media; picture-in-picture" tabindex="-1" aria-hidden="true"></iframe>`;
+  let m = url.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?(?:[^#]*&)?v=|shorts\/|embed\/|live\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/i);
+  if (m) return frame(`https://www.youtube-nocookie.com/embed/${m[1]}?autoplay=1&amp;mute=1&amp;loop=1&amp;playlist=${m[1]}&amp;controls=0&amp;playsinline=1&amp;rel=0&amp;disablekb=1`);
+  m = url.match(/^https:\/\/(?:www\.|player\.)?vimeo\.com\/(?:video\/)?(\d+)/i);
+  if (m) return frame(`https://player.vimeo.com/video/${m[1]}?background=1&amp;autoplay=1&amp;muted=1&amp;loop=1`);
+  return `<video src="${esc(url)}" poster="${esc(poster)}" autoplay muted loop playsinline preload="metadata"></video>`;
+}
 
 // An initiative page takes its browser-tab title from the saved title of that initiative
 const INIT_PAGES = { 'scholarships.html': ['schol', 'Scholarships'], 'coaches.html': ['coach', 'Coach Recruitment &amp; Support'], 'clubhouse.html': ['club', 'Club House &amp; Field'] };
@@ -151,6 +164,11 @@ export function render(response, saved, pathname, popups = []) {
         if (el.getAttribute('type') === 'image/png') el.removeAttribute('type');
       } });
     }
+  }
+
+  if (saved.home && saved.home.video) {
+    const poster = (photos && photos.hero1) || 'hero-1.jpg';
+    rw.on('.heromedia', { element(el) { el.setInnerContent(videoHtml(saved.home.video, poster), { html: true }); } });
   }
 
   // Page content: single texts, paragraphs, buttons, and rebuilt lists

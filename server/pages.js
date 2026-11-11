@@ -1,6 +1,6 @@
 // Page content: what each page says when nothing has been changed in the admin
 // (mirrors tools/build.ps1), and the rules for what may be saved.
-import { dollars, href, link, list, multiline, obj, paragraphs, text } from './valid.js';
+import { dollars, href, link, list, multiline, obj, paragraphs, text, video } from './valid.js';
 
 const TESTIMONIAL = (n) => ({ quote: `[TESTIMONIAL ${n}: a sentence or two about the experience.]`, name: '[NAME]', role: '[PLAYER / PARENT / COACH / PARTNER]' });
 
@@ -9,6 +9,7 @@ export const PAGE_DEFAULTS = {
     kicker: 'An offshoot of Dnamo Football Club',
     headline: 'Where talent meets possibility.',
     intro: 'Youth of all backgrounds deserve high-quality soccer training, development and facilities.',
+    video: '',
     button1: { label: 'Support a player', href: 'donate.html' },
     button2: { label: 'Our initiatives', href: 'initiatives.html' },
     values: ['Teamwork', 'Perseverance', 'Sportsmanship', 'Technical mastery', 'Tactical awareness', 'Love for the game', 'Confidence', 'Leadership'],
@@ -27,7 +28,7 @@ export const PAGE_DEFAULTS = {
     intro: 'Our Board of Directors is made up of caring community members who believe in the power of sports to bring kids together. They guide our mission with heart and commitment, ensuring every child has the opportunity to learn, grow, and thrive. Select a director to read their profile.',
     members: [
       { name: 'Elizabeth Estrada', role: 'Director', photo: 'board-elizabeth-estrada.jpg',
-        bio: "Ellie's lifelong love for soccer opened doors that changed the course of her life. Her dedication and talent on the field earned her the opportunity to play at the collegiate level, where the sport not only fueled her passion but helped pay for her education. Grateful for the doors soccer opened, Ellie is committed to helping the next generation players access the same opportunities. Leveraging her experiences as both a student-athlete and mentor, she works to ensure that programs at Dnamo Football Academy Foundation provide meaningful opportunities for growth. Her efforts supports Dnamo's mission to empower young athletes, strengthen families, and give back to the community through soccer." },
+        bio: "Ellie's lifelong love for soccer opened doors that changed the course of her life. Her dedication and talent on the field earned her the opportunity to play at the collegiate level, where the sport not only fueled her passion but helped pay for her education. Grateful for the doors soccer opened, Ellie is committed to helping the next generation of players access the same opportunities. Leveraging her experiences as both a student-athlete and mentor, she works to ensure that programs at Dnamo Football Academy Foundation provide meaningful opportunities for growth. Her efforts support Dnamo's mission to empower young athletes, strengthen families, and give back to the community through soccer." },
       { name: 'Ika Kvavilashvili', role: 'Director', photo: 'board-ika-kvavilashvili.jpg',
         bio: 'Ika Kvavilashvili founded Dnamo FC to create opportunities for every child to experience the mentorship, discipline, and joy that shaped his own soccer journey. What began as a small local club has grown into a community built on passion, inclusivity, and the belief that soccer can change lives. With international playing and coaching experience across Georgia, the United States, and Europe, Ika brings a global perspective and a deep understanding of what it takes to develop both great players and great people. His vision extends far beyond the field. He sees soccer as a powerful tool to inspire confidence, build leadership, and unite diverse communities through shared purpose.\n\nThrough the Dnamo Football Academy Foundation, Ika continues his lifelong mission to break down barriers and open doors for young athletes. His commitment is to ensure that every child, regardless of background, has the opportunity to learn, grow, and find belonging through the beautiful game.' },
       { name: 'Paulo Romero', role: 'Director', photo: 'board-paulo-romero.jpg',
@@ -163,6 +164,7 @@ export const PAGE_CLEAN = {
       kicker: text(v.kicker, 120, 'The small line above the headline', false),
       headline: text(v.headline, 120, 'The headline'),
       intro: text(v.intro, 300, 'The text under the headline', false),
+      video: video(v.video),
       button1: link(v.button1, 'The first button'),
       button2: link(v.button2, 'The second button'),
       values: list(v.values, 16, 'The scrolling words').map((w) => text(w, 40, 'A scrolling word', false)).filter(Boolean),

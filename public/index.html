@@ -24,10 +24,10 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 
 <header class="site-header">
   <div class="w">
-    <a class="nav brand" href="index.html">Dnamo <span>Football Foundation</span></a>
+    <a class="nav brand" href="/">Dnamo <span>Football Foundation</span></a>
     <button class="nav burger" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
     <nav class="navbox" id="site-nav" aria-label="Main">
-      <a class="nav on" href="index.html" aria-current="page">Home</a>
+      <a class="nav on" href="/" aria-current="page">Home</a>
       <a class="nav" href="board.html">Board of Directors</a>
       <div class="navdrop">
         <a class="nav" href="initiatives.html">Our Initiatives<svg class="caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg></a>
@@ -48,7 +48,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 <main>
 <section class="dark">
   <div class="hero2">
-    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css) -->
+    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css). A video link set in the admin replaces it. -->
     <div class="heromedia" role="img" aria-label="Dnamo players and coaches training on pitches in San Francisco">
       <img data-slot="hero1" src="hero-1.jpg" alt="" fetchpriority="high">
       <img data-slot="hero2" src="hero-2.jpg" alt="">
@@ -69,7 +69,8 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 <div class="marquee" aria-hidden="true"><div class="mq-track" data-list="home.values"><span>Teamwork</span><span>Perseverance</span><span>Sportsmanship</span><span>Technical mastery</span><span>Tactical awareness</span><span>Love for the game</span><span>Confidence</span><span>Leadership</span><span>Teamwork</span><span>Perseverance</span><span>Sportsmanship</span><span>Technical mastery</span><span>Tactical awareness</span><span>Love for the game</span><span>Confidence</span><span>Leadership</span></div></div>
 
 <section class="w split pad-l">
-  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2></div>
+  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2>
+    <img class="mission-img" data-slot="mission" src="hero-3.jpg" alt="Dnamo players and a coach at training" width="2000" height="1125" loading="lazy"></div>
   <div class="prose" data-p="home.mission">
     <p>Dnamo Football Academy Foundation, founded in 2025, is a nonprofit organization dedicated to providing youth of all backgrounds with access to high-quality soccer training, development, and facilities. We are an offshoot of Dnamo Football Club.</p>
     <p>Our mission is to deliver soccer excellence on and off the pitch by developing not only skilled athletes but also disciplined, respectful, and motivated individuals. Soccer excellence means fostering technical mastery, tactical awareness, and a genuine love for the game while promoting teamwork, perseverance, and sportsmanship.</p>
@@ -103,7 +104,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
     <!-- Footer row 1: page links on the left, light / dark switch on the right -->
     <div class="foot-top">
       <nav class="foot-links" aria-label="Footer">
-      <a class="nav" href="index.html">Home</a>
+      <a class="nav" href="/">Home</a>
       <a class="nav" href="board.html">Board of Directors</a>
       <a class="nav" href="initiatives.html">Our Initiatives</a>
       <a class="nav" href="testimonials.html">Testimonials</a>

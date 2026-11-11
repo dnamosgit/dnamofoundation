@@ -57,3 +57,13 @@ export function dollars(v, what, max = 100000000) {
   if (!Number.isInteger(n) || n < 0 || n > max) throw new Error(`${what} must be a whole dollar amount.`);
   return n;
 }
+
+// A background video: a YouTube or Vimeo link, a direct link to a video file,
+// or a video file that is part of the site. Empty means "no video".
+export function video(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (!s) return '';
+  if (s.length > 500) throw new Error('That video link is too long.');
+  if (/^https:\/\/[^\s<>"']+$/i.test(s) || /^[A-Za-z0-9][A-Za-z0-9._\/-]*\.(mp4|webm)$/i.test(s)) return s;
+  throw new Error('Use a full video link starting with https:// (YouTube, Vimeo, or a link to an .mp4 file).');
+}

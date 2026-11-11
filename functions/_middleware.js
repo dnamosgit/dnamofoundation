@@ -19,7 +19,7 @@ export async function onRequest(context) {
   // The admin's own files live in /_adm/ and are never served directly.
   if (path === '/_adm' || path.startsWith('/_adm/')) return page(context, url, await notFound(env, url));
 
-  const secret = String(env.ADMIN_PATH || '').replace(/^\/+|\/+$/g, '');
+  const secret = String(env.ADMIN_PATH || '').trim().replace(/^\/+|\/+$/g, '');
   if (secret.length >= 8) {
     const base = '/' + secret;
     if (path === base || path.startsWith(base + '/')) {

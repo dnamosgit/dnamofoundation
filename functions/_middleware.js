@@ -16,18 +16,6 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const path = url.pathname;
 
-  // TEMPORARY setup check, to be removed once the admin is reachable. It says only
-  // whether each setting is present and well-formed, never what it contains.
-  if (path === '/_adm/check') {
-    const raw = String(env.ADMIN_PATH || '');
-    const tidy = raw.trim().replace(/^\/+|\/+$/g, '');
-    const state = !raw ? 'missing' : tidy.length < 8 ? 'too-short' : !/^[a-z0-9-]+$/.test(tidy) ? 'odd-characters' : raw !== tidy ? 'ok-after-trim' : 'ok';
-    const res = await notFound(env, url);
-    const headers = new Headers(res.headers);
-    headers.set('X-Setup-Check', `path=${state}; code=${String(env.SETUP_TOKEN || '').trim().length >= 16 ? 'ok' : 'missing-or-short'}; db=${env.DB ? 'ok' : 'missing'}`);
-    return new Response(res.body, { status: 404, headers });
-  }
-
   // The admin's own files live in /_adm/ and are never served directly.
   if (path === '/_adm' || path.startsWith('/_adm/')) return page(context, url, await notFound(env, url));
 

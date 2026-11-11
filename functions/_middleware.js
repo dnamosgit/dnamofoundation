@@ -2,12 +2,14 @@
 //  - The admin center answers only under the secret ADMIN_PATH. Every other
 //    admin-looking address gets the normal "page not found" page.
 //  - /media/<id> serves photos uploaded in the admin.
+//  - /embed/<key>.js shows pop-ups on a site hosted elsewhere.
 //  - Public pages pass through, with any content saved in the admin applied.
 import { handleAdmin } from '../server/admin.js';
 import { notFound } from '../server/assets.js';
 import { savedContent, serveMedia, siteForHost } from '../server/content.js';
 import { activePopups } from '../server/popups.js';
 import { pageFile, render } from '../server/render.js';
+import { serveEmbed } from '../server/sites.js';
 
 export async function onRequest(context) {
   const { request, env } = context;
@@ -28,6 +30,13 @@ export async function onRequest(context) {
   const media = path.match(/^\/media\/([0-9a-f]{24})$/);
   if (media && env.DB && request.method === 'GET') {
     return (await serveMedia(context, media[1])) || page(context, url, await notFound(env, url));
+  }
+
+  // The one-line script that shows pop-ups on a site hosted elsewhere.
+  const embed = path.match(/^\/embed\/([0-9a-f]{32})\.js$/);
+  if (embed && env.DB && request.method === 'GET') {
+    return (await serveEmbed(context, embed[1])) || new Response('/* unknown site */\n', {
+      status: 404, headers: { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' } });
   }
 
   // Pages are always fetched in full (never "not modified"), because saved

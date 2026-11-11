@@ -142,10 +142,11 @@
 
   window.DnamoPopup = { show: show };
 
+  // The pop-ups come with the page, or with the script itself on a site hosted elsewhere.
   var store = document.getElementById('dn-popups');
-  if (!store) return;
-  var list = [];
-  try { list = JSON.parse(store.textContent) || []; } catch (e) {}
+  var list = Array.isArray(window.DnamoPopups) ? window.DnamoPopups : [];
+  if (store) { try { list = JSON.parse(store.textContent) || []; } catch (e) {} }
+  var begin = function () {
   // One pop-up per page view: the newest one this visitor has not used up.
   var next = list.filter(function (p) { return !seen(p); })[0];
   if (!next) return;
@@ -163,4 +164,6 @@
       show(next);
     }, Math.max(0, Number(next.delay) || 0) * 1000 + (tries ? 700 : 400));
   })();
+  };
+  if (document.body) begin(); else document.addEventListener('DOMContentLoaded', begin);
 })();

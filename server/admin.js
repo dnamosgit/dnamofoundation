@@ -4,11 +4,12 @@ import {
   checkPassword, clearFailures, createSession, currentUser, endSession, hashPassword,
   isLockedOut, now, recordFailure, sameSecret, sessionCookie,
 } from './auth.js';
+import { MIN_PASSWORD, accountRoutes, checkNewPassword, cleanEmail, joinRoutes, validEmail } from './accounts.js';
 import { saveContent, saveMedia, savedContent } from './content.js';
 import { DEFAULTS, KEYS, PAGES, SLOTS } from './defaults.js';
+import { SITE_COLUMNS, siteRoutes } from './sites.js';
 import { FREQUENCIES, POPUP_PAGES, createPopup, deletePopup, listPopups, updatePopup } from './popups.js';
 
-const MIN_PASSWORD = 12;
 const FILES = { '/admin.css': '/_adm/admin.css', '/admin.js': '/_adm/admin.js' };
 
 const SECURITY = {
@@ -33,9 +34,6 @@ async function file(env, url, path) {
   for (const [k, v] of Object.entries(SECURITY)) headers.set(k, v);
   return new Response(res.body, { status: 200, headers });
 }
-
-const cleanEmail = (v) => String(v || '').trim().toLowerCase();
-const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) && v.length <= 200;
 
 export async function handleAdmin(context, base, sub) {
   const { request, env } = context;
@@ -74,7 +72,7 @@ export async function handleAdmin(context, base, sub) {
   if (route === 'GET /state') {
     if (!userCount) return json({ view: 'setup', minPassword: MIN_PASSWORD });
     if (!user) return json({ view: 'login' });
-    const sites = (await env.DB.prepare('SELECT id, slug, name, hostnames FROM sites ORDER BY id').all()).results;
+    const sites = (await env.DB.prepare(`SELECT ${SITE_COLUMNS} FROM sites ORDER BY id`).all()).results;
     return json({ view: 'app', user, sites });
   }
 
@@ -92,8 +90,7 @@ export async function handleAdmin(context, base, sub) {
     const password = String(body.password || '');
     if (!name) return fail(400, 'Enter your name.');
     if (!validEmail(email)) return fail(400, 'Enter a valid email address.');
-    if (password.length < MIN_PASSWORD) return fail(400, `Use a password of at least ${MIN_PASSWORD} characters.`);
-    if (password.length > 200) return fail(400, 'That password is too long.');
+    try { checkNewPassword(password); } catch (e) { return fail(400, e.message); }
     const p = await hashPassword(password);
     const made = await env.DB.prepare(
       `INSERT INTO users (email, name, role, pass_hash, pass_salt, pass_iter, created_at)
@@ -123,16 +120,30 @@ export async function handleAdmin(context, base, sub) {
     return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', base, secure, 0) });
   }
 
-  // Everything below needs a signed-in admin.
-  if (!user) return fail(401, 'Sign in first.');
-
-  // Per-site routes: /api/sites/<id>/...
-  const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media|popups)(?:\/([a-z0-9]+))?$/);
-  if (!m) return fail(404, 'Not found.');
-  const site = await env.DB.prepare('SELECT id, name FROM sites WHERE id = ?').bind(Number(m[1])).first();
-  if (!site) return fail(404, 'That site does not exist.');
-
+  const c = { env, route, method, sub, body, user, ip, base, secure, json, fail };
   try {
+    // Using a one-time invitation or password link (no sign-in needed)
+    if (userCount) {
+      const joined = await joinRoutes(c);
+      if (joined) return joined;
+    }
+
+    // Everything below needs a signed-in admin.
+    if (!user) return fail(401, 'Sign in first.');
+
+    const other = (await accountRoutes(c)) || (await siteRoutes(c));
+    if (other) return other;
+
+    // Per-site routes: /api/sites/<id>/...
+    const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media|popups)(?:\/([a-z0-9]+))?$/);
+    if (!m) return fail(404, 'Not found.');
+    const site = await env.DB.prepare('SELECT id, name, kind FROM sites WHERE id = ?').bind(Number(m[1])).first();
+    if (!site) return fail(404, 'That site does not exist.');
+    // A site hosted elsewhere has pop-ups (and their photos) only, shown on all its pages.
+    const full = site.kind === 'full';
+    if (!full && m[2] === 'content') return fail(400, 'This site is hosted elsewhere, so only its pop-ups are managed here.');
+    const popup = full || !body.popup || typeof body.popup !== 'object' ? body.popup : { ...body.popup, pages: 'all' };
+
     // Everything the editing screens need: current values, which are customised, and the photo slots
     if (method === 'GET' && m[2] === 'content' && !m[3]) {
       const saved = await savedContent(env, site.id);
@@ -152,20 +163,20 @@ export async function handleAdmin(context, base, sub) {
       if (method === 'GET' && !m[3]) {
         return json({ popups: await listPopups(env, site.id), pages: POPUP_PAGES, frequencies: FREQUENCIES, now: now() });
       }
-      if (method === 'POST' && !m[3]) return json({ popup: await createPopup(env, site.id, body.popup, user.id) });
+      if (method === 'POST' && !m[3]) return json({ popup: await createPopup(env, site.id, popup, user.id) });
       if (method === 'PUT' && pid) {
-        const popup = await updatePopup(env, site.id, pid, body.popup, user.id);
-        return popup ? json({ popup }) : fail(404, 'That pop-up no longer exists.');
+        const changed = await updatePopup(env, site.id, pid, popup, user.id);
+        return changed ? json({ popup: changed }) : fail(404, 'That pop-up no longer exists.');
       }
       if (method === 'DELETE' && pid) {
         return (await deletePopup(env, site.id, pid)) ? json({ ok: true }) : fail(404, 'That pop-up no longer exists.');
       }
     }
+    return fail(404, 'Not found.');
   } catch (e) {
     // Validation messages are written for the admin; anything else is a real fault.
     if (e instanceof Error && !(e instanceof TypeError) && !/D1_|SQLITE/.test(e.message)) return fail(400, e.message);
     console.error(e);
     return fail(500, 'Could not save. Try again.');
   }
-  return fail(404, 'Not found.');
 }

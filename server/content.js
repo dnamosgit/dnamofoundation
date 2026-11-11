@@ -6,7 +6,7 @@ const MAX_UPLOAD = 1500000;   // bytes; the database allows up to 2 MB per row
 
 // Which site a request is for: matched by web address, otherwise the first site.
 export async function siteForHost(env, hostname) {
-  const sites = (await env.DB.prepare('SELECT id, hostnames FROM sites ORDER BY id').all()).results;
+  const sites = (await env.DB.prepare("SELECT id, hostnames FROM sites WHERE kind = 'full' ORDER BY id").all()).results;
   const host = hostname.toLowerCase();
   const hit = sites.find((s) => s.hostnames.split(',').map((h) => h.trim().toLowerCase()).includes(host));
   return (hit || sites[0] || {}).id || null;

@@ -156,3 +156,15 @@ button,input,select{font:inherit}
 @media (max-width:560px){.pop{flex-direction:column}.pop-img{width:100%}.pop-img.none{display:none}}
 .btn[hidden]{display:none}
 .side button[aria-current="page"]:hover:not([disabled]){background:var(--red)}
+/* Sites, admins and one-time links */
+.copy{display:flex;gap:10px;align-items:flex-start;margin:8px 0 4px}
+.copy-text{flex:1;min-width:0;padding:10px 12px;border:1.5px solid #cfcfcf;border-radius:10px;background:#fafafa;color:#000;font:13px/1.5 ui-monospace,Consolas,monospace;resize:none;word-break:break-all}
+.copy .btn{margin-top:0;flex:none}
+.card.note{border-color:var(--red);box-shadow:0 0 0 3px rgba(235,35,35,.12)}
+.people{display:flex;flex-direction:column}
+.person{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:12px 0;border-top:1px solid var(--line)}
+.person:first-child{border-top:0;padding-top:0}
+.person-body{flex:1;min-width:180px;display:flex;flex-direction:column}
+.person .stack{margin-top:0}
+.pop-head h2{margin-bottom:0}
+.pop-head + p{margin-top:8px;margin-bottom:14px}

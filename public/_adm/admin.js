@@ -96,14 +96,18 @@
 
   var SECTIONS = [
     { id: 'overview', label: 'Overview' },
-    { id: 'identity', label: 'Site settings' },
-    { id: 'chrome', label: 'Header & footer' },
-    { id: 'photos', label: 'Photos' },
-    { id: 'pages', label: 'Page content' },
+    { id: 'identity', label: 'Site settings', full: true },
+    { id: 'chrome', label: 'Header & footer', full: true },
+    { id: 'photos', label: 'Photos', full: true },
+    { id: 'pages', label: 'Page content', full: true },
     { id: 'popups', label: 'Pop-ups' },
-    { id: 'sites', label: 'Sites', soon: true },
-    { id: 'admins', label: 'Admins', soon: true }
+    { id: 'sites', label: 'Sites', owner: true },
+    { id: 'admins', label: 'Admins', owner: true },
+    { id: 'account', label: 'My account' }
   ];
+  /* A site hosted here can be edited in full; one hosted elsewhere has pop-ups only. Sites and Admins are for the owner. */
+  var isFull = function () { return site.kind === 'full'; };
+  var allowed = function (s) { return (!s.full || isFull()) && (!s.owner || session.user.role === 'owner'); };
 
   var session = null;   // { user, sites }
   var site = null;      // the site being edited
@@ -128,18 +132,15 @@
     var top = h('header', { class: 'top' },
       h('div', { class: 'brand' }, 'Dnamo ', h('b', {}, 'Admin')),
       h('label', { class: 'pick' }, 'Site', select),
-      h('a', { class: 'btn ghost small', href: '/', target: '_blank', rel: 'noopener' }, 'View site'),
+      h('a', { class: 'btn ghost small', href: isFull() ? '/' : 'https://' + site.hostnames.split(',')[0], target: '_blank', rel: 'noopener' }, 'View site'),
       h('span', { class: 'who' }, state.user.name),
       h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
         api('POST', '/logout', {}).then(load, load);
       } }, 'Sign out'));
 
     var side = h('nav', { class: 'side', 'aria-label': 'Admin sections' });
-    SECTIONS.forEach(function (s) {
-      side.appendChild(h('button', {
-        type: 'button', disabled: !!s.soon, 'data-section': s.id,
-        onclick: function () { go(s.id); }
-      }, s.label, s.soon ? h('span', { class: 'tag' }, 'Soon') : null));
+    SECTIONS.filter(allowed).forEach(function (s) {
+      side.appendChild(h('button', { type: 'button', 'data-section': s.id, onclick: function () { go(s.id); } }, s.label));
     });
 
     mainEl = h('main', { class: 'main' });
@@ -147,6 +148,11 @@
     datalist();
     data = null;
     paint(h('p', { class: 'lead' }, 'Loading...'));
+    if (!isFull()) {          // nothing to load: this site has pop-ups only
+      data = { content: {}, customised: [], slots: [], pages: [] };
+      go(section);
+      return;
+    }
     api('GET', '/sites/' + site.id + '/content').then(function (d) {
       data = d;
       datalist();
@@ -169,13 +175,14 @@
   }
 
   function go(id) {
+    if (!SECTIONS.some(function (s) { return s.id === id && allowed(s); })) id = 'overview';
     section = id;
     Array.prototype.forEach.call(document.querySelectorAll('.side button'), function (b) {
       if (b.getAttribute('data-section') === id) b.setAttribute('aria-current', 'page');
       else b.removeAttribute('aria-current');
     });
     if (!data) return;
-    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages, popups: popups }[id] || overview)();
+    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages, popups: popups, sites: sites, admins: admins, account: account }[id] || overview)();
     mainEl.scrollTop = 0;
     window.scrollTo(0, 0);
   }
@@ -228,27 +235,34 @@
   function overview() {
     var role = session.user.role === 'owner' ? 'Owner' : 'Admin';
     var changed = data.customised.length;
+    var edit = isFull() ? h('section', { class: 'card' },
+      h('h2', {}, 'Edit the site'),
+      h('p', { class: 'muted' }, changed ? changed + ' section' + (changed > 1 ? 's' : '') + ' customised so far.' : 'Nothing has been changed yet.'),
+      h('div', { class: 'stack' },
+        h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('identity'); } }, 'Name and logo'),
+        h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('chrome'); } }, 'Header & footer'),
+        h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('photos'); } }, 'Photos'),
+        h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('pages'); } }, 'Page content'),
+        h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('popups'); } }, 'Pop-ups')))
+      : h('section', { class: 'card' },
+        h('h2', {}, 'Pop-ups for this site'),
+        h('p', { class: 'muted' }, 'This site is hosted elsewhere. Pop-ups you make here show on it once this line is on its pages:'),
+        copyBox(embedCode(site), 2),
+        h('div', { class: 'stack' },
+          h('button', { class: 'btn small', type: 'button', onclick: function () { go('popups'); } }, 'Manage pop-ups')));
     paint(
       h('h1', {}, 'Welcome, ' + session.user.name.split(' ')[0]),
       h('p', { class: 'lead' }, 'You are managing ' + site.name + '.'),
       h('div', { class: 'cards' },
-        h('section', { class: 'card' },
-          h('h2', {}, 'Edit the site'),
-          h('p', { class: 'muted' }, changed ? changed + ' section' + (changed > 1 ? 's' : '') + ' customised so far.' : 'Nothing has been changed yet.'),
-          h('div', { class: 'stack' },
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('identity'); } }, 'Name and logo'),
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('chrome'); } }, 'Header & footer'),
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('photos'); } }, 'Photos'),
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('pages'); } }, 'Page content'),
-            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('popups'); } }, 'Pop-ups'))),
+        edit,
         h('section', { class: 'card' },
           h('h2', {}, 'Your account'),
           h('p', {}, session.user.email),
-          h('p', { class: 'muted' }, role)),
-        h('section', { class: 'card' },
-          h('h2', {}, 'Being built next'),
-          h('ol', {},
-            h('li', {}, 'More sites and admin accounts')))));
+          h('p', { class: 'muted' }, role),
+          h('div', { class: 'stack' },
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('account'); } }, 'Change password'),
+            session.user.role === 'owner' ? h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('admins'); } }, 'Admins') : null,
+            session.user.role === 'owner' ? h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('sites'); } }, 'Sites') : null))));
   }
 
   /* ---------- Site settings: name and logo ---------- */
@@ -719,7 +733,7 @@
     drawThumb();
 
     var bLabel = input('Button label', p.button.label, { maxlength: 40 }, 'Leave empty for no button.');
-    var bHref = input('Button link', p.button.href, { list: 'pages' }, 'A page on this site or a full https:// address.');
+    var bHref = input('Button link', p.button.href, { list: 'pages' }, isFull() ? 'A page on this site or a full https:// address.' : 'A full https:// address, or a page on that site.');
 
     var all = h('input', { type: 'radio', name: 'where', checked: p.pages === 'all' });
     var some = h('input', { type: 'radio', name: 'where', checked: p.pages !== 'all' });
@@ -745,7 +759,7 @@
       return {
         title: title.input.value, text: text.input.value, image: image,
         button: { label: bLabel.input.value, href: bHref.input.value },
-        pages: all.checked ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
+        pages: all.checked || !isFull() ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
         frequency: freq.value, delay: Number(delay.input.value || 0),
         startsAt: fromLocal(start.input.value), endsAt: fromLocal(end.input.value), enabled: enabled.checked
       };
@@ -778,10 +792,10 @@
         h('div', { class: 'two' }, bLabel, bHref)),
       h('section', { class: 'card' },
         h('h2', {}, 'Where and how often'),
-        h('div', { class: 'checks' },
+        isFull() ? [h('div', { class: 'checks' },
           h('label', { class: 'check' }, all, 'All pages'),
           h('label', { class: 'check' }, some, 'Only the pages I choose')),
-        pageBox,
+        pageBox] : h('p', { class: 'muted' }, 'Shows on every page of ' + site.name + ' that has the pop-up line.'),
         h('div', { class: 'two', style: 'margin-top:16px' },
           h('label', { class: 'field' }, h('span', {}, 'How often a visitor sees it'), freq),
           delay)),
@@ -800,6 +814,203 @@
           h('button', { class: 'btn ghost', type: 'button', onclick: popupList }, 'Cancel'),
           status)));
     title.input.focus();
+  }
+
+  /* ---------- Shared: a box of text with a Copy button ---------- */
+
+  function copyBox(value, rows) {
+    var box = h('textarea', { class: 'copy-text', readonly: true, rows: rows || 2, spellcheck: 'false', 'aria-label': 'Text to copy' });
+    box.value = value;
+    box.addEventListener('focus', function () { box.select(); });
+    var btn = h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+      var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy'; }, 1600); };
+      var manual = function () { box.focus(); box.select(); try { document.execCommand('copy'); done(); } catch (e) {} };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(value).then(done, manual);
+      else manual();
+    } }, 'Copy');
+    return h('div', { class: 'copy' }, box, btn);
+  }
+
+  var embedCode = function (s) {
+    return '<script src="' + location.origin + '/embed/' + s.embedKey + '.js" async></scr' + 'ipt>';
+  };
+  /* A button that reports a failure next to itself */
+  function statusLine() { return h('span', { class: 'status', role: 'status' }); }
+  function bad(status) { return function (err) { status.className = 'status bad'; status.textContent = err.message; }; }
+
+  /* ---------- Sites (owner) ---------- */
+
+  function sites() {
+    var cards = session.sites.map(function (s) {
+      var full = s.kind === 'full';
+      var name = input('Name in this admin', s.name, { maxlength: 80 });
+      var address = input(full ? 'Web address (optional)' : 'Web address', s.hostnames.split(',').join(', '), { placeholder: 'www.example.org' },
+        full ? 'The address this site is reached at, once it has its own domain.' : 'Where the site lives.');
+      var status = statusLine();
+      var saveBtn = h('button', { class: 'btn small', type: 'button', onclick: function () {
+        status.className = 'status'; status.textContent = 'Saving...';
+        api('PUT', '/sites/' + s.id, { name: name.input.value, address: address.input.value }).then(load, bad(status));
+      } }, 'Save');
+      var del = full ? null : h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+        if (!window.confirm('Remove "' + s.name + '" from this admin? Its pop-ups and their photos are deleted. This cannot be undone.')) return;
+        api('DELETE', '/sites/' + s.id, {}).then(load, bad(status));
+      } }, 'Remove site');
+      return h('section', { class: 'card' },
+        h('div', { class: 'pop-head' }, h('h2', {}, s.name), h('span', { class: 'chip ' + (full ? 'live' : 'wait') }, full ? 'Hosted here' : 'Pop-ups only')),
+        h('p', { class: 'muted' }, full ? 'Everything on this site can be edited: name, logo, menus, photos, page content and pop-ups.'
+          : 'This site is hosted elsewhere. Pop-ups you make here show on it once the line below is added to its pages.'),
+        h('div', { class: 'two' }, name, address),
+        full ? null : [h('h3', {}, 'Line to add to the site'),
+          h('p', { class: 'muted small' }, 'Paste it just before </body> on every page (or in the site builder’s "custom code" box). It only needs doing once.'),
+          copyBox(embedCode(s), 2)],
+        h('div', { class: 'actions' }, saveBtn, del, status));
+    });
+
+    var newName = input('Name', '', { maxlength: 80, placeholder: 'Dnamo Football Club' });
+    var newAddress = input('Web address', '', { placeholder: 'www.example.org' });
+    var addStatus = statusLine();
+    paint(
+      h('h1', {}, 'Sites'),
+      h('p', { class: 'lead' }, 'The websites managed from this admin. Choose which one you are working on with the Site menu at the top.'),
+      cards,
+      h('section', { class: 'card' },
+        h('h2', {}, 'Add a site'),
+        h('p', { class: 'muted' }, 'For a website hosted somewhere else. You will get one line to add to it; after that, its pop-ups are made here.'),
+        h('div', { class: 'two' }, newName, newAddress),
+        h('div', { class: 'actions' },
+          h('button', { class: 'btn', type: 'button', onclick: function () {
+            addStatus.className = 'status'; addStatus.textContent = 'Adding...';
+            api('POST', '/sites', { name: newName.input.value, address: newAddress.input.value }).then(function (res) {
+              try { localStorage.setItem('dnamoAdminSite', String(res.site.id)); } catch (e) {}
+              return load();
+            }).catch(bad(addStatus));
+          } }, 'Add site'), addStatus)));
+  }
+
+  /* ---------- Admins (owner) ---------- */
+
+  var people = null;      // { users, invites, max }
+  var freshLink = null;   // { text, link }: a one-time link just made, shown until the screen is left
+
+  var joinLink = function (token) { return location.origin + location.pathname + '#join=' + token; };
+
+  function admins() {
+    paint(h('h1', {}, 'Admins'), h('p', { class: 'lead' }, 'Loading...'));
+    api('GET', '/users').then(function (d) {
+      people = d;
+      if (section === 'admins') adminList();
+    }).catch(function (err) { paint(h('h1', {}, 'Admins'), h('p', { class: 'msg' }, err.message)); });
+  }
+
+  function adminList() {
+    var status = statusLine();
+    var rows = people.users.map(function (u) {
+      var me = u.id === session.user.id;
+      return h('div', { class: 'person' },
+        h('div', { class: 'person-body' },
+          h('strong', {}, u.name + (me ? ' (you)' : '')),
+          h('span', { class: 'muted small' }, u.email)),
+        h('span', { class: 'chip' + (u.role === 'owner' ? ' live' : '') }, u.role === 'owner' ? 'Owner' : 'Admin'),
+        me || u.role === 'owner' ? null : h('div', { class: 'stack' },
+          h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+            if (!window.confirm('Make a link that lets ' + u.name + ' choose a new password? Any earlier link stops working.')) return;
+            api('POST', '/users/' + u.id + '/reset', {}).then(function (res) {
+              freshLink = { text: 'Send this link to ' + u.name + '. It works once, for 24 hours.', link: joinLink(res.token) };
+              admins();
+            }, bad(status));
+          } }, 'Password link'),
+          h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+            if (!window.confirm('Remove ' + u.name + '? They are signed out at once and can no longer sign in.')) return;
+            api('DELETE', '/users/' + u.id, {}).then(admins, bad(status));
+          } }, 'Remove')));
+    });
+    var waiting = people.invites.map(function (i) {
+      return h('div', { class: 'person' },
+        h('div', { class: 'person-body' },
+          h('strong', {}, i.email),
+          h('span', { class: 'muted small' }, (i.kind === 'invite' ? 'Invitation' : 'Password link') + ', works until ' + niceDate(i.expiresAt))),
+        h('span', { class: 'chip wait' }, 'Waiting'),
+        h('div', { class: 'stack' }, h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+          api('DELETE', '/invites/' + i.id, {}).then(admins, bad(status));
+        } }, 'Cancel link')));
+    });
+
+    var email = input('Their email', '', { type: 'email', autocomplete: 'off', placeholder: 'name@example.org' });
+    var inviteStatus = statusLine();
+    var link = freshLink;
+    paint(
+      h('h1', {}, 'Admins'),
+      h('p', { class: 'lead' }, 'People who can sign in here. Admins can edit sites and pop-ups; only you, the owner, can manage sites and admins.'),
+      link ? h('section', { class: 'card note' },
+        h('h2', {}, 'Link ready'),
+        h('p', {}, link.text),
+        copyBox(link.link, 3),
+        h('p', { class: 'muted small' }, 'It is shown only now. Send it privately (a text or email to that person); anyone who has it can use it.')) : null,
+      h('section', { class: 'card' },
+        h('h2', {}, 'Who has access'),
+        h('div', { class: 'people' }, rows, waiting), status),
+      h('section', { class: 'card' },
+        h('h2', {}, 'Invite an admin'),
+        h('p', { class: 'muted' }, 'You get a one-time link to send them. They open it, choose their own name and password, and are in. You never see their password.'),
+        email,
+        h('div', { class: 'actions' },
+          h('button', { class: 'btn', type: 'button', onclick: function () {
+            inviteStatus.className = 'status'; inviteStatus.textContent = 'Making the link...';
+            api('POST', '/users/invite', { email: email.input.value }).then(function (res) {
+              freshLink = { text: 'Send this link to ' + res.email + '. It works once, for 7 days.', link: joinLink(res.token) };
+              admins();
+            }, bad(inviteStatus));
+          } }, 'Make invitation link'), inviteStatus)));
+    freshLink = null;
+  }
+
+  /* ---------- My account ---------- */
+
+  function account() {
+    var current = input('Current password', '', { type: 'password', autocomplete: 'current-password' });
+    var next = input('New password', '', { type: 'password', autocomplete: 'new-password' }, 'At least 12 characters.');
+    var again = input('New password again', '', { type: 'password', autocomplete: 'new-password' });
+    var status = statusLine();
+    var btn = h('button', { class: 'btn', type: 'submit' }, 'Change password');
+    var form = h('form', { novalidate: true, onsubmit: function (e) {
+      e.preventDefault();
+      if (next.input.value !== again.input.value) { bad(status)(new Error('The two new passwords do not match.')); return; }
+      status.className = 'status'; status.textContent = 'Saving...';
+      btn.disabled = true;
+      api('POST', '/account/password', { current: current.input.value, password: next.input.value }).then(function () {
+        form.reset();
+        status.className = 'status ok'; status.textContent = 'Password changed. Other devices have been signed out.';
+        btn.disabled = false;
+      }, function (err) { bad(status)(err); btn.disabled = false; });
+    } }, current, h('div', { class: 'two' }, next, again), h('div', { class: 'actions' }, btn, status));
+    paint(
+      h('h1', {}, 'My account'),
+      h('p', { class: 'lead' }, session.user.name + ' · ' + session.user.email + ' · ' + (session.user.role === 'owner' ? 'Owner' : 'Admin')),
+      h('section', { class: 'card' }, h('h2', {}, 'Change password'), form));
+  }
+
+  /* ---------- Opening a one-time link: a new admin joins, or a password is chosen again ---------- */
+
+  function viewJoin(token) {
+    var leave = function () {
+      try { history.replaceState(null, '', location.pathname); } catch (e) { location.hash = ''; }
+    };
+    api('POST', '/join/check', { token: token }).then(function (info) {
+      var reset = info.kind === 'reset';
+      var hint = 'At least ' + info.minPassword + ' characters.';
+      gateForm(reset ? 'Choose a new password' : 'Create your account', (reset ? 'For ' : 'You were invited as ') + info.email, [
+        reset ? null : field('Your name', 'name', 'text', { autocomplete: 'name' }),
+        field('Password', 'password', 'password', { autocomplete: 'new-password', minlength: info.minPassword }, hint)
+      ], reset ? 'Save password' : 'Create account', function (data) {
+        data.token = token;
+        return api('POST', '/join', data).then(leave);
+      });
+    }).catch(function (err) {
+      leave();
+      show(h('main', { class: 'gate' }, h('div', { class: 'gate-card' },
+        h('h1', {}, 'Link not valid'), h('p', { class: 'sub' }, err.message),
+        h('button', { class: 'btn', type: 'button', onclick: load }, 'Go to sign in'))));
+    });
   }
 
   /* ---------- Photos ---------- */
@@ -894,6 +1105,8 @@
 
   function load() {
     return api('GET', '/state').then(function (state) {
+      var join = /^#join=([0-9a-f]{64})$/.exec(location.hash);
+      if (join && state.view === 'login') { viewJoin(join[1]); return; }
       if (state.view === 'setup') viewSetup(state);
       else if (state.view === 'login') viewLogin();
       else viewApp(state);

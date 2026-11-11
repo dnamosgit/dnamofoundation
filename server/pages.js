@@ -90,6 +90,7 @@ export const PAGE_DEFAULTS = {
   // Giving options. The ids are fixed (the donate page and its links use them);
   // the wording and amounts can change. tag is shown instead of a price when a gift has several amounts.
   giving: {
+    payUrl: 'https://www.zeffy.com/en-US/donation-form/dnamo-football-academy-fundraiser',
     general: { amounts: [25, 50, 100, 250], def: 50 },
     club: { amounts: [50, 100, 250, 500], def: 100 },
     schol: [
@@ -221,7 +222,11 @@ export const PAGE_CLEAN = {
     };
   },
   giving(v) {
+    // Where "Continue to payment" goes. A page saved before this option existed keeps the built-in address.
+    const payUrl = v.payUrl == null ? PAGE_DEFAULTS.giving.payUrl : String(v.payUrl).trim();
+    if (!/^https:\/\/[^\s<>"']{4,490}$/i.test(payUrl)) throw new Error('The payment page must be a full address starting with https://');
     return {
+      payUrl,
       general: fund(v.general, 'Where it is needed most'),
       club: fund(v.club, 'the Club House & Field fund'),
       schol: gifts(v.schol, PAGE_DEFAULTS.giving.schol, 'Scholarship gifts'),

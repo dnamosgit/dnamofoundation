@@ -1,29 +1,31 @@
 /* Dnamo pop-ups. Loaded only on pages that have a live pop-up.
+   A pop-up is a small card that slides in at the bottom right corner. It never
+   covers the page or blocks it: visitors can keep reading and close it when they like.
    Self-contained: brings its own styles, so it looks the same on any page.
    All text is placed with textContent, so pop-up text can never inject markup. */
 (function () {
   'use strict';
 
   var CSS = '' +
-    '.dnp-back{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(0,0,0,.62);opacity:0;transition:opacity .25s ease}' +
-    '.dnp-back.dnp-in{opacity:1}' +
-    '.dnp-card{position:relative;width:100%;max-width:440px;max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:auto;background:#fff;color:#111;border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.45);font:400 15px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;text-align:left;transform:translateY(14px);transition:transform .25s ease}' +
-    '.dnp-in .dnp-card{transform:none}' +
+    '.dnp-card{position:fixed;right:76px;bottom:20px;z-index:2147483000;box-sizing:border-box;width:330px;max-width:calc(100vw - 24px);max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);overflow:auto;background:#fff;color:#111;border:1px solid #e3e3e3;border-radius:16px;box-shadow:0 16px 44px rgba(0,0,0,.2);font:400 13.5px/1.55 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;text-align:left;opacity:0;transform:translateY(18px);transition:opacity .35s ease,transform .35s ease}' +
+    '.dnp-card.dnp-in{opacity:1;transform:none}' +
+    '.dnp-card *{box-sizing:border-box}' +
     '.dnp-img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#eee}' +
-    '.dnp-body{padding:26px 26px 28px;border-top:4px solid #eb2323}' +
-    '.dnp-title{margin:0 36px 10px 0;font:700 26px/1.04 "Barlow Condensed","Arial Narrow",Arial,sans-serif;text-transform:uppercase;letter-spacing:.02em;color:#000}' +
+    '.dnp-body{padding:14px 18px 18px;border-top:3px solid #eb2323}' +
+    '.dnp-title{margin:0 26px 6px 0;font:700 21px/1.05 "Barlow Condensed","Arial Narrow",Arial,sans-serif;text-transform:uppercase;letter-spacing:.02em;color:#000}' +
     '.dnp-img + .dnp-body .dnp-title{margin-right:0}' +
-    '.dnp-text{margin:0 0 10px;color:#333}' +
+    '.dnp-text{margin:0 0 6px;color:#444}' +
     '.dnp-text:last-of-type{margin-bottom:0}' +
-    '.dnp-btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;margin-top:18px;padding:9px 22px;border-radius:999px;background:#eb2323;color:#fff;font:600 12.5px/1 Inter,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;transition:background-color .2s ease}' +
+    '.dnp-btn{display:inline-flex;align-items:center;justify-content:center;min-height:34px;margin-top:12px;padding:7px 16px;border-radius:999px;background:#eb2323;color:#fff;font:600 11.5px/1 Inter,system-ui,sans-serif;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;transition:background-color .2s ease}' +
     '.dnp-btn:hover,.dnp-btn:focus-visible{background:#c81a1a;color:#fff}' +
-    '.dnp-x{position:absolute;top:10px;right:10px;width:40px;height:40px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#000;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)}' +
+    '.dnp-x{position:absolute;top:8px;right:8px;width:26px;height:26px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#444;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.18)}' +
+    '.dnp-x::before{content:"";position:absolute;inset:-8px}' +
     '.dnp-x:hover{background:#000;color:#fff}' +
-    '.dnp-x svg{width:16px;height:16px}' +
+    '.dnp-x svg{width:10px;height:10px}' +
     '.dnp-card :focus-visible{outline:2px solid #eb2323;outline-offset:2px}' +
-    '.dnp-note{margin:0;padding:8px 26px;background:#111;color:#fff;font:600 12px/1.4 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase}' +
-    '@media (max-width:520px){.dnp-back{align-items:flex-end;padding:12px}.dnp-card{max-height:calc(100dvh - 24px)}.dnp-body{padding:22px 20px 24px}.dnp-title{font-size:24px}}' +
-    '@media (prefers-reduced-motion:reduce){.dnp-back,.dnp-card{transition:none}}';
+    '.dnp-note{margin:0;padding:6px 18px;background:#111;color:#fff;font:600 10.5px/1.4 Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}' +
+    '@media (max-width:600px){.dnp-card{left:12px;right:12px;bottom:12px;width:auto;max-width:none}}' +
+    '@media (prefers-reduced-motion:reduce){.dnp-card{transition:none}}';
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -45,11 +47,9 @@
       document.head.appendChild(st);
     }
 
-    var back = el('div', 'dnp-back');
-    var card = el('div', 'dnp-card');
-    card.setAttribute('role', 'dialog');
-    card.setAttribute('aria-modal', 'true');
-    card.setAttribute('aria-labelledby', 'dnp-title');
+    var card = el('aside', 'dnp-card');
+    card.setAttribute('role', 'region');
+    card.setAttribute('aria-label', 'Announcement');
 
     if (opts.preview) card.appendChild(el('p', 'dnp-note', 'Preview'));
     if (p.image) {
@@ -59,9 +59,7 @@
       card.appendChild(img);
     }
     var body = el('div', 'dnp-body');
-    var title = el('h2', 'dnp-title', p.title);
-    title.id = 'dnp-title';
-    body.appendChild(title);
+    body.appendChild(el('h2', 'dnp-title', p.title));
     String(p.text || '').split(/\n+/).forEach(function (line) {
       if (line.trim()) body.appendChild(el('p', 'dnp-text', line.trim()));
     });
@@ -77,12 +75,12 @@
 
     var x = el('button', 'dnp-x');
     x.type = 'button';
-    x.setAttribute('aria-label', 'Close');
+    x.setAttribute('aria-label', 'Close announcement');
     var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 16 16');
     svg.setAttribute('fill', 'none');
     svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-width', '2.2');
     svg.setAttribute('stroke-linecap', 'round');
     svg.setAttribute('aria-hidden', 'true');
     var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -90,35 +88,21 @@
     svg.appendChild(path);
     x.appendChild(svg);
     card.appendChild(x);
-    back.appendChild(card);
 
-    var before = document.activeElement;
     function close() {
       if (open !== close) return;
       open = null;
-      document.removeEventListener('keydown', keys, true);
-      back.remove();
-      if (before && before.focus) { try { before.focus(); } catch (e) {} }
+      document.removeEventListener('keydown', keys);
+      card.remove();
     }
-    function keys(e) {
-      if (e.key === 'Escape') { e.preventDefault(); close(); return; }
-      if (e.key !== 'Tab') return;
-      // keep the keyboard inside the pop-up while it is open
-      var f = card.querySelectorAll('a[href],button');
-      var first = f[0], last = f[f.length - 1];
-      if (!card.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
-      else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    }
+    function keys(e) { if (e.key === 'Escape') close(); }
     x.addEventListener('click', close);
-    back.addEventListener('mousedown', function (e) { if (e.target === back) close(); });
-    document.addEventListener('keydown', keys, true);
+    document.addEventListener('keydown', keys);
 
     open = close;
-    document.body.appendChild(back);
-    back.offsetWidth;                 // start the fade from the hidden state
-    back.classList.add('dnp-in');
-    x.focus();
+    document.body.appendChild(card);
+    card.offsetWidth;                 // start the slide from the hidden state
+    card.classList.add('dnp-in');
     return close;
   }
 
@@ -147,23 +131,23 @@
   var list = Array.isArray(window.DnamoPopups) ? window.DnamoPopups : [];
   if (store) { try { list = JSON.parse(store.textContent) || []; } catch (e) {} }
   var begin = function () {
-  // One pop-up per page view: the newest one this visitor has not used up.
-  var next = list.filter(function (p) { return !seen(p); })[0];
-  if (!next) return;
-  var tries = 0;
-  (function start() {
-    // On phones the site opens with a logo screen; wait for it to clear first.
-    var splash = document.querySelector('.splash');
-    if (splash && !splash.classList.contains('done') && getComputedStyle(splash).display !== 'none' && tries++ < 30) {
-      setTimeout(start, 200);
-      return;
-    }
-    setTimeout(function () {
-      if (seen(next)) return;           // shown meanwhile in another tab
-      mark(next);
-      show(next);
-    }, Math.max(0, Number(next.delay) || 0) * 1000 + (tries ? 700 : 400));
-  })();
+    // One pop-up per page view: the newest one this visitor has not used up.
+    var next = list.filter(function (p) { return !seen(p); })[0];
+    if (!next) return;
+    var tries = 0;
+    (function start() {
+      // On phones the site opens with a logo screen; wait for it to clear first.
+      var splash = document.querySelector('.splash');
+      if (splash && !splash.classList.contains('done') && getComputedStyle(splash).display !== 'none' && tries++ < 30) {
+        setTimeout(start, 200);
+        return;
+      }
+      setTimeout(function () {
+        if (seen(next)) return;           // shown meanwhile in another tab
+        mark(next);
+        show(next);
+      }, Math.max(0, Number(next.delay) || 0) * 1000 + (tries ? 700 : 400));
+    })();
   };
   if (document.body) begin(); else document.addEventListener('DOMContentLoaded', begin);
 })();

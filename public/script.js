@@ -87,6 +87,21 @@
     });
   }
 
+  /* Home hero slideshow: the photos take turns, cross-fading. Works for any number of photos.
+     Without motion (or with a single photo) the first one simply stays. */
+  var heroMedia = document.querySelector('.heromedia');
+  var slides = heroMedia ? heroMedia.querySelectorAll('img[data-slot], img[data-extra]') : [];
+  if (slides.length > 1 && !reduceMotion) {
+    var slideNow = 0;
+    slides[0].classList.add('on');
+    heroMedia.classList.add('cycling');
+    setInterval(function () {
+      slides[slideNow].classList.remove('on');
+      slideNow = (slideNow + 1) % slides.length;
+      slides[slideNow].classList.add('on');
+    }, 6500);
+  }
+
   /* Home hero: the background video stays still for visitors who ask for reduced motion */
   var heroVideo = document.querySelector('.heromedia video');
   if (heroVideo && reduceMotion) {

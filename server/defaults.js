@@ -58,6 +58,8 @@ export const SLOTS = [
   { id: 'init-club', group: 'Initiative pages', label: 'Club House & Field', src: 'hero-4.jpg', max: 2000 },
 ];
 
+export const MAX_EXTRA_SLIDES = 8;
+
 // --- Validation -----------------------------------------------------------
 // Each cleaner returns a tidy copy of what was sent, or throws an Error whose
 // message is shown to the admin.
@@ -94,6 +96,10 @@ const CLEAN = {
       if (!/^\/media\/[0-9a-f]{24}$/.test(val)) throw new Error('That photo is not one uploaded here.');
       out[slot.id] = val;
     }
+    // Photos added to the home slideshow, shown after the four built-in slides
+    const extra = [...new Set(list(v.extra || [], MAX_EXTRA_SLIDES, 'Extra slideshow photos'))];
+    for (const val of extra) if (!/^\/media\/[0-9a-f]{24}$/.test(val)) throw new Error('That photo is not one uploaded here.');
+    if (extra.length) out.extra = extra;
     return out;
   },
   ...PAGE_CLEAN,

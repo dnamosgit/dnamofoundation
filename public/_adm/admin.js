@@ -600,6 +600,7 @@
       return f;
     };
     var general = fund(v.general), club = fund(v.club);
+    var payUrl = input('Donation form address', v.payUrl, { placeholder: 'https://' }, 'For example your Zeffy donation form.');
     var giftFields = [
       { key: 'title', label: 'Title' },
       { key: 'desc', label: 'Description' },
@@ -610,13 +611,15 @@
     var schol = itemList(v.schol, { fixed: true, fields: giftFields });
     var coach = itemList(v.coach, { fixed: true, fields: giftFields });
     return [
+      h('section', { class: 'card' }, h('h2', {}, 'Payment page'),
+        h('p', { class: 'muted' }, 'Where the "Continue to payment" button on the Donate page takes people. It opens in a new tab.'), payUrl),
       h('section', { class: 'card' }, h('h2', {}, 'Where it is needed most'), general.el),
       h('section', { class: 'card' }, h('h2', {}, 'Club House & Field fund'), club.el),
       h('section', { class: 'card' }, h('h2', {}, 'Scholarship gifts'),
         h('p', { class: 'muted' }, 'Shown on the Scholarships page and on the Donate page.'), schol.el),
       h('section', { class: 'card' }, h('h2', {}, 'Coach gifts'),
         h('p', { class: 'muted' }, 'Shown on the Coach page and on the Donate page. Visitors can also enter another amount.'), coach.el,
-        actions('giving', function () { return { general: general.read(), club: club.read(), schol: schol.read(), coach: coach.read() }; }, pages))
+        actions('giving', function () { return { payUrl: payUrl.input.value, general: general.read(), club: club.read(), schol: schol.read(), coach: coach.read() }; }, pages))
     ];
   }
 
@@ -706,7 +709,7 @@
     });
     paint(
       h('h1', {}, 'Pop-ups'),
-      h('p', { class: 'lead' }, 'Announcements that open over a page, so visitors see what is coming. A visitor sees one pop-up at a time: the newest that is live.'),
+      h('p', { class: 'lead' }, 'Small announcements that slide in at the bottom corner of a page, so visitors see what is coming without being interrupted. A visitor sees one at a time: the newest that is live.'),
       h('div', { class: 'actions flat' },
         h('button', { class: 'btn', type: 'button', onclick: function () { popupEdit(null); } }, 'New pop-up'), status),
       rows.length ? h('div', { class: 'pops' }, rows)
@@ -1109,9 +1112,61 @@
       h('h1', {}, 'Photos'),
       h('p', { class: 'lead' }, 'Replace any photo on the site. Large photos are shrunk automatically; a change is live as soon as it uploads.'),
       groups.map(function (g) {
+        var show = g.name === 'Home slideshow';
         return h('section', { class: 'card' }, h('h2', {}, g.name),
-          h('div', { class: 'photos' }, g.slots.map(function (s) { return photoCard(s, photos); })));
+          show ? h('p', { class: 'muted' }, 'The photos behind the headline on the home page. They fade from one to the next, in this order.') : null,
+          h('div', { class: 'photos' }, g.slots.map(function (s) { return photoCard(s, photos); }), show ? extraSlides() : null));
       }));
+  }
+
+  /* Photos added to the home slideshow, after the built-in four: each can be removed, and one more can be added */
+  var MAX_EXTRA = 8;
+  function extraSlides() {
+    var extra = data.content.photos.extra || [];
+    var saveExtra = function (list, status) {
+      var next = Object.assign({}, data.content.photos);
+      if (list.length) next.extra = list; else delete next.extra;
+      return save('photos', next, status).then(photos);
+    };
+    var cards = extra.map(function (url, i) {
+      var status = h('span', { class: 'status', role: 'status' });
+      return h('div', { class: 'photo' },
+        h('div', { class: 'thumb' }, h('img', { src: url, alt: '', loading: 'lazy' })),
+        h('div', { class: 'photo-body' },
+          h('strong', {}, 'Slide ' + (i + 5)),
+          h('span', { class: 'muted small' }, 'Added'),
+          h('div', { class: 'stack' },
+            h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+              if (!window.confirm('Remove this photo from the slideshow?')) return;
+              saveExtra(extra.filter(function (u, j) { return j !== i; }), status).catch(function () {});
+            } }, 'Remove')),
+          status));
+    });
+    if (extra.length < MAX_EXTRA) {
+      var addStatus = h('span', { class: 'status', role: 'status' });
+      var file = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
+        var f = file.files[0];
+        if (!f) return;
+        addStatus.className = 'status';
+        addStatus.textContent = 'Uploading...';
+        prepare(f, 2000).then(function (blob) {
+          return api('POST', '/sites/' + site.id + '/media', blob, { 'X-File-Name': encodeURIComponent(f.name) });
+        }).then(function (m) {
+          return saveExtra(extra.concat([m.url]), addStatus);
+        }).catch(function (err) {
+          addStatus.className = 'status bad';
+          addStatus.textContent = err.message;
+          file.value = '';
+        });
+      } });
+      cards.push(h('div', { class: 'photo add' },
+        h('button', { class: 'add-photo', type: 'button', onclick: function () { file.click(); } },
+          h('span', { class: 'plus', 'aria-hidden': 'true' }, '+'), 'Add a photo'),
+        h('div', { class: 'photo-body' },
+          h('span', { class: 'muted small' }, extra.length ? (MAX_EXTRA - extra.length) + ' more can be added.' : 'Up to ' + MAX_EXTRA + ' extra photos. A wide photo works best.'),
+          addStatus, file)));
+    }
+    return cards;
   }
 
   /* ---------- Start ---------- */

@@ -169,6 +169,11 @@ export function render(response, saved, pathname, popups = []) {
   if (saved.home && saved.home.video) {
     const poster = (photos && photos.hero1) || 'hero-1.jpg';
     rw.on('.heromedia', { element(el) { el.setInnerContent(videoHtml(saved.home.video, poster), { html: true }); } });
+  } else if (photos && photos.extra && photos.extra.length) {
+    // Photos added to the slideshow follow the built-in slides
+    rw.on('.heromedia', { element(el) {
+      el.append(photos.extra.map((u) => `<img data-extra src="${esc(u)}" alt="" loading="lazy">`).join(''), { html: true });
+    } });
   }
 
   // Page content: single texts, paragraphs, buttons, and rebuilt lists
@@ -192,6 +197,7 @@ export function render(response, saved, pathname, popups = []) {
 
   // Donate page: amounts and gift names follow the saved giving options
   if (giving) {
+    if (giving.payUrl) rw.on('#pay-link', { element(el) { el.setAttribute('href', giving.payUrl); } });
     const funds = { general: giving.general, club: giving.club };
     rw.on('[data-fund]', { element(el) {
       const f = funds[el.getAttribute('data-fund')];

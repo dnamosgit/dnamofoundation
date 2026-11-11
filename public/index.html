@@ -48,7 +48,7 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 <main>
 <section class="dark">
   <div class="hero2">
-    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css). A video link set in the admin replaces it. -->
+    <!-- Hero slideshow: the photos cross-fade in turn (script.js). More can be added in the admin; a video link there replaces them. -->
     <div class="heromedia" role="img" aria-label="Dnamo players and coaches training on pitches in San Francisco">
       <img data-slot="hero1" src="hero-1.jpg" alt="" fetchpriority="high">
       <img data-slot="hero2" src="hero-2.jpg" alt="">
@@ -68,14 +68,18 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
 <!-- Decorative ticker of the values named in the mission text; hidden from screen readers -->
 <div class="marquee" aria-hidden="true"><div class="mq-track" data-list="home.values"><span>Teamwork</span><span>Perseverance</span><span>Sportsmanship</span><span>Technical mastery</span><span>Tactical awareness</span><span>Love for the game</span><span>Confidence</span><span>Leadership</span><span>Teamwork</span><span>Perseverance</span><span>Sportsmanship</span><span>Technical mastery</span><span>Tactical awareness</span><span>Love for the game</span><span>Confidence</span><span>Leadership</span></div></div>
 
-<section class="w split pad-l">
-  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2>
+<section class="w pad-l">
+  <p class="eyebrow" data-t="home.missionEyebrow">Our mission</p>
+  <!-- The label sits above both columns so the heading and the text start level -->
+  <div class="split">
+  <div><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2>
     <img class="mission-img" data-slot="mission" src="hero-3.jpg" alt="Dnamo players and a coach at training" width="2000" height="1125" loading="lazy"></div>
   <div class="prose" data-p="home.mission">
     <p>Dnamo Football Academy Foundation, founded in 2025, is a nonprofit organization dedicated to providing youth of all backgrounds with access to high-quality soccer training, development, and facilities. We are an offshoot of Dnamo Football Club.</p>
     <p>Our mission is to deliver soccer excellence on and off the pitch by developing not only skilled athletes but also disciplined, respectful, and motivated individuals. Soccer excellence means fostering technical mastery, tactical awareness, and a genuine love for the game while promoting teamwork, perseverance, and sportsmanship.</p>
     <p>We are committed to breaking down financial and social barriers by offering affordable programs, scholarships, and community-based initiatives. Through creating access to quality training environments and fields, we give our players a safe and consistent environment where they can connect and grow as individuals.</p>
     <p>Beyond athletic training, we emphasize academic support and leadership development to help young athletes build confidence, pursue higher education, and make a lasting positive impact in their communities.</p>
+  </div>
   </div>
 </section>
 

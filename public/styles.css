@@ -166,9 +166,12 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 /* A video link set in the admin replaces the slideshow. A YouTube or Vimeo player is sized to cover the area. */
 .heromedia video{position:absolute;inset:0}
 .heromedia iframe{position:absolute;top:50%;left:50%;width:max(100%,177.78vh);height:max(100%,56.25vw);transform:translate(-50%,-50%);border:0;pointer-events:none}
-/* Slideshow: the photos are stacked and cross-fade. Without motion only the first one shows. */
-.heromedia img{position:absolute;inset:0;opacity:0}
+/* Slideshow: the photos are stacked and cross-fade (any number of them). Without motion only the first one shows. */
+.heromedia img{position:absolute;inset:0;opacity:0;transition:opacity 1.6s ease,transform 0s 1.6s}
 .heromedia img:first-child{opacity:1}
+/* script.js adds .cycling and moves .on from photo to photo */
+.heromedia.cycling img{opacity:0}
+.heromedia.cycling img.on{opacity:1}
 .heromedia img:nth-child(1){object-position:72% 50%}
 .heromedia img:nth-child(2){object-position:42% 50%}
 .heromedia img:nth-child(3){object-position:50% 50%}
@@ -212,13 +215,16 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 .mq-track span::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);margin:0 28px}
 
 /* Board */
-.profile{position:relative;margin-top:28px;background:var(--slab);color:var(--fg);padding:30px}
-.profile h2.h{padding-right:56px}
-.pclose{position:absolute;top:20px;right:20px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;background:transparent;color:var(--fg);box-shadow:inset 0 0 0 1.5px var(--line-strong);cursor:pointer;transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
-.pclose:hover{background:var(--red);color:#fff;box-shadow:none}
-.profile h2.h{font-size:30px}
-.profile .prole{margin:4px 0 16px;color:var(--eyebrow);font-weight:600}
-.profile .pbio{margin:0 0 20px;max-width:760px;opacity:.88;white-space:pre-line}
+.profile{position:relative;max-width:700px;margin:28px auto 0;background:var(--card);color:var(--fg);padding:24px 28px 26px;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.profile h2.h{padding-right:40px}
+.pclose{position:absolute;top:14px;right:14px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;padding:0;border:0;border-radius:50%;background:var(--soft);color:var(--muted);cursor:pointer;transition:background-color .2s ease,color .2s ease,box-shadow .2s ease}
+.pclose svg{width:11px;height:11px}
+.pclose:hover{background:var(--red);color:#fff}
+/* A larger invisible area keeps the small button easy to tap */
+.pclose::before{content:"";position:absolute;inset:-8px}
+.profile h2.h{font-size:25px}
+.profile .prole{margin:3px 0 14px;color:var(--eyebrow);font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.profile .pbio{margin:0;font-size:14.5px;line-height:1.7;opacity:.9;white-space:pre-line}
 .cta-row{margin-top:40px;background:var(--soft);padding:18px 26px;display:flex;flex-wrap:wrap;gap:16px 32px;align-items:center;justify-content:space-between}
 .cta-row p{margin:0;font-size:15.5px}
 
@@ -249,7 +255,8 @@ figure.card::before{content:"\201C";display:block;height:44px;font:700 96px/.85 
 .reach .row>:last-child{min-width:0;overflow-wrap:anywhere}
 .reach .note{font-size:13px;text-align:center}
 .reach .btn{display:flex;width:fit-content;margin:0 auto}
-.sum .fine{margin:0;font-size:13px;color:var(--muted)}
+.sum .fine{margin:0;font-size:12.5px;color:var(--muted)}
+.sum .pay-note{margin-bottom:12px}
 .right{text-align:right}
 .bold{font-weight:700;font-variant-numeric:tabular-nums}
 @media (min-width:901px){.sum{position:sticky;top:100px}}
@@ -313,11 +320,8 @@ html{scroll-behavior:smooth}
 .herotx>:nth-child(4){animation-delay:.24s}
 @keyframes zoom{from{transform:scale(1)}to{transform:scale(1.1)}}
 @keyframes cue{from{transform:translateY(-100%)}to{transform:translateY(250%)}}
-@keyframes slide{0%{opacity:0;transform:scale(1)}4%{opacity:1}25%{opacity:1}29%{opacity:0;transform:scale(1.1)}100%{opacity:0;transform:scale(1.1)}}
-.heromedia img{animation:slide 28s linear infinite}
-.heromedia img:nth-child(2){animation-delay:7s}
-.heromedia img:nth-child(3){animation-delay:14s}
-.heromedia img:nth-child(4){animation-delay:21s}
+/* The photo on show drifts slowly closer */
+.heromedia.cycling img.on{transform:scale(1.08);transition:opacity 1.6s ease,transform 9s linear}
 .heroph{animation:zoom 24s ease-in-out infinite alternate}
 .herocue::after{animation:cue 2.2s ease-in-out infinite}
 .mq-track{animation:mq 48s linear infinite}
@@ -424,4 +428,5 @@ h2.h,.band h2.h{font-size:28px}
 .nav.burger{padding:8px 14px}
 .card{padding:20px}
 .sum,.profile{padding:20px}
+.profile{border-radius:14px}
 }

@@ -86,8 +86,9 @@ try{if(sessionStorage.getItem('dnamoSplash'))document.documentElement.className=
       <div class="row"><span>Fund</span><span class="right" id="sum-fund">Where it is needed most</span></div>
       <div class="row" id="sum-gift-row" hidden><span>Gift</span><span class="right" id="sum-gift"></span></div>
       <div class="row"><span>Amount</span><span class="bold" id="sum-amount">$50</span></div>
-      <!-- TODO: no payment provider yet. Point this at Wix donations, PayPal or Stripe. -->
-      <a class="btn block" href="#">Continue to payment</a>
+      <!-- Payment happens on the Zeffy donation form. The address can be changed in the admin (Giving options). -->
+      <a class="btn block" id="pay-link" href="https://www.zeffy.com/en-US/donation-form/dnamo-football-academy-fundraiser" target="_blank" rel="noopener">Continue to payment</a>
+      <p class="fine pay-note">You will finish your gift on Zeffy, our secure donation page. Please choose the same amount there.</p>
       <p class="fine">The Dnamo Football Academy Foundation has a nonprofit tax exempt status with the IRS (EIN 39-2786889).</p>
     </div>
   </div>

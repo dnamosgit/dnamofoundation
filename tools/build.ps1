@@ -279,7 +279,7 @@ foreach ($v in @('Teamwork','Perseverance','Sportsmanship','Technical mastery','
 $main = @"
 <section class="dark">
   <div class="hero2">
-    <!-- Hero slideshow: four photos that cross-fade (see .heromedia in styles.css). A video link set in the admin replaces it. -->
+    <!-- Hero slideshow: the photos cross-fade in turn (script.js). More can be added in the admin; a video link there replaces them. -->
     <div class="heromedia" role="img" aria-label="Dnamo players and coaches training on pitches in San Francisco">
       <img data-slot="hero1" src="hero-1.jpg" alt="" fetchpriority="high">
       <img data-slot="hero2" src="hero-2.jpg" alt="">
@@ -299,14 +299,18 @@ $main = @"
 <!-- Decorative ticker of the values named in the mission text; hidden from screen readers -->
 <div class="marquee" aria-hidden="true"><div class="mq-track" data-list="home.values">$mq$mq</div></div>
 
-<section class="w split pad-l">
-  <div><p class="eyebrow" data-t="home.missionEyebrow">Our mission</p><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2>
+<section class="w pad-l">
+  <p class="eyebrow" data-t="home.missionEyebrow">Our mission</p>
+  <!-- The label sits above both columns so the heading and the text start level -->
+  <div class="split">
+  <div><h2 class="h" data-t="home.missionTitle">Soccer excellence, on and off the pitch.</h2>
     <img class="mission-img" data-slot="mission" src="hero-3.jpg" alt="Dnamo players and a coach at training" width="2000" height="1125" loading="lazy"></div>
   <div class="prose" data-p="home.mission">
     <p>Dnamo Football Academy Foundation, founded in 2025, is a nonprofit organization dedicated to providing youth of all backgrounds with access to high-quality soccer training, development, and facilities. We are an offshoot of Dnamo Football Club.</p>
     <p>Our mission is to deliver soccer excellence on and off the pitch by developing not only skilled athletes but also disciplined, respectful, and motivated individuals. Soccer excellence means fostering technical mastery, tactical awareness, and a genuine love for the game while promoting teamwork, perseverance, and sportsmanship.</p>
     <p>We are committed to breaking down financial and social barriers by offering affordable programs, scholarships, and community-based initiatives. Through creating access to quality training environments and fields, we give our players a safe and consistent environment where they can connect and grow as individuals.</p>
     <p>Beyond athletic training, we emphasize academic support and leadership development to help young athletes build confidence, pursue higher education, and make a lasting positive impact in their communities.</p>
+  </div>
   </div>
 </section>
 
@@ -509,8 +513,9 @@ $main = @'
       <div class="row"><span>Fund</span><span class="right" id="sum-fund">Where it is needed most</span></div>
       <div class="row" id="sum-gift-row" hidden><span>Gift</span><span class="right" id="sum-gift"></span></div>
       <div class="row"><span>Amount</span><span class="bold" id="sum-amount">$50</span></div>
-      <!-- TODO: no payment provider yet. Point this at Wix donations, PayPal or Stripe. -->
-      <a class="btn block" href="#">Continue to payment</a>
+      <!-- Payment happens on the Zeffy donation form. The address can be changed in the admin (Giving options). -->
+      <a class="btn block" id="pay-link" href="https://www.zeffy.com/en-US/donation-form/dnamo-football-academy-fundraiser" target="_blank" rel="noopener">Continue to payment</a>
+      <p class="fine pay-note">You will finish your gift on Zeffy, our secure donation page. Please choose the same amount there.</p>
       <p class="fine">{{LEGAL}}</p>
     </div>
   </div>

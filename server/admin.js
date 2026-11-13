@@ -6,7 +6,7 @@ import {
 } from './auth.js';
 import { MIN_PASSWORD, accountRoutes, checkNewPassword, cleanEmail, joinRoutes, validEmail } from './accounts.js';
 import { saveContent, saveMedia, savedContent } from './content.js';
-import { DEFAULTS, KEYS, PAGES, SLOTS } from './defaults.js';
+import { templateFor } from './templates.js';
 import { SITE_COLUMNS, siteRoutes } from './sites.js';
 import { FREQUENCIES, POPUP_PAGES, createPopup, deletePopup, listPopups, updatePopup } from './popups.js';
 
@@ -137,22 +137,24 @@ export async function handleAdmin(context, base, sub) {
     // Per-site routes: /api/sites/<id>/...
     const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media|popups)(?:\/([a-z0-9]+))?$/);
     if (!m) return fail(404, 'Not found.');
-    const site = await env.DB.prepare('SELECT id, name, kind FROM sites WHERE id = ?').bind(Number(m[1])).first();
+    const site = await env.DB.prepare('SELECT id, name, kind, template FROM sites WHERE id = ?').bind(Number(m[1])).first();
     if (!site) return fail(404, 'That site does not exist.');
     // A site hosted elsewhere has pop-ups (and their photos) only, shown on all its pages.
+    // A one-page site shows its pop-ups on that page.
     const full = site.kind === 'full';
+    const tpl = templateFor(site.template);
     if (!full && m[2] === 'content') return fail(400, 'This site is hosted elsewhere, so only its pop-ups are managed here.');
-    const popup = full || !body.popup || typeof body.popup !== 'object' ? body.popup : { ...body.popup, pages: 'all' };
+    const popup = (full && !tpl.onePage) || !body.popup || typeof body.popup !== 'object' ? body.popup : { ...body.popup, pages: 'all' };
 
     // Everything the editing screens need: current values, which are customised, and the photo slots
     if (method === 'GET' && m[2] === 'content' && !m[3]) {
-      const saved = await savedContent(env, site.id);
-      return json({ content: { ...DEFAULTS, ...saved }, customised: Object.keys(saved), slots: SLOTS, pages: PAGES });
+      const saved = await savedContent(env, site.id, tpl);
+      return json({ content: { ...tpl.DEFAULTS, ...saved }, customised: Object.keys(saved), slots: tpl.SLOTS, pages: tpl.PAGES });
     }
     // Save one section. A value of null puts the section back to the original.
-    if (method === 'PUT' && m[2] === 'content' && KEYS.includes(m[3])) {
+    if (method === 'PUT' && m[2] === 'content' && tpl.KEYS.includes(m[3])) {
       if (!('value' in body)) return fail(400, 'Invalid request.');
-      return json({ value: await saveContent(env, site.id, m[3], body.value, user.id) });
+      return json({ value: await saveContent(env, site.id, m[3], body.value, user.id, tpl) });
     }
     if (upload && m[2] === 'media' && !m[3]) {
       return json(await saveMedia(env, site.id, request, user.id));

@@ -1,35 +1,46 @@
 // Reading and saving a site's editable content, and its uploaded photos.
-import { DEFAULTS, KEYS, clean } from './defaults.js';
+import { clean, templateFor } from './templates.js';
 import { now } from './auth.js';
 
 const MAX_UPLOAD = 1500000;   // bytes; the database allows up to 2 MB per row
 
-// Which site a request is for: matched by web address, otherwise the first site.
-export async function siteForHost(env, hostname) {
-  const sites = (await env.DB.prepare("SELECT id, hostnames FROM sites WHERE kind = 'full' ORDER BY id").all()).results;
+// Which site a request is for, as { id, tpl, ownHost }.
+// A site that is not the main one is reached under its own path (for example /fc/)
+// on any address, or at the top of a web address that belongs to it (ownHost).
+// Otherwise the site is matched by web address, falling back to the first site.
+export async function siteFor(env, hostname, pathname) {
+  const sites = (await env.DB.prepare("SELECT id, hostnames, template FROM sites WHERE kind = 'full' ORDER BY id").all()).results;
+  if (!sites.length) return null;
+  const under = sites.find((s) => {
+    const p = templateFor(s.template).path;
+    return p !== '/' && (pathname + '/').startsWith(p);
+  });
+  if (under) return { id: under.id, tpl: templateFor(under.template), ownHost: false };
   const host = hostname.toLowerCase();
   const hit = sites.find((s) => s.hostnames.split(',').map((h) => h.trim().toLowerCase()).includes(host));
-  return (hit || sites[0] || {}).id || null;
+  const site = hit || sites.find((s) => templateFor(s.template).path === '/') || sites[0];
+  const tpl = templateFor(site.template);
+  return { id: site.id, tpl, ownHost: tpl.path !== '/' };
 }
 
 // Only what has been saved, as { key: value }. Unsaved keys are absent.
-export async function savedContent(env, siteId) {
+export async function savedContent(env, siteId, tpl) {
   const rows = (await env.DB.prepare('SELECT key, value FROM content WHERE site_id = ?').bind(siteId).all()).results;
   const out = {};
   for (const r of rows) {
-    if (!KEYS.includes(r.key)) continue;
+    if (!tpl.KEYS.includes(r.key)) continue;
     try { out[r.key] = JSON.parse(r.value); } catch (e) { /* ignore a damaged row; the default shows */ }
   }
   return out;
 }
 
-export async function saveContent(env, siteId, key, value, userId) {
-  if (!KEYS.includes(key)) throw new Error('Unknown setting.');
+export async function saveContent(env, siteId, key, value, userId, tpl) {
+  if (!tpl.KEYS.includes(key)) throw new Error('Unknown setting.');
   if (value === null) {           // back to the built-in original
     await env.DB.prepare('DELETE FROM content WHERE site_id = ? AND key = ?').bind(siteId, key).run();
-    return DEFAULTS[key];
+    return tpl.DEFAULTS[key];
   }
-  const tidy = clean(key, value);
+  const tidy = clean(tpl, key, value);
   await env.DB.prepare(
     `INSERT INTO content (site_id, key, value, updated_at, updated_by) VALUES (?, ?, ?, ?, ?)
      ON CONFLICT (site_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at, updated_by = excluded.updated_by`)

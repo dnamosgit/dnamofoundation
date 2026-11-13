@@ -32,7 +32,7 @@ export function href(v, what, required = true) {
   }
   if (s.length > 500) throw new Error(`${what}: that link is too long.`);
   const ok = /^https?:\/\/[^\s<>"']+$/i.test(s) || /^mailto:[^\s<>"']+$/i.test(s) || /^tel:[+\d\s().-]+$/i.test(s)
-    || /^\/?[A-Za-z0-9][A-Za-z0-9._\/-]*(\?[^\s<>"'#]*)?(#[A-Za-z0-9_-]*)?$/.test(s) || /^#[A-Za-z0-9_-]*$/.test(s) || s === '/';
+    || /^\/?[A-Za-z0-9][A-Za-z0-9._\/-]*(\?[^\s<>"'#]*)?(#[A-Za-z0-9_-]*)?$/.test(s) || /^#[A-Za-z0-9_-]*$/.test(s) || s === '/' || s === './';
   if (!ok) throw new Error(`${what}: "${s}" is not a link we can use. Use a page like board.html or a full https:// address.`);
   return s;
 }

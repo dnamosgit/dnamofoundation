@@ -397,7 +397,7 @@ $(Subnav $i.file)
     <h1 class="h init-title" data-t="inits.$($i.id).title">$($i.title)</h1>
     <p class="init-lead" data-t="inits.$($i.id).lead">$($i.lead)</p>
 $($intro[$i.id].TrimEnd())
-    <a class="btn" href="donate.html?fund=$($i.id)">Donate to <span data-t="inits.$($i.id).title">$($i.title)</span></a>
+    <a class="btn" href="donate.html?fund=$($i.id)"><span>Donate to <span data-t="inits.$($i.id).title">$($i.title)</span></span></a>
   </div>
   <img class="shot" data-slot="init-$($i.id)" src="$($i.photo)" alt="$($i.alt)" width="2000" height="1125" loading="lazy">
 </section>

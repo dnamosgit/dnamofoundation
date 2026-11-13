@@ -96,17 +96,20 @@
 
   var SECTIONS = [
     { id: 'overview', label: 'Overview' },
-    { id: 'identity', label: 'Site settings', full: true },
-    { id: 'chrome', label: 'Header & footer', full: true },
-    { id: 'photos', label: 'Photos', full: true },
-    { id: 'pages', label: 'Page content', full: true },
-    { id: 'popups', label: 'Pop-ups' },
-    { id: 'sites', label: 'Sites', owner: true },
-    { id: 'admins', label: 'Admins', owner: true },
-    { id: 'account', label: 'My account' }
+    { id: 'pages', label: 'Page content', full: true, group: 'Website' },
+    { id: 'photos', label: 'Photos', full: true, group: 'Website' },
+    { id: 'chrome', label: 'Header & footer', full: true, group: 'Website' },
+    { id: 'identity', label: 'Site settings', full: true, group: 'Website' },
+    { id: 'popups', label: 'Pop-ups', group: 'Announcements' },
+    { id: 'sites', label: 'Sites', owner: true, group: 'Manage' },
+    { id: 'admins', label: 'Admins', owner: true, group: 'Manage' },
+    { id: 'account', label: 'My account', group: 'Manage' }
   ];
   /* A site hosted here can be edited in full; one hosted elsewhere has pop-ups only. Sites and Admins are for the owner. */
   var isFull = function () { return site.kind === 'full'; };
+  /* The Dnamo Football Club site: one page, reached at /fc/ until it has its own address */
+  var isClub = function () { return isFull() && site.template === 'club'; };
+  var sitePath = function (s) { return s.template === 'club' ? '/fc/' : '/'; };
   var allowed = function (s) { return (!s.full || isFull()) && (!s.owner || session.user.role === 'owner'); };
 
   var session = null;   // { user, sites }
@@ -130,16 +133,19 @@
     });
 
     var top = h('header', { class: 'top' },
-      h('div', { class: 'brand' }, 'Dnamo ', h('b', {}, 'Admin')),
+      h('div', { class: 'brand' }, h('img', { src: '/logo.png', alt: '', width: 24, height: 24 }), h('span', {}, 'Dnamo ', h('b', {}, 'Admin'))),
       h('label', { class: 'pick' }, 'Site', select),
-      h('a', { class: 'btn ghost small', href: isFull() ? '/' : 'https://' + site.hostnames.split(',')[0], target: '_blank', rel: 'noopener' }, 'View site'),
+      h('a', { class: 'btn ghost small', href: isFull() ? sitePath(site) : 'https://' + site.hostnames.split(',')[0], target: '_blank', rel: 'noopener' }, 'View site'),
       h('span', { class: 'who' }, state.user.name),
       h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
         api('POST', '/logout', {}).then(load, load);
       } }, 'Sign out'));
 
     var side = h('nav', { class: 'side', 'aria-label': 'Admin sections' });
+    var group = '';
     SECTIONS.filter(allowed).forEach(function (s) {
+      if (s.group && s.group !== group) side.appendChild(h('p', { class: 'side-label' }, s.group));
+      group = s.group || '';
       side.appendChild(h('button', { type: 'button', 'data-section': s.id, onclick: function () { go(s.id); } }, s.label));
     });
 
@@ -188,7 +194,7 @@
   }
 
   var isCustom = function (key) { return data.customised.indexOf(key) > -1; };
-  /* Keep the red "changed" dots on the Page content tabs in step with what is saved */
+  /* Keep the "changed" dots on the Page content tabs in step with what is saved */
   function marks() {
     Array.prototype.forEach.call(document.querySelectorAll('.tabs button[data-tab]'), function (b) {
       var dot = b.querySelector('.dot');
@@ -223,7 +229,7 @@
   function actions(key, read, redraw) {
     var status = h('span', { class: 'status', role: 'status' });
     var saveBtn = h('button', { class: 'btn', type: 'button', onclick: function () {
-      // Once a section is saved it can be reset, and its tab gets the red dot
+      // Once a section is saved it can be reset, and its tab gets the dot
       save(key, read(), status, saveBtn).then(function () { reset.hidden = false; marks(); }, function () {});
     } }, 'Save changes');
     var reset = h('button', { class: 'btn ghost', type: 'button', hidden: !isCustom(key), onclick: function () {
@@ -495,6 +501,12 @@
   var pageTab = 'home';
 
   function pages() {
+    if (isClub()) {
+      paint(h('h1', {}, 'Page content'),
+        h('p', { class: 'lead' }, 'The words on the ' + site.name + ' home page.'),
+        pageClub());
+      return;
+    }
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, PAGE_TABS.map(function (t) {
       return h('button', { type: 'button', role: 'tab', 'data-tab': t.id, 'aria-selected': String(t.id === pageTab), onclick: function () {
         pageTab = t.id; pages();
@@ -502,7 +514,7 @@
     }));
     var body = ({ home: pageHome, board: pageBoard, inits: pageInits, giving: pageGiving, testimonials: pageTestimonials })[pageTab]();
     paint(h('h1', {}, 'Page content'),
-      h('p', { class: 'lead' }, 'The words on each page. A red dot marks a page you have changed.'),
+      h('p', { class: 'lead' }, 'The words on each page. A blue dot marks a page you have changed.'),
       tabs, body);
   }
 
@@ -532,6 +544,55 @@
             button1: { label: b1l.input.value, href: b1h.input.value }, button2: { label: b2l.input.value, href: b2h.input.value },
             values: values.read(), missionEyebrow: mEye.input.value, missionTitle: mTitle.input.value, mission: mission.read(),
             initsEyebrow: iEye.input.value, initsTitle: iTitle.input.value };
+        }, pages))
+    ];
+  }
+
+  /* The Dnamo Football Club home page */
+  function pageClub() {
+    var v = data.content.home;
+    var pair = function (label, b) {
+      var l = input(label + ' label', b.label), r = input(label + ' link', b.href, { list: 'pages', placeholder: 'https://' });
+      return { el: h('div', { class: 'two' }, l, r), read: function () { return { label: l.input.value, href: r.input.value }; } };
+    };
+    var kicker = input('Small line above the headline', v.kicker);
+    var headline = input('Headline', v.headline);
+    var intro = area('Text under the headline', v.intro, 2);
+    var b1 = pair('First button', v.button1), b2 = pair('Second button', v.button2);
+    var video = input('Background video link (optional)', v.video, { placeholder: 'https://' },
+      'Paste a YouTube or Vimeo link, or a link to an .mp4 file. It plays silently on a loop behind the headline, in place of the photo slideshow. Leave empty to show the photos.');
+    var ticker = lines('Scrolling words', v.ticker, 12, 'One per line. They scroll across the page under the photo.');
+    var show = h('input', { type: 'checkbox', checked: v.eventShow !== false });
+    var eEye = input('Small label', v.eventEyebrow), eTitle = input('Event name', v.eventTitle);
+    var eText = paras('Text', v.eventText, 6);
+    var eBtn = pair('Button', v.eventButton);
+    var lEye = input('Small label', v.levelsEyebrow), lTitle = input('Heading', v.levelsTitle);
+    var lIntro = paras('Text under the heading', v.levelsIntro, 5);
+    var levels = itemList(v.levels, { addLabel: 'Add a level', max: 8, blank: { title: '', text: '', href: 'https://www.dnamofc.com/programs' }, fields: [
+      { key: 'title', label: 'Name' },
+      { key: 'text', label: 'Text', type: 'area', rows: 3 },
+      { key: 'href', label: 'Link', hint: 'Where "Explore more" goes.' }
+    ] });
+    var jTitle = input('Heading', v.joinTitle);
+    var jText = area('Text', v.joinText, 3);
+    var jBtn = pair('Button', v.joinButton);
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Top of the page'), kicker, headline, intro, b1.el, b2.el, video,
+        h('p', { class: 'muted small' }, 'The slideshow photos and the event photo are changed under Photos. Leave a button label empty to hide that button.')),
+      h('section', { class: 'card' }, h('h2', {}, 'Scrolling words'), ticker),
+      h('section', { class: 'card' }, h('h2', {}, 'Upcoming event'),
+        h('p', { class: 'muted' }, 'The camp, tryout or event you want families to see first.'),
+        h('div', { class: 'two' }, eEye, eTitle), eText, eBtn.el,
+        h('label', { class: 'check switch' }, show, 'Show the upcoming event on the page')),
+      h('section', { class: 'card' }, h('h2', {}, 'Club levels'), h('div', { class: 'two' }, lEye, lTitle), lIntro,
+        h('h3', {}, 'Levels'), levels.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Closing section'), jTitle, jText, jBtn.el,
+        actions('home', function () {
+          return { kicker: kicker.input.value, headline: headline.input.value, intro: intro.input.value, video: video.input.value,
+            button1: b1.read(), button2: b2.read(), ticker: ticker.read(),
+            eventShow: show.checked, eventEyebrow: eEye.input.value, eventTitle: eTitle.input.value, eventText: eText.read(), eventButton: eBtn.read(),
+            levelsEyebrow: lEye.input.value, levelsTitle: lTitle.input.value, levelsIntro: lIntro.read(), levels: levels.read(),
+            joinTitle: jTitle.input.value, joinText: jText.input.value, joinButton: jBtn.read() };
         }, pages))
     ];
   }
@@ -775,7 +836,7 @@
       return {
         title: title.input.value, text: text.input.value, image: image,
         button: { label: bLabel.input.value, href: bHref.input.value },
-        pages: all.checked || !isFull() ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
+        pages: all.checked || !isFull() || isClub() ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
         frequency: freq.value, delay: Number(delay.input.value || 0),
         startsAt: fromLocal(start.input.value), endsAt: fromLocal(end.input.value), enabled: enabled.checked
       };
@@ -808,10 +869,10 @@
         h('div', { class: 'two' }, bLabel, bHref)),
       h('section', { class: 'card' },
         h('h2', {}, 'Where and how often'),
-        isFull() ? [h('div', { class: 'checks' },
+        isFull() && !isClub() ? [h('div', { class: 'checks' },
           h('label', { class: 'check' }, all, 'All pages'),
           h('label', { class: 'check' }, some, 'Only the pages I choose')),
-        pageBox] : h('p', { class: 'muted' }, 'Shows on every page of ' + site.name + ' that has the pop-up line.'),
+        pageBox] : h('p', { class: 'muted' }, isClub() ? 'Shows on the ' + site.name + ' page.' : 'Shows on every page of ' + site.name + ' that has the pop-up line.'),
         h('div', { class: 'two', style: 'margin-top:16px' },
           h('label', { class: 'field' }, h('span', {}, 'How often a visitor sees it'), freq),
           delay)),
@@ -873,7 +934,7 @@
       } }, 'Remove site');
       return h('section', { class: 'card' },
         h('div', { class: 'pop-head' }, h('h2', {}, s.name), h('span', { class: 'chip ' + (full ? 'live' : 'wait') }, full ? 'Hosted here' : 'Pop-ups only')),
-        h('p', { class: 'muted' }, full ? 'Everything on this site can be edited: name, logo, menus, photos, page content and pop-ups.'
+        h('p', { class: 'muted' }, full ? 'Everything on this site can be edited: name, logo, menus, photos, page content and pop-ups.' + (sitePath(s) === '/' ? '' : ' Until it has its own web address it is at ' + location.origin + sitePath(s))
           : 'This site is hosted elsewhere. Pop-ups you make here show on it once the line below is added to its pages.'),
         h('div', { class: 'two' }, name, address),
         full ? null : [h('h3', {}, 'Line to add to the site'),

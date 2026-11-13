@@ -1,5 +1,5 @@
 // The sites managed from this admin center.
-// The first site is served from here. Others are hosted elsewhere and show
+// Sites of kind 'full' are served from here. Others are hosted elsewhere and show
 // pop-ups made here by loading one small script: /embed/<key>.js
 import { asset } from './assets.js';
 import { now } from './auth.js';
@@ -9,7 +9,7 @@ import { text } from './valid.js';
 const MAX_SITES = 20;
 const randomHex = (bytes) => [...crypto.getRandomValues(new Uint8Array(bytes))].map((b) => b.toString(16).padStart(2, '0')).join('');
 
-export const SITE_COLUMNS = 'id, slug, name, hostnames, kind, embed_key AS embedKey';
+export const SITE_COLUMNS = 'id, slug, name, hostnames, kind, template, embed_key AS embedKey';
 
 // "https://www.example.org/about, example.org" -> "www.example.org,example.org"
 function hosts(v, required) {

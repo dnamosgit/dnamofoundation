@@ -18,7 +18,7 @@ export function pageFile(pathname) {
   if (!last) return 'index.html';
   return last.includes('.') ? last : last + '.html';
 }
-const fileOf = (href) => href.split('#')[0].split('?')[0].replace(/^\//, '') || 'index.html';
+const fileOf = (href) => href.split('#')[0].split('?')[0].replace(/^\.?\//, '') || 'index.html';
 
 // The main menu, with the same markup and classes the page generator writes.
 function navHtml(header, page) {
@@ -88,6 +88,10 @@ const LISTS = {
     return `<div class="fund"><div class="fund-top"><span class="fund-pct">${pct}%</span><span><strong>${shown[0]}</strong> raised</span><span class="fund-goal">Goal: <strong>${shown[1]}</strong></span></div>`
       + `<div class="fund-bar" role="progressbar" aria-label="Club House and Field fund" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><span style="width:${pct}%"></span></div></div>`;
   },
+  // Dnamo Football Club home page
+  'club.ticker': (c) => c.home && Array.isArray(c.home.ticker) ? c.home.ticker.map((v) => `<span>${esc(v)}</span>`).join('').repeat(2) : undefined,
+  'club.levels': (c) => c.home && Array.isArray(c.home.levels) ? c.home.levels.map((l, i) =>
+    `<a class="card d" href="${esc(l.href)}"><span class="num">${String(i + 1).padStart(2, '0')}</span><h3 class="h">${esc(l.title)}</h3><p>${esc(l.text)}</p><span class="more">Explore more <span class="arr" aria-hidden="true">&rarr;</span></span></a>`).join('') : undefined,
   'tiers.schol': (c) => c.giving && tiers(c.giving.schol, 'schol'),
   'tiers.coach': (c) => c.giving && tiers(c.giving.coach, 'coach'),
 };
@@ -108,7 +112,7 @@ function videoHtml(url, poster) {
 // An initiative page takes its browser-tab title from the saved title of that initiative
 const INIT_PAGES = { 'scholarships.html': ['schol', 'Scholarships'], 'coaches.html': ['coach', 'Coach Recruitment &amp; Support'], 'clubhouse.html': ['club', 'Club House &amp; Field'] };
 
-export function render(response, saved, pathname, popups = []) {
+export function render(response, saved, pathname, popups = [], tpl = { title: 'Dnamo Football Foundation', path: '/' }) {
   const { identity, header, footer, photos, inits, giving } = saved;
   if (!Object.keys(saved).length && !popups.length) return response;
 
@@ -131,7 +135,7 @@ export function render(response, saved, pathname, popups = []) {
       if (!t.lastInTextNode) { t.remove(); return; }
       let title = buffer;
       if (initPage) title = title.split(initPage[1]).join(esc(inits[initPage[0]].title));
-      if (full) title = title.split('Dnamo Football Foundation').join(esc(full));
+      if (full) title = title.split(tpl.title).join(esc(full));
       t.replace(title, { html: true });
       buffer = '';
     } });
@@ -159,7 +163,7 @@ export function render(response, saved, pathname, popups = []) {
     } });
     if (photos.logo) {
       // browser tab icon, phone home-screen icon and the preload hint
-      rw.on('link[href="logo.png"]', { element(el) {
+      rw.on('link[href$="logo.png"]', { element(el) {
         el.setAttribute('href', photos.logo);
         if (el.getAttribute('type') === 'image/png') el.removeAttribute('type');
       } });
@@ -167,7 +171,7 @@ export function render(response, saved, pathname, popups = []) {
   }
 
   if (saved.home && saved.home.video) {
-    const poster = (photos && photos.hero1) || 'hero-1.jpg';
+    const poster = (photos && photos.hero1) || (tpl.path === '/' ? '' : '/') + 'hero-1.jpg';
     rw.on('.heromedia', { element(el) { el.setInnerContent(videoHtml(saved.home.video, poster), { html: true }); } });
   } else if (photos && photos.extra && photos.extra.length) {
     // Photos added to the slideshow follow the built-in slides
@@ -188,12 +192,16 @@ export function render(response, saved, pathname, popups = []) {
   rw.on('[data-link]', { element(el) {
     const v = get(saved, el.getAttribute('data-link'));
     if (v && v.label) { el.setAttribute('href', v.href); el.setInnerContent(v.label); }
+    else if (v && v.label === '') el.remove();   // a button with no label is left out
   } });
   rw.on('[data-list]', { element(el) {
     const make = LISTS[el.getAttribute('data-list')];
     const html = make && make(saved);
     if (typeof html === 'string') el.setInnerContent(html, { html: true });
   } });
+
+  // Club home page: the upcoming event can be switched off
+  if (saved.home && saved.home.eventShow === false) rw.on('#event', { element(el) { el.remove(); } });
 
   // Donate page: amounts and gift names follow the saved giving options
   if (giving) {

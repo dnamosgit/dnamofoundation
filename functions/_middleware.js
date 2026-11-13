@@ -5,8 +5,8 @@
 //  - /embed/<key>.js shows pop-ups on a site hosted elsewhere.
 //  - Public pages pass through, with any content saved in the admin applied.
 import { handleAdmin } from '../server/admin.js';
-import { notFound } from '../server/assets.js';
-import { savedContent, serveMedia, siteForHost } from '../server/content.js';
+import { asset, notFound } from '../server/assets.js';
+import { savedContent, serveMedia, siteFor } from '../server/content.js';
 import { activePopups } from '../server/popups.js';
 import { pageFile, render } from '../server/render.js';
 import { serveEmbed } from '../server/sites.js';
@@ -46,26 +46,32 @@ export async function onRequest(context) {
     const headers = new Headers(request.headers);
     headers.delete('If-None-Match');
     headers.delete('If-Modified-Since');
-    return page(context, url, await context.next(new Request(request, { headers })));
+    const site = env.DB ? await siteFor(env, url.hostname, path).catch(() => null) : null;
+    // A site with its own web address shows its home page at the top of that address.
+    if (site && site.ownHost) {
+      if (path !== '/') return Response.redirect(url.origin + '/', 302);
+      return page(context, url, await asset(env, url, site.tpl.path), site);
+    }
+    return page(context, url, await context.next(new Request(request, { headers })), site);
   }
   return context.next();
 }
 
 // Apply saved admin content to an HTML response. If anything goes wrong
 // (for example the database is unreachable) the original page is served.
-async function page(context, url, response) {
+async function page(context, url, response, known) {
   const { request, env } = context;
   if (request.method !== 'GET' || !env.DB) return response;
   if (!(response.headers.get('Content-Type') || '').includes('text/html')) return response;
   try {
-    const siteId = await siteForHost(env, url.hostname);
-    if (!siteId) return response;
+    const site = known || await siteFor(env, url.hostname, url.pathname);
+    if (!site) return response;
     // Pop-ups are for real pages only, never the "page not found" page.
     const [saved, popups] = await Promise.all([
-      savedContent(env, siteId),
-      response.status === 200 ? activePopups(env, siteId, pageFile(url.pathname)).catch(() => []) : [],
+      savedContent(env, site.id, site.tpl),
+      response.status === 200 ? activePopups(env, site.id, pageFile(url.pathname)).catch(() => []) : [],
     ]);
-    return render(response, saved, url.pathname, popups);
+    return render(response, saved, url.pathname, popups, site.tpl);
   } catch (e) {
     console.error('render failed', e);
     return response;

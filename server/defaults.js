@@ -64,7 +64,7 @@ export const MAX_EXTRA_SLIDES = 8;
 // Each cleaner returns a tidy copy of what was sent, or throws an Error whose
 // message is shown to the admin.
 
-const CLEAN = {
+export const CLEAN = {
   identity(v) {
     return { nameA: text(v.nameA, 40, 'The first part of the name'), nameB: text(v.nameB, 60, 'The second part of the name', false) };
   },
@@ -88,9 +88,15 @@ const CLEAN = {
       instagram: socialUrl(v.instagram, 'Instagram'),
     };
   },
-  photos(v) {
+  photos: photosCleaner(SLOTS),
+  ...PAGE_CLEAN,
+};
+
+// Replaced photos (one per slot) and the photos added to the home slideshow
+export function photosCleaner(slots) {
+  return (v) => {
     const out = {};
-    for (const slot of SLOTS) {
+    for (const slot of slots) {
       const val = v[slot.id];
       if (val == null || val === '') continue;
       if (!/^\/media\/[0-9a-f]{24}$/.test(val)) throw new Error('That photo is not one uploaded here.');
@@ -101,9 +107,11 @@ const CLEAN = {
     for (const val of extra) if (!/^\/media\/[0-9a-f]{24}$/.test(val)) throw new Error('That photo is not one uploaded here.');
     if (extra.length) out.extra = extra;
     return out;
-  },
-  ...PAGE_CLEAN,
-};
+  };
+}
+
+// The parts every site has: its name, its menu and its footer
+export const SHARED_CLEAN = { identity: CLEAN.identity, header: CLEAN.header, footer: CLEAN.footer };
 
 function socialUrl(v, what) {
   const s = String(v == null ? '' : v).trim();
@@ -113,9 +121,3 @@ function socialUrl(v, what) {
 }
 
 export const KEYS = Object.keys(CLEAN);
-
-export function clean(key, value) {
-  if (!CLEAN[key]) throw new Error('Unknown setting.');
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid value.');
-  return CLEAN[key](value);
-}

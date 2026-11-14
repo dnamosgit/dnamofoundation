@@ -441,6 +441,42 @@ html[data-splash-key] .splash{background:#000}
 .grid.four{grid-template-columns:repeat(4,1fr)}
 .levels-intro{max-width:760px;margin:16px 0 44px;opacity:.8}
 .levels-intro p{margin:0 0 12px}
+/* The program ticker under the home photo: a black strip, words centred in it, fading out at both ends */
+.marquee.mq-dark{position:relative;padding:22px 0;background:#000;-webkit-mask-image:none;mask-image:none}
+.mq-dark::before,.mq-dark::after{content:"";position:absolute;top:0;bottom:0;z-index:1;width:22%;pointer-events:none}
+.mq-dark::before{left:0;background:linear-gradient(90deg,#000 8%,rgba(0,0,0,.7) 45%,transparent)}
+.mq-dark::after{right:0;background:linear-gradient(270deg,#000 8%,rgba(0,0,0,.7) 45%,transparent)}
+.mq-dark .mq-track span{color:rgba(255,255,255,.62);line-height:1}
+/* Banner across the top of every inner page: the photo drifts as the page scrolls and settles in on arrival */
+.pagehero{--fg:#fff;position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:flex-end;min-height:min(56vh,480px);background:#0b0b0b;color:#fff}
+.pagehero.plain{min-height:300px;background:radial-gradient(120% 140% at 0% 100%,#3a0d0d,#0b0b0b 60%)}
+.pagehero img{position:absolute;left:0;top:-10%;z-index:-2;width:100%;height:120%;object-fit:cover;transform:translate3d(0,var(--drift,0px),0);will-change:transform}
+.pagehero::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,rgba(0,0,0,.8),rgba(0,0,0,.45) 55%,rgba(0,0,0,.15)),linear-gradient(0deg,rgba(0,0,0,.75),transparent 55%)}
+.ph-in{width:100%;padding-top:130px;padding-bottom:44px}
+.pagehero .eyebrow{color:#fff;opacity:.8}
+.pagehero h1.h{font-size:60px;max-width:860px;text-shadow:0 2px 30px rgba(0,0,0,.35)}
+.pagehero h1.h::after{content:"";display:block;width:64px;height:4px;border-radius:4px;background:var(--red);margin-top:18px}
+.ph-lead{margin:18px 0 0;max-width:640px;font-size:18px;opacity:.92}
+.club-chips{padding-top:28px}
+.club-top{padding-top:40px;padding-bottom:88px}
+.club-chips+.club-top{padding-top:32px}
+.club-top .shot,.sec-split .shot{border-radius:8px;transition:transform .5s ease}
+.club-top .shot:hover,.sec-split .shot:hover{transform:scale(1.015)}
+.sec-split{display:grid;grid-template-columns:3fr 2fr;gap:48px;align-items:center}
+.sec-split.flip>div{order:2}
+.sec-split>div>h2.h{margin-bottom:22px}
+.sec-split>div>.prose+.goals,.sec-split>div>.prose+.rows,.sec-split>div>.goals+.rows{margin-top:22px}
+.sec-split>div>.goals{margin-bottom:0}
+.sec-split>div>.club-btns{margin-top:26px}
+@media (prefers-reduced-motion:no-preference){
+.pagehero img{animation:ph-in 1.6s ease-out both}
+.ph-in>*{animation:up .7s ease both}
+.ph-in>:nth-child(2){animation-delay:.08s}
+.ph-in>:nth-child(3){animation-delay:.16s}
+}
+@keyframes ph-in{from{scale:1.1;opacity:.4}to{scale:1;opacity:1}}
+@media (max-width:900px){.sec-split{grid-template-columns:1fr;gap:28px}.sec-split.flip>div{order:0}.pagehero h1.h{font-size:44px}.ph-in{padding-top:110px;padding-bottom:32px}.club-top{padding-bottom:56px}}
+@media (max-width:640px){.pagehero{min-height:300px}.pagehero h1.h{font-size:34px}.ph-lead{font-size:16px}.mq-dark::before,.mq-dark::after{width:16%}.marquee.mq-dark{padding:18px 0}}
 .club-top .prose{margin-bottom:28px}
 .club-top:not(.split2)>div{max-width:820px}
 .club-btns{margin-top:4px}

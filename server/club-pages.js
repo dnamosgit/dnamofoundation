@@ -43,10 +43,19 @@ export function pageMain(slug, all, live) {
   const group = meta.group ? CLUB_PAGES.filter((x) => x.group === meta.group) : [];
   let out = '';
 
+  // The banner across the top: the page photo with the title over it
+  const family = group.length ? group[0].menu || group[0].label : '';
+  out += `<section class="pagehero${p.photo ? '' : ' plain'}">`;
+  if (p.photo) out += `<img src="${esc(p.photo)}" alt="" width="2000" height="1125" fetchpriority="high">`;
+  out += '\n  <div class="w ph-in">';
+  if (family || p.eyebrow) out += `<p class="eyebrow">${esc(family || p.eyebrow)}</p>`;
+  out += `<h1 class="h">${esc(p.title)}</h1>`;
+  if (p.lead) out += `<p class="ph-lead">${esc(p.lead)}</p>`;
+  out += '</div>\n</section>\n';
+
   // Links to the sister pages (all programs, all camps, the About pages)
   if (group.length) {
-    const name = group[0].menu || group[0].label;
-    out += `<section class="w pad-sub">\n  <p class="eyebrow">${esc(name)}</p>\n  <nav class="row-wrap g12" aria-label="${esc(name)}">`;
+    out += `<section class="w club-chips">\n  <nav class="row-wrap g12" aria-label="${esc(family)}">`;
     for (const g of group) {
       const on = g.slug === slug ? ' on" aria-current="page' : '';
       out += `<a class="sub${on}" href="${g.slug}.html">${esc(g.index ? 'Overview' : g.label)}</a>`;
@@ -54,15 +63,15 @@ export function pageMain(slug, all, live) {
     out += '</nav>\n</section>\n';
   }
 
-  out += `<section class="w ${p.photo ? 'split2 ' : ''}${group.length ? 'pad-after-sub' : 'pad'} club-top">\n  <div>`;
-  if (p.eyebrow && !group.length) out += `<p class="eyebrow">${esc(p.eyebrow)}</p>`;
-  out += `<h1 class="h init-title">${esc(p.title)}</h1>`;
-  if (p.lead) out += `<p class="init-lead">${esc(p.lead)}</p>`;
-  if (p.facts.length) out += '<dl class="facts">' + p.facts.map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('') + '</dl>';
-  if (p.body.length) out += '<div class="prose">' + p.body.map((x) => `<p>${rich(x)}</p>`).join('') + '</div>';
-  out += buttons(p.buttons) + '</div>';
-  if (p.photo) out += `\n  <img class="shot" src="${esc(p.photo)}" alt="" width="2000" height="1125" loading="lazy">`;
-  out += '\n</section>\n';
+  // The introduction: quick facts, text and buttons, with a photo beside them
+  if (p.facts.length || p.body.length || p.buttons.length || p.sidePhoto) {
+    out += `<section class="w ${p.sidePhoto ? 'split2 ' : ''}club-top">\n  <div>`;
+    if (p.facts.length) out += '<dl class="facts">' + p.facts.map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('') + '</dl>';
+    if (p.body.length) out += '<div class="prose">' + p.body.map((x) => `<p>${rich(x)}</p>`).join('') + '</div>';
+    out += buttons(p.buttons) + '</div>';
+    if (p.sidePhoto) out += `\n  <img class="shot" src="${esc(p.sidePhoto)}" alt="" width="2000" height="1125" loading="lazy">`;
+    out += '\n</section>\n';
+  }
 
   // Sections take turns between the dark band and the plain page
   let dark = true;
@@ -82,11 +91,17 @@ export function pageMain(slug, all, live) {
     }).join('') + '</div>');
   }
 
+  let flip = false;
   for (const s of p.sections) {
     let inner = s.title ? `<h2 class="h">${esc(s.title)}</h2>` : '';
     if (s.text.length) inner += '<div class="prose">' + s.text.map((x) => `<p>${rich(x)}</p>`).join('') + '</div>';
     if (s.points.length) inner += '<ul class="goals">' + s.points.map((x) => `<li>${rich(x)}</li>`).join('') + '</ul>';
     inner += rows(s.rows) + buttons(s.buttons);
+    // A section's photo sits beside it, on the right and the left in turn
+    if (s.photo) {
+      inner = `<div class="sec-split${flip ? ' flip' : ''}"><div>${inner}</div><img class="shot" src="${esc(s.photo)}" alt="" width="2000" height="1125" loading="lazy"></div>`;
+      flip = !flip;
+    }
     out += band(inner);
   }
 
@@ -152,7 +167,8 @@ export function cleanPage(v) {
     eyebrow: text(v.eyebrow, 60, 'The small label', false),
     title,
     lead: text(v.lead, 200, 'The line under the title', false),
-    photo: image(v.photo, 'The page photo'),
+    photo: image(v.photo, 'The banner photo'),
+    sidePhoto: image(v.sidePhoto, 'The photo beside the introduction'),
     facts: list(v.facts || [], 4, 'Quick facts').map((f) => {
       const o = obj(f);
       return { label: text(o.label, 30, 'A quick fact label'), value: text(o.value, 60, 'A quick fact') };
@@ -171,6 +187,7 @@ export function cleanPage(v) {
           return { label: text(q.label, 80, 'A table row name'), value: text(q.value, 60, 'A table figure', false), note: text(q.note, 300, 'A table note', false) };
         }),
         buttons: buttonList(o.buttons, 'Section'),
+        photo: image(o.photo, `The photo for "${name || 'a section'}"`),
       };
     }),
     peopleTitle: text(v.peopleTitle, 80, 'The team heading', false),

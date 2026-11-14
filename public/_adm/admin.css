@@ -192,3 +192,5 @@ button,input,select,textarea{font:inherit}
 .pagepick .btn{margin-top:0;margin-bottom:4px}
 .photos.mini{grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));margin-bottom:8px}
 .photos.mini .add-photo{min-height:90px}
+.item-photo.wide img{width:112px;height:70px;border-radius:6px}
+.item-photo .stack{margin-top:4px}

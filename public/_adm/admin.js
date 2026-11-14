@@ -435,15 +435,19 @@
             var chosen = file.files[0];
             if (!chosen) return;
             st.className = 'status'; st.textContent = 'Uploading...';
-            prepare(chosen, 600).then(function (blob) {
+            prepare(chosen, f.size || 600).then(function (blob) {
               return api('POST', '/sites/' + site.id + '/media', blob, { 'X-File-Name': encodeURIComponent(chosen.name) });
             }).then(function (m) {
-              value = m.url; img.src = m.url;
+              value = m.url; img.src = m.url; clear.hidden = false;
               st.className = 'status ok'; st.textContent = 'Uploaded. Save to publish.';
             }).catch(function (err) { st.className = 'status bad'; st.textContent = err.message; file.value = ''; });
           } });
-          body.appendChild(h('div', { class: 'item-photo' }, img,
-            h('div', {}, h('button', { class: 'btn ghost small', type: 'button', onclick: function () { file.click(); } }, 'Change photo'), st, file)));
+          var clear = h('button', { class: 'btn ghost small', type: 'button', hidden: !value, onclick: function () {
+            value = ''; img.src = '/person.svg'; clear.hidden = true; st.className = 'status'; st.textContent = 'Removed. Save to publish.';
+          } }, 'Remove photo');
+          body.appendChild(h('div', { class: 'item-photo' + (f.wide ? ' wide' : '') }, img,
+            h('div', {}, f.label ? h('span', { class: 'muted small' }, f.label) : null,
+              h('div', { class: 'stack' }, h('button', { class: 'btn ghost small', type: 'button', onclick: function () { file.click(); } }, value ? 'Change photo' : 'Add photo'), clear), st, file)));
           readers[f.key] = function () { return value; };
         } else if (f.type === 'area') {
           var a = area(f.label, v, f.rows || 4, f.hint);
@@ -629,20 +633,22 @@
   function pageAny(key) {
     var v = data.content[key];
     var BTN = 'One per line: the label, then " | ", then the link. For example: Register now | https://...  (up to 3)';
-    var eyebrow = input('Small label above the title', v.eyebrow, {}, 'Not shown on pages that have the row of sister pages at the top.');
+    var eyebrow = input('Small label above the title', v.eyebrow, {}, 'On program, camp and About pages the group name is shown here in its place.');
     var title = input('Title', v.title), lead = input('Line under the title', v.lead);
     var body = paras('Introduction', v.body, 7);
     var facts = pipes('Quick facts', v.facts, ['label', 'value'], 4, 'Up to 4, one per line: the label, then " | ", then the figure. For example: Ages | U9 - U18');
     var btns = pipes('Buttons', v.buttons, ['label', 'href'], 3, BTN);
     var photo = photoList(v.photo ? [v.photo] : [], 1, 2000);
+    var side = photoList(v.sidePhoto ? [v.sidePhoto] : [], 1, 1600);
     var sections = itemList(v.sections.map(function (x) {
-      return { title: x.title, text: x.text.join('\n\n'), points: x.points.join('\n'), rows: pipesText(x.rows, ['label', 'value', 'note']), buttons: pipesText(x.buttons, ['label', 'href']) };
-    }), { addLabel: 'Add a section', max: 12, blank: { title: '', text: '', points: '', rows: '', buttons: '' }, fields: [
+      return { title: x.title, text: x.text.join('\n\n'), points: x.points.join('\n'), rows: pipesText(x.rows, ['label', 'value', 'note']), buttons: pipesText(x.buttons, ['label', 'href']), photo: x.photo || '' };
+    }), { addLabel: 'Add a section', max: 12, blank: { title: '', text: '', points: '', rows: '', buttons: '', photo: '' }, fields: [
       { key: 'title', label: 'Heading' },
       { key: 'text', label: 'Text', type: 'area', rows: 4, hint: 'Leave an empty line between paragraphs. Put **two stars** around words to make them bold.' },
       { key: 'points', label: 'Bullet points', type: 'area', rows: 4, hint: 'One per line.' },
       { key: 'rows', label: 'Table', type: 'area', rows: 4, hint: 'One row per line: the name, then " | ", the figure, then " | ", the small print. For example: Training | $561 per season | 1 training per week' },
-      { key: 'buttons', label: 'Buttons', type: 'area', rows: 2, hint: BTN }
+      { key: 'buttons', label: 'Buttons', type: 'area', rows: 2, hint: BTN },
+      { key: 'photo', type: 'photo', size: 1600, wide: true, label: 'Photo beside this section (optional)' }
     ] });
     var pTitle = input('Heading', v.peopleTitle), pIntro = area('Introduction', v.peopleIntro, 3);
     var people = itemList(v.people, { addLabel: 'Add a profile', max: 40, blank: { name: '', role: 'Coach', license: '', photo: '', bio: '' }, fields: [
@@ -687,10 +693,10 @@
     syncSource();
     var read = function () {
       return {
-        eyebrow: eyebrow.input.value, title: title.input.value, lead: lead.input.value, photo: photo.read()[0] || '',
+        eyebrow: eyebrow.input.value, title: title.input.value, lead: lead.input.value, photo: photo.read()[0] || '', sidePhoto: side.read()[0] || '',
         facts: facts.read(), body: body.read(), buttons: btns.read(),
         sections: sections.read().map(function (x) {
-          return { title: x.title, text: parasRead(x.text), points: linesRead(x.points), rows: pipesRead(x.rows, ['label', 'value', 'note']), buttons: pipesRead(x.buttons, ['label', 'href']) };
+          return { title: x.title, text: parasRead(x.text), points: linesRead(x.points), rows: pipesRead(x.rows, ['label', 'value', 'note']), buttons: pipesRead(x.buttons, ['label', 'href']), photo: x.photo || '' };
         }),
         peopleTitle: pTitle.input.value, peopleIntro: pIntro.input.value, peopleOrder: pOrder.value, people: people.read(),
         galleryTitle: gTitle.input.value, galleryIntro: gIntro.input.value, gallerySource: gSource.value,
@@ -698,10 +704,13 @@
       };
     };
     return [
-      h('section', { class: 'card' }, h('h2', {}, 'Top of the page'), eyebrow, title, lead, facts, body, btns,
-        h('h3', {}, 'Photo beside the text'), photo.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Banner'),
+        h('p', { class: 'muted' }, 'The wide photo across the top of the page, with the title over it. A wide photo works best.'),
+        eyebrow, title, lead, h('h3', {}, 'Banner photo'), photo.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Introduction'), facts, body, btns,
+        h('h3', {}, 'Photo beside the introduction'), side.el),
       h('section', { class: 'card' }, h('h2', {}, 'Sections'),
-        h('p', { class: 'muted' }, 'The blocks down the page, in this order. Leave any part of a section empty to leave it out.'), sections.el),
+        h('p', { class: 'muted' }, 'The blocks down the page, in this order. Leave any part of a section empty to leave it out. Each section can have a photo beside it.'), sections.el),
       h('section', { class: 'card' }, h('h2', {}, 'People'),
         h('p', { class: 'muted' }, 'The coach and staff profiles. Add a profile at the bottom of the list; remove one with the \u00d7 beside it. Leave the list empty on pages without profiles.'),
         pTitle, pIntro,

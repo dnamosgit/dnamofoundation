@@ -74,7 +74,7 @@
     Array.prototype.forEach.call(document.querySelectorAll(
       'main section.w > .eyebrow, main section.w > h1.h, main section.w > .lead, ' +
       '.dark > .w > .eyebrow, .dark > .w > h2.h, .grid > *, .split > *, .split2 > *, ' +
-      '.goals li, .cta-row, .band .w'
+      '.goals li, .cta-row, .band .w, .sec-split > *, .club-sec > h2.h'
     ), function (el) {
       var i = seen.filter(function (p) { return p === el.parentNode; }).length;
       seen.push(el.parentNode);
@@ -82,6 +82,20 @@
       el.classList.add('reveal');
       revealIO.observe(el);
     });
+  }
+
+  /* Page banner (Club pages): the photo moves a little slower than the page */
+  var banner = document.querySelector('.pagehero img');
+  if (banner && !reduceMotion) {
+    var drifting = false;
+    var drift = function () {
+      drifting = false;
+      var y = window.scrollY || 0;
+      if (y < banner.parentNode.offsetHeight + 80) banner.style.setProperty('--drift', Math.round(y * 0.22) + 'px');
+    };
+    window.addEventListener('scroll', function () {
+      if (!drifting) { drifting = true; requestAnimationFrame(drift); }
+    }, { passive: true });
   }
 
   /* Cards: a soft red glow follows the pointer */

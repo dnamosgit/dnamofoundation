@@ -2,12 +2,14 @@
 // in the admin center. tools/build-club.mjs writes the pages in /public/fc from
 // this file, so the pages and the admin defaults can never disagree.
 //
-// A page is: { eyebrow, title, lead, photo, facts, body, buttons, sections,
+// A page is: { eyebrow, title, lead, photo, sidePhoto, facts, body, buttons, sections,
 //              peopleTitle, peopleIntro, peopleOrder, people,
 //              galleryTitle, galleryIntro, gallerySource, galleryCount, galleryFeed, gallery }
 //   peopleOrder    'title' sorts people by title then name; 'manual' keeps the order of the list
 //   gallerySource  'photos' shows the uploaded photos; 'instagram' shows the latest posts
-// A section is: { title, text, points, rows, buttons }
+// A section is: { title, text, points, rows, buttons, photo }
+//   photo      the banner across the top of the page
+//   sidePhoto  a photo beside the introduction; a section's photo sits beside that section
 //   facts   [{ label, value }]            short figures under the lead
 //   rows    [{ label, value, note }]      a table: name, figure, small print
 //   buttons [{ label, href }]
@@ -46,11 +48,11 @@ export const CLUB_PAGES = [
 export const keyOf = (slug) => slug.replace(/-/g, '');
 
 const page = (p) => ({
-  eyebrow: '', title: '', lead: '', photo: '', facts: [], body: [], buttons: [], sections: [],
+  eyebrow: '', title: '', lead: '', photo: '', sidePhoto: '', facts: [], body: [], buttons: [], sections: [],
   peopleTitle: '', peopleIntro: '', peopleOrder: 'title', people: [],
   galleryTitle: '', galleryIntro: '', gallerySource: 'photos', galleryCount: 12, galleryFeed: '', gallery: [], ...p,
 });
-const section = (s) => ({ title: '', text: [], points: [], rows: [], buttons: [], ...s });
+const section = (s) => ({ title: '', text: [], points: [], rows: [], buttons: [], photo: '', ...s });
 // Written as "Title · License" below; kept as two separate fields
 const person = (name, role, bio) => {
   const [title, ...rest] = role.split(' · ');
@@ -453,3 +455,16 @@ export const CLUB_DEFAULTS = {
     buttons: [{ label: 'Contact us', href: CONTACT_FORM }, { label: 'Email info@dnamofc.com', href: 'mailto:info@dnamofc.com' }],
   }),
 };
+
+// Photos. Every page gets a banner; pages with an introduction get a photo beside it;
+// the first section that is text or bullet points gets one too. These are stand-ins
+// taken in turn from the four photos the site has, to be replaced in the admin.
+const SHOTS = ['/hero-1.jpg', '/hero-2.jpg', '/hero-3.jpg', '/hero-4.jpg'];
+CLUB_PAGES.forEach((meta, i) => {
+  const p = CLUB_DEFAULTS[meta.slug];
+  if (!p.photo) p.photo = SHOTS[i % 4];
+  const at = SHOTS.indexOf(p.photo);
+  if (p.body.length) p.sidePhoto = SHOTS[(at + 1) % 4];
+  const first = p.sections.find((s) => !s.rows.length && (s.text.length || s.points.length));
+  if (first && p.sections.length > 1) first.photo = SHOTS[(at + 2) % 4];
+});

@@ -107,7 +107,7 @@ write('index.html', CLUB.title, 'Dnamo Football Club is a San Francisco youth so
 </section>
 
 <!-- Decorative ticker of the club's programs; hidden from screen readers -->
-<div class="marquee" aria-hidden="true"><div class="mq-track" data-list="club.ticker">${h.ticker.map((w) => `<span>${esc(w)}</span>`).join('').repeat(2)}</div></div>
+<div class="marquee mq-dark" aria-hidden="true"><div class="mq-track" data-list="club.ticker">${h.ticker.map((w) => `<span>${esc(w)}</span>`).join('').repeat(2)}</div></div>
 
 <section class="dark">
   <div class="w pad-l">

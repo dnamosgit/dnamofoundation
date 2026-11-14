@@ -7,6 +7,7 @@ import {
 import { MIN_PASSWORD, accountRoutes, checkNewPassword, cleanEmail, joinRoutes, validEmail } from './accounts.js';
 import { saveContent, saveMedia, savedContent } from './content.js';
 import { templateFor } from './templates.js';
+import { BEHOLD_FEED, refreshInstagram } from './instagram.js';
 import { SITE_COLUMNS, siteRoutes } from './sites.js';
 import { FREQUENCIES, LAYOUTS, createPopup, deletePopup, listPopups, updatePopup } from './popups.js';
 
@@ -135,7 +136,7 @@ export async function handleAdmin(context, base, sub) {
     if (other) return other;
 
     // Per-site routes: /api/sites/<id>/...
-    const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media|popups)(?:\/([a-z0-9]+))?$/);
+    const m = sub.match(/^\/api\/sites\/(\d+)\/(content|media|popups|instagram)(?:\/([a-z0-9]+))?$/);
     if (!m) return fail(404, 'Not found.');
     const site = await env.DB.prepare('SELECT id, name, kind, template FROM sites WHERE id = ?').bind(Number(m[1])).first();
     if (!site) return fail(404, 'That site does not exist.');
@@ -157,6 +158,13 @@ export async function handleAdmin(context, base, sub) {
     }
     if (upload && m[2] === 'media' && !m[3]) {
       return json(await saveMedia(env, site.id, request, user.id));
+    }
+    // Ask Instagram for the latest posts now, and say how it went
+    if (method === 'POST' && m[2] === 'instagram' && !m[3] && full) {
+      const feed = String(body.feed || '').trim();
+      if (feed && !BEHOLD_FEED.test(feed)) return fail(400, 'The Behold feed address should look like https://feeds.behold.so/ followed by its code.');
+      const r = await refreshInstagram(env, site.id, feed);
+      return json({ connected: r.connected, count: r.posts.length, error: r.error, sample: r.posts.slice(0, 6) });
     }
     // Pop-ups: list, add, change, delete
     if (m[2] === 'popups') {

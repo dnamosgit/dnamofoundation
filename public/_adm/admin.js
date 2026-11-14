@@ -645,14 +645,46 @@
       { key: 'buttons', label: 'Buttons', type: 'area', rows: 2, hint: BTN }
     ] });
     var pTitle = input('Heading', v.peopleTitle), pIntro = area('Introduction', v.peopleIntro, 3);
-    var people = itemList(v.people, { addLabel: 'Add a person', max: 40, blank: { name: '', role: '', photo: '', bio: '' }, fields: [
+    var people = itemList(v.people, { addLabel: 'Add a profile', max: 40, blank: { name: '', role: 'Coach', license: '', photo: '', bio: '' }, fields: [
       { key: 'photo', type: 'photo' },
       { key: 'name', label: 'Name' },
-      { key: 'role', label: 'Role and license' },
+      { key: 'role', label: 'Title', hint: 'For example: Coach, or Director of Goalkeepers.' },
+      { key: 'license', label: 'License (optional)', hint: 'For example: USSF C License.' },
       { key: 'bio', label: 'Profile', type: 'area', rows: 5, hint: 'Shown when a visitor selects this person.' }
     ] });
+    var pOrder = h('select', {},
+      h('option', { value: 'title', selected: v.peopleOrder !== 'manual' }, 'By title, then name (directors first)'),
+      h('option', { value: 'manual', selected: v.peopleOrder === 'manual' }, 'In the order of the list below'));
     var gTitle = input('Heading', v.galleryTitle), gIntro = input('Introduction', v.galleryIntro);
     var gallery = photoList(v.gallery, 30, 1600);
+
+    /* The gallery can show the latest Instagram posts in place of uploaded photos */
+    var gSource = h('select', {},
+      h('option', { value: 'photos', selected: v.gallerySource !== 'instagram' }, 'Photos I upload here'),
+      h('option', { value: 'instagram', selected: v.gallerySource === 'instagram' }, 'Latest posts from Instagram'));
+    var gCount = input('How many posts to show', String(v.galleryCount || 12), { type: 'number', min: 3, max: 24, step: 1 });
+    var gFeed = input('Behold feed address (only if you connect through Behold)', v.galleryFeed, { placeholder: 'https://feeds.behold.so/...' },
+      'Leave empty when the Instagram account is connected directly.');
+    var gStatus = h('span', { class: 'status', role: 'status' });
+    var gSample = h('div', { class: 'photos mini' });
+    var gCheck = h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+      gStatus.className = 'status'; gStatus.textContent = 'Asking Instagram...';
+      gSample.textContent = '';
+      api('POST', '/sites/' + site.id + '/instagram', { feed: gFeed.input.value.trim() }).then(function (r) {
+        if (!r.connected) { gStatus.className = 'status bad'; gStatus.textContent = 'No Instagram account is connected yet. Until one is, the uploaded photos are shown.'; return; }
+        if (r.error) { gStatus.className = 'status bad'; gStatus.textContent = 'Instagram could not be reached: ' + r.error; return; }
+        gStatus.className = 'status ok'; gStatus.textContent = 'Connected. ' + r.count + ' posts found.';
+        r.sample.forEach(function (m) {
+          gSample.appendChild(h('div', { class: 'photo' }, h('div', { class: 'thumb' }, h('img', { src: m.img, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }))));
+        });
+      }).catch(function (err) { gStatus.className = 'status bad'; gStatus.textContent = err.message; });
+    } }, 'Check the Instagram connection');
+    var gInsta = h('div', {}, h('div', { class: 'two' }, gCount, gFeed),
+      h('div', { class: 'stack' }, gCheck), gStatus, gSample,
+      h('p', { class: 'muted small' }, 'New posts appear on the page within half an hour. If Instagram cannot be reached, the photos below are shown.'));
+    var syncSource = function () { gInsta.hidden = gSource.value !== 'instagram'; };
+    gSource.addEventListener('change', syncSource);
+    syncSource();
     var read = function () {
       return {
         eyebrow: eyebrow.input.value, title: title.input.value, lead: lead.input.value, photo: photo.read()[0] || '',
@@ -660,8 +692,9 @@
         sections: sections.read().map(function (x) {
           return { title: x.title, text: parasRead(x.text), points: linesRead(x.points), rows: pipesRead(x.rows, ['label', 'value', 'note']), buttons: pipesRead(x.buttons, ['label', 'href']) };
         }),
-        peopleTitle: pTitle.input.value, peopleIntro: pIntro.input.value, people: people.read(),
-        galleryTitle: gTitle.input.value, galleryIntro: gIntro.input.value, gallery: gallery.read()
+        peopleTitle: pTitle.input.value, peopleIntro: pIntro.input.value, peopleOrder: pOrder.value, people: people.read(),
+        galleryTitle: gTitle.input.value, galleryIntro: gIntro.input.value, gallerySource: gSource.value,
+        galleryCount: Number(gCount.input.value || 12), galleryFeed: gFeed.input.value.trim(), gallery: gallery.read()
       };
     };
     return [
@@ -670,9 +703,15 @@
       h('section', { class: 'card' }, h('h2', {}, 'Sections'),
         h('p', { class: 'muted' }, 'The blocks down the page, in this order. Leave any part of a section empty to leave it out.'), sections.el),
       h('section', { class: 'card' }, h('h2', {}, 'People'),
-        h('p', { class: 'muted' }, 'For a page that introduces coaches or staff. Leave the list empty on other pages.'), pTitle, pIntro, people.el),
+        h('p', { class: 'muted' }, 'The coach and staff profiles. Add a profile at the bottom of the list; remove one with the \u00d7 beside it. Leave the list empty on pages without profiles.'),
+        pTitle, pIntro,
+        h('label', { class: 'field' }, h('span', {}, 'Order on the page'), pOrder,
+          h('small', {}, 'To arrange them yourself, choose "In the order of the list below" and use the arrows beside each profile.')),
+        h('h3', {}, 'Profiles'), people.el),
       h('section', { class: 'card' }, h('h2', {}, 'Photo gallery'),
-        h('p', { class: 'muted' }, 'Leave empty for no gallery.'), h('div', { class: 'two' }, gTitle, gIntro), gallery.el,
+        h('p', { class: 'muted' }, 'Leave empty for no gallery.'), h('div', { class: 'two' }, gTitle, gIntro),
+        h('label', { class: 'field' }, h('span', {}, 'Where the photos come from'), gSource), gInsta,
+        h('h3', {}, 'Uploaded photos'), gallery.el,
         actions(key, read, pages))
     ];
   }

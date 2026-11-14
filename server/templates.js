@@ -13,6 +13,7 @@ const FOUNDATION = {
   DEFAULTS, SLOTS, PAGES, KEYS, CLEAN, POPUP_PAGES,
   PAGE_LIST: [],
   main: () => null,
+  live: async () => null,
 };
 
 const TEMPLATES = { foundation: FOUNDATION, club: CLUB };

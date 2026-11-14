@@ -2,6 +2,7 @@
 // may be saved. The same markup function writes the files in /public/fc
 // (tools/build-club.mjs) and redraws a page once it has been edited in the admin.
 import { CLUB_PAGES, keyOf } from './club-content.js';
+import { BEHOLD_FEED } from './instagram.js';
 import { href, image, list, multiline, obj, paragraphs, text } from './valid.js';
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -22,8 +23,21 @@ function buttons(items) {
 const rows = (items) => !items.length ? '' : '<div class="rows">' + items.map((r) =>
   `<div class="rw"><span class="rw-l">${esc(r.label)}${r.note ? `<small>${esc(r.note)}</small>` : ''}</span>${r.value ? `<strong class="rw-v">${esc(r.value)}</strong>` : ''}</div>`).join('') + '</div>';
 
+// People in order of title, then name. Directors come first.
+const rank = (m) => (/director/i.test(m.role) ? 0 : 1);
+export function sortPeople(people) {
+  return people.slice().sort((a, b) => rank(a) - rank(b) || a.role.localeCompare(b.role) || a.name.localeCompare(b.name));
+}
+// A person saved before the license had its own field has it at the end of the title
+const withLicense = (m) => {
+  if (m.license !== undefined) return m;
+  const [role, ...rest] = String(m.role || '').split(' · ');
+  return { ...m, role, license: rest.join(' · ') };
+};
+
 // The inner HTML of <main> for one page. all holds every page's content plus the home page's.
-export function pageMain(slug, all) {
+// live holds what is fetched at the moment a page is asked for: { instagram: [{ img, href, alt }] }.
+export function pageMain(slug, all, live) {
   const meta = CLUB_PAGES.find((p) => p.slug === slug);
   const p = all[keyOf(slug)];
   const group = meta.group ? CLUB_PAGES.filter((x) => x.group === meta.group) : [];
@@ -79,16 +93,27 @@ export function pageMain(slug, all) {
   if (p.people.length) {
     let inner = p.peopleTitle ? `<h2 class="h">${esc(p.peopleTitle)}</h2>` : '';
     if (p.peopleIntro) inner += `<p class="lead">${esc(p.peopleIntro)}</p>`;
-    inner += '<div class="grid people">' + p.people.map((m) =>
-      `<button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="${attr(m.name)}" data-role="${attr(m.role)}" data-bio="${attr(m.bio)}"><img src="${esc(m.photo || '/person.svg')}" alt="" width="120" height="120" loading="lazy"><span class="h">${esc(m.name)}</span><span class="red">${esc(m.role)}</span></button>`).join('') + '</div>';
+    const staff = p.people.map(withLicense);
+    inner += '<div class="grid people">' + (p.peopleOrder === 'manual' ? staff : sortPeople(staff)).map((m) =>
+      `<button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="${attr(m.name)}" data-role="${attr(m.role + (m.license ? ' · ' + m.license : ''))}" data-bio="${attr(m.bio)}"><img src="${esc(m.photo || '/person.svg')}" alt="" width="120" height="120" loading="lazy"><span class="h">${esc(m.name)}</span><span class="red">${esc(m.role)}</span>${m.license ? `<span class="lic">${esc(m.license)}</span>` : ''}</button>`).join('') + '</div>';
     inner += `<div class="profile" id="profile" hidden aria-live="polite"><button class="pclose" type="button" aria-label="Close profile" title="Close">${CLOSE}</button><h2 class="h pname"></h2><p class="prole"></p><p class="pbio"></p></div>`;
     out += band(inner, 'team');
   }
 
-  if (p.gallery.length) {
+  // The gallery: the latest Instagram posts when that is switched on and they could
+  // be fetched, otherwise the photos uploaded in the admin.
+  const posts = p.gallerySource === 'instagram' && live && Array.isArray(live.instagram) ? live.instagram : [];
+  if (posts.length || p.gallery.length) {
     let inner = p.galleryTitle ? `<h2 class="h">${esc(p.galleryTitle)}</h2>` : '';
     if (p.galleryIntro) inner += `<p class="lead">${esc(p.galleryIntro)}</p>`;
-    inner += '<div class="gallery">' + p.gallery.map((u) => `<img src="${esc(u)}" alt="" loading="lazy">`).join('') + '</div>';
+    if (posts.length) {
+      inner += '<div class="gallery insta">' + posts.map((m) =>
+        `<a href="${esc(m.href)}" target="_blank" rel="noopener"><img src="${esc(m.img)}" alt="${attr(m.alt)}" loading="lazy" referrerpolicy="no-referrer"></a>`).join('') + '</div>';
+      const profile = all.footer && all.footer.instagram;
+      if (profile) inner += `<div class="row-wrap g12 club-btns"><a class="btn s" href="${esc(profile)}" target="_blank" rel="noopener">See more on Instagram</a></div>`;
+    } else {
+      inner += '<div class="gallery">' + p.gallery.map((u) => `<img src="${esc(u)}" alt="" loading="lazy">`).join('') + '</div>';
+    }
     out += band(inner, 'gallery');
   }
 
@@ -108,6 +133,17 @@ function buttonList(v, what) {
     const label = text(o.label, 40, 'A button label');
     return { label, href: href(o.href, `"${label}"`) };
   });
+}
+
+function galleryCount(v) {
+  const n = v === undefined || v === '' || v === null ? 12 : Number(v);
+  if (!Number.isInteger(n) || n < 3 || n > 24) throw new Error('Show between 3 and 24 Instagram posts.');
+  return n;
+}
+function feedAddress(v) {
+  const s = String(v == null ? '' : v).trim();
+  if (s && !BEHOLD_FEED.test(s)) throw new Error('The Behold feed address should look like https://feeds.behold.so/ followed by its code.');
+  return s;
 }
 
 export function cleanPage(v) {
@@ -139,13 +175,17 @@ export function cleanPage(v) {
     }),
     peopleTitle: text(v.peopleTitle, 80, 'The team heading', false),
     peopleIntro: text(v.peopleIntro, 600, 'The team introduction', false),
+    peopleOrder: v.peopleOrder === 'manual' ? 'manual' : 'title',
     people: list(v.people || [], 40, 'Team members').map((m) => {
-      const o = obj(m);
+      const o = withLicense(obj(m));
       const name = text(o.name, 80, 'A name');
-      return { name, role: text(o.role, 120, `The role of ${name}`, false), photo: image(o.photo, `The photo of ${name}`), bio: multiline(o.bio, 2500, `The profile of ${name}`, false) };
+      return { name, role: text(o.role, 80, `The title of ${name}`, false), license: text(o.license, 80, `The license of ${name}`, false), photo: image(o.photo, `The photo of ${name}`), bio: multiline(o.bio, 2500, `The profile of ${name}`, false) };
     }),
     galleryTitle: text(v.galleryTitle, 80, 'The gallery heading', false),
     galleryIntro: text(v.galleryIntro, 300, 'The gallery introduction', false),
+    gallerySource: v.gallerySource === 'instagram' ? 'instagram' : 'photos',
+    galleryCount: galleryCount(v.galleryCount),
+    galleryFeed: feedAddress(v.galleryFeed),
     gallery: list(v.gallery || [], 30, 'Gallery photos').map((u) => image(u, 'A gallery photo')).filter(Boolean),
   };
 }

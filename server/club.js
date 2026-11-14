@@ -4,6 +4,7 @@
 import { CLUB_DEFAULTS, CLUB_PAGES, keyOf } from './club-content.js';
 import { cleanPage, pageMain } from './club-pages.js';
 import { SHARED_CLEAN, photosCleaner } from './defaults.js';
+import { instagramPosts } from './instagram.js';
 import { href, list, obj, paragraphs, text, video } from './valid.js';
 
 const kids = (group) => CLUB_PAGES.filter((p) => p.group === group && !p.index && !p.menu)
@@ -135,11 +136,19 @@ export const CLUB = {
   // An inner page is drawn afresh once anything that shows on it has been saved:
   // the page itself, a page it lists, or the closing invitation from the home page.
   // Returns { html, title } or null when the stored file can be served as it is.
-  main(file, saved) {
+  main(file, saved, live) {
     const meta = CLUB_PAGES.find((p) => p.slug + '.html' === file);
     if (!meta) return null;
     if (!saved.home && !CLUB_PAGES.some((p) => saved[keyOf(p.slug)])) return null;
     const mine = saved[keyOf(meta.slug)];
-    return { html: pageMain(meta.slug, { ...DEFAULTS, ...saved }), title: mine ? mine.title : null, was: DEFAULTS[keyOf(meta.slug)].title };
+    return { html: pageMain(meta.slug, { ...DEFAULTS, ...saved }, live), title: mine ? mine.title : null, was: DEFAULTS[keyOf(meta.slug)].title };
+  },
+  // What a page needs fetched at the moment it is asked for: the Instagram posts
+  // of a gallery that is set to show them. Returns null when there is nothing to fetch.
+  async live(env, siteId, file, saved) {
+    const meta = CLUB_PAGES.find((p) => p.slug + '.html' === file);
+    const mine = meta && saved[keyOf(meta.slug)];
+    if (!mine || mine.gallerySource !== 'instagram') return null;
+    return { instagram: await instagramPosts(env, siteId, mine.galleryCount || 12, mine.galleryFeed || '') };
   },
 };

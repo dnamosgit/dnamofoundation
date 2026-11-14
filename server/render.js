@@ -112,7 +112,7 @@ function videoHtml(url, poster) {
 // An initiative page takes its browser-tab title from the saved title of that initiative
 const INIT_PAGES = { 'scholarships.html': ['schol', 'Scholarships'], 'coaches.html': ['coach', 'Coach Recruitment &amp; Support'], 'clubhouse.html': ['club', 'Club House &amp; Field'] };
 
-export function render(response, saved, pathname, popups = [], tpl = { title: 'Dnamo Football Foundation', path: '/', logo: '', main: () => null }) {
+export function render(response, saved, pathname, popups = [], tpl = { title: 'Dnamo Football Foundation', path: '/', logo: '', main: () => null }, live = null) {
   const { identity, header, footer, photos, inits, giving } = saved;
   if (!Object.keys(saved).length && !popups.length) return response;
 
@@ -121,7 +121,7 @@ export function render(response, saved, pathname, popups = [], tpl = { title: 'D
 
   const initPage = inits && INIT_PAGES[page];
   // A page drawn from saved content (the club's inner pages)
-  const drawn = tpl.main(page, saved);
+  const drawn = tpl.main(page, saved, live);
   if (drawn) rw.on('main', { element(el) { el.setInnerContent('\n' + drawn.html, { html: true }); } });
   const retitle = drawn && drawn.title && drawn.title !== drawn.was ? drawn : null;
   if (identity) {

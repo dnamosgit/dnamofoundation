@@ -73,7 +73,9 @@ async function page(context, url, response, known) {
       savedContent(env, site.id, site.tpl),
       response.status === 200 ? activePopups(env, site.id, pageFile(url.pathname)).catch(() => []) : [],
     ]);
-    return render(response, saved, url.pathname, popups, site.tpl);
+    // Anything a page shows that is fetched as it is asked for (Instagram posts). A failure leaves it out.
+    const live = response.status === 200 ? await site.tpl.live(env, site.id, pageFile(url.pathname), saved).catch(() => null) : null;
+    return render(response, saved, url.pathname, popups, site.tpl, live);
   } catch (e) {
     console.error('render failed', e);
     return response;

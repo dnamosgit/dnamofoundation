@@ -2,16 +2,23 @@
   'use strict';
 
   /* Logo splash (phones and tablets): hold briefly once the logo has loaded, then fade out.
-     Shown once per visit; later pages skip it via the inline script in <head>. */
+     Shown once per visit; later pages skip it via the inline script in <head>.
+     The Club site (data-splash-key) keeps its own "seen" note, and also waits for the
+     page's pictures and styles to finish loading, so the page is ready when the logo clears.
+     The stylesheet fades the splash out by itself after 3 seconds whatever happens. */
   var splash = document.querySelector('.splash');
   if (splash && getComputedStyle(splash).display !== 'none') {
-    try { sessionStorage.setItem('dnamoSplash', '1'); } catch (e) {}
+    var splashKey = document.documentElement.getAttribute('data-splash-key');
+    try { sessionStorage.setItem(splashKey || 'dnamoSplash', '1'); } catch (e) {}
     var logo = splash.querySelector('img');
+    var waits = splashKey && document.readyState !== 'complete' ? 2 : 1;
     var hideSplash = function () {
+      if (--waits > 0) return;
       setTimeout(function () { splash.classList.add('done'); }, 900);
     };
     if (logo.complete) hideSplash();
     else { logo.addEventListener('load', hideSplash); logo.addEventListener('error', hideSplash); }
+    if (waits > 0 && splashKey) window.addEventListener('load', hideSplash);
   }
 
   /* Light / dark mode. The choice is remembered on this device, per site: the Foundation

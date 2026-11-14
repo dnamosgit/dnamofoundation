@@ -24,7 +24,9 @@ let foot = '<footer class="site-footer">' + rest.split('<footer class="site-foot
 // Head: shared files are addressed from the top of the site; the club has its own logo.
 // Dark is this site's own look, so it is set on the page itself; a visitor who picked
 // light on this site (remembered under its own name) gets light before the page paints.
-head = must(head, '<html lang="en">', '<html lang="en" data-theme="dark" data-theme-key="dnamoFcTheme">');
+head = must(head, '<html lang="en">', '<html lang="en" data-theme="dark" data-theme-key="dnamoFcTheme" data-splash-key="dnamoFcSplash">');
+// The logo screen on phones and tablets is shown once per visit to this site, whether or not the Foundation site was seen first
+head = must(head, "sessionStorage.getItem('dnamoSplash')", "sessionStorage.getItem('dnamoFcSplash')");
 head = must(head, "try{if(localStorage.getItem('dnamoTheme')==='dark')document.documentElement.setAttribute('data-theme','dark')}catch(e){}",
   "try{if(localStorage.getItem('dnamoFcTheme')==='light')document.documentElement.removeAttribute('data-theme')}catch(e){}");
 head = must(head, '<meta name="theme-color" content="#ffffff">', '<meta name="theme-color" content="#000000">');

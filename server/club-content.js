@@ -3,7 +3,10 @@
 // this file, so the pages and the admin defaults can never disagree.
 //
 // A page is: { eyebrow, title, lead, photo, facts, body, buttons, sections,
-//              peopleTitle, peopleIntro, people, galleryTitle, galleryIntro, gallery }
+//              peopleTitle, peopleIntro, peopleOrder, people,
+//              galleryTitle, galleryIntro, gallerySource, galleryCount, galleryFeed, gallery }
+//   peopleOrder    'title' sorts people by title then name; 'manual' keeps the order of the list
+//   gallerySource  'photos' shows the uploaded photos; 'instagram' shows the latest posts
 // A section is: { title, text, points, rows, buttons }
 //   facts   [{ label, value }]            short figures under the lead
 //   rows    [{ label, value, note }]      a table: name, figure, small print
@@ -44,10 +47,15 @@ export const keyOf = (slug) => slug.replace(/-/g, '');
 
 const page = (p) => ({
   eyebrow: '', title: '', lead: '', photo: '', facts: [], body: [], buttons: [], sections: [],
-  peopleTitle: '', peopleIntro: '', people: [], galleryTitle: '', galleryIntro: '', gallery: [], ...p,
+  peopleTitle: '', peopleIntro: '', peopleOrder: 'title', people: [],
+  galleryTitle: '', galleryIntro: '', gallerySource: 'photos', galleryCount: 12, galleryFeed: '', gallery: [], ...p,
 });
 const section = (s) => ({ title: '', text: [], points: [], rows: [], buttons: [], ...s });
-const person = (name, role, bio) => ({ name, role, photo: '', bio });
+// Written as "Title · License" below; kept as two separate fields
+const person = (name, role, bio) => {
+  const [title, ...rest] = role.split(' · ');
+  return { name, role: title, license: rest.join(' · '), photo: '', bio };
+};
 const info = (href) => [{ label: 'Get more info', href }];
 
 const STAFF = [

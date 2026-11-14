@@ -54,6 +54,29 @@
     burger.setAttribute('aria-expanded', String(open));
   });
 
+  /* Club site: on phones and tablets each dropdown is folded away behind a small arrow,
+     so the whole menu fits. The group holding the current page starts open. */
+  if (document.documentElement.getAttribute('data-site') === 'club') {
+    Array.prototype.forEach.call(navbox.querySelectorAll('.navdrop'), function (drop, i) {
+      var menu = drop.querySelector('.dropmenu');
+      var link = drop.querySelector('.nav');
+      if (!menu || !link) return;
+      menu.id = menu.id || 'dropmenu-' + i;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'droptoggle';
+      btn.setAttribute('aria-controls', menu.id);
+      btn.setAttribute('aria-label', 'Show the pages under ' + link.textContent.trim());
+      var set = function (open) {
+        drop.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', String(open));
+      };
+      btn.addEventListener('click', function () { set(!drop.classList.contains('open')); });
+      drop.insertBefore(btn, menu);
+      set(!!menu.querySelector('.on'));
+    });
+  }
+
   /* Blocks fade up as they scroll into view. The .reveal class is added here, so the page
      is fully visible without JavaScript. Classes are removed afterwards so hover effects
      are not slowed by the stagger delay. */

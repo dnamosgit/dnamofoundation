@@ -539,3 +539,18 @@ button.coach-head{cursor:pointer}
 .gallery img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px}
 @media (max-width:1100px){.grid.four{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:640px){.grid.four{grid-template-columns:1fr}.rw{flex-direction:column;gap:4px}.rw-v{max-width:none;text-align:left}.brand-logo{width:32px;height:32px}.facts div{flex:1 1 40%}}
+/* Phone and tablet menu: it scrolls when it is taller than the screen */
+@media (max-width:1100px){
+.site-header{max-height:100vh;max-height:100dvh;overflow-y:auto;overscroll-behavior:contain}
+/* Club site: dropdowns are folded away until their arrow is tapped */
+[data-site="club"] .navbox{align-items:stretch}
+[data-site="club"] .navbox .btn{align-self:flex-start}
+[data-site="club"] .navdrop{display:flex;flex-wrap:wrap;align-items:center}
+[data-site="club"] .navdrop>.nav{flex:1}
+[data-site="club"] .droptoggle{position:relative;flex:none;width:44px;height:34px;padding:0;border:0;background:none;color:inherit;cursor:pointer}
+[data-site="club"] .droptoggle::before{content:"";position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-6px 0 0 -4px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform .2s ease}
+[data-site="club"] .navdrop.open .droptoggle::before{transform:rotate(225deg);margin-top:-2px}
+[data-site="club"] .dropmenu{display:none;flex-basis:100%}
+[data-site="club"] .navdrop.open .dropmenu{display:flex}
+}
+@media (min-width:1101px){.droptoggle{display:none}}

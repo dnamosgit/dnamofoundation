@@ -67,3 +67,12 @@ export function video(v) {
   if (/^https:\/\/[^\s<>"']+$/i.test(s) || /^[A-Za-z0-9][A-Za-z0-9._\/-]*\.(mp4|webm)$/i.test(s)) return s;
   throw new Error('Use a full video link starting with https:// (YouTube, Vimeo, or a link to an .mp4 file).');
 }
+
+// A photo: one uploaded in the admin, or a picture file that is part of the site
+export function image(v, what) {
+  const s = String(v == null ? '' : v).trim();
+  if (!s) return '';
+  if (/^\/media\/[0-9a-f]{24}$/.test(s)) return s;
+  if (/^\/[A-Za-z0-9][A-Za-z0-9._\/-]*\.(jpe?g|png|webp|gif|svg)$/i.test(s) && !s.includes('..') && s.length <= 200) return s;
+  throw new Error(`${what} is not a photo uploaded here.`);
+}

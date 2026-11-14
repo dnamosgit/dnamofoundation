@@ -47,10 +47,12 @@ export async function onRequest(context) {
     headers.delete('If-None-Match');
     headers.delete('If-Modified-Since');
     const site = env.DB ? await siteFor(env, url.hostname, path).catch(() => null) : null;
-    // A site with its own web address shows its home page at the top of that address.
+    // A site with its own web address has its pages at the top of that address:
+    // /tryouts there is the file kept under the site's own folder (/fc/tryouts).
     if (site && site.ownHost) {
-      if (path !== '/') return Response.redirect(url.origin + '/', 302);
-      return page(context, url, await asset(env, url, site.tpl.path), site);
+      if (path.includes('..')) return page(context, url, await notFound(env, url), site);
+      const found = await asset(env, url, site.tpl.path + path.replace(/^\/+/, ''));
+      return page(context, url, found.ok ? found : await notFound(env, url), site);
     }
     return page(context, url, await context.next(new Request(request, { headers })), site);
   }

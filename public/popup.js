@@ -1,6 +1,7 @@
 /* Dnamo pop-ups. Loaded only on pages that have a live pop-up.
    A pop-up is a small card that slides in at the bottom right corner. It never
    covers the page or blocks it: visitors can keep reading and close it when they like.
+   Two shapes: a tall card with the photo on top, or a low, wide card with the photo at the side.
    Self-contained: brings its own styles, so it looks the same on any page.
    All text is placed with textContent, so pop-up text can never inject markup. */
 (function () {
@@ -24,7 +25,20 @@
     '.dnp-x svg{width:10px;height:10px}' +
     '.dnp-card :focus-visible{outline:2px solid #eb2323;outline-offset:2px}' +
     '.dnp-note{margin:0;padding:6px 18px;background:#111;color:#fff;font:600 10.5px/1.4 Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}' +
-    '@media (max-width:600px){.dnp-card{left:12px;right:12px;bottom:12px;width:auto;max-width:none}}' +
+    '.dnp-label{display:flex;align-items:center;gap:8px;margin:0 26px 6px 0;font:italic 600 10.5px/1.3 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#111}' +
+    '.dnp-label::before{content:"";flex:none;width:7px;height:7px;background:#eb2323}' +
+    '.dnp-label + .dnp-title{margin-right:0}' +
+    '.dnp-wide{display:grid;grid-template-columns:minmax(0,1fr) 38%;width:480px;border-radius:6px}' +
+    '.dnp-wide .dnp-note{grid-column:1/-1}' +
+    '.dnp-wide .dnp-img{order:2;width:100%;height:100%;min-height:150px;aspect-ratio:auto}' +
+    '.dnp-wide .dnp-body{order:1;padding:14px 16px 14px;border-top:0;border-left:3px solid #eb2323}' +
+    '.dnp-wide .dnp-title{font-size:19px;margin-right:0}' +
+    '.dnp-wide .dnp-text{font-size:12px;line-height:1.5;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden}' +
+    '.dnp-wide .dnp-btn{min-height:0;margin-top:10px;padding:0;border-radius:0;background:none;color:#d81e1e;font-size:11.5px}' +
+    '.dnp-wide .dnp-btn::after{content:"\\2197";margin-left:8px;font-size:13px}' +
+    '.dnp-wide .dnp-btn:hover,.dnp-wide .dnp-btn:focus-visible{background:none;color:#a51414;text-decoration:underline}' +
+    '.dnp-wide:not(:has(.dnp-img)){display:block;width:360px}' +
+    '@media (max-width:600px){.dnp-card{left:12px;right:12px;bottom:12px;width:auto;max-width:none}.dnp-wide .dnp-img{min-height:120px}.dnp-wide .dnp-text{-webkit-line-clamp:3}}' +
     '@media (prefers-reduced-motion:reduce){.dnp-card{transition:none}}';
 
   function el(tag, cls, text) {
@@ -47,7 +61,7 @@
       document.head.appendChild(st);
     }
 
-    var card = el('aside', 'dnp-card');
+    var card = el('aside', 'dnp-card' + (p.layout === 'wide' ? ' dnp-wide' : ''));
     card.setAttribute('role', 'region');
     card.setAttribute('aria-label', 'Announcement');
 
@@ -59,6 +73,7 @@
       card.appendChild(img);
     }
     var body = el('div', 'dnp-body');
+    if (p.label) body.appendChild(el('p', 'dnp-label', p.label));
     body.appendChild(el('h2', 'dnp-title', p.title));
     String(p.text || '').split(/\n+/).forEach(function (line) {
       if (line.trim()) body.appendChild(el('p', 'dnp-text', line.trim()));

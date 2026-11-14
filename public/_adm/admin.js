@@ -107,7 +107,7 @@
   ];
   /* A site hosted here can be edited in full; one hosted elsewhere has pop-ups only. Sites and Admins are for the owner. */
   var isFull = function () { return site.kind === 'full'; };
-  /* The Dnamo Football Club site: one page, reached at /fc/ until it has its own address */
+  /* The Dnamo Football Club site, reached at /fc/ until it has its own address */
   var isClub = function () { return isFull() && site.template === 'club'; };
   var sitePath = function (s) { return s.template === 'club' ? '/fc/' : '/'; };
   var allowed = function (s) { return (!s.full || isFull()) && (!s.owner || session.user.role === 'owner'); };
@@ -502,9 +502,28 @@
 
   function pages() {
     if (isClub()) {
+      var list = data.pageList || [];
+      if (clubPage !== 'home' && !list.some(function (x) { return x.key === clubPage; })) clubPage = 'home';
+      var mark = function (key) { return isCustom(key) ? ' \u2022' : ''; };
+      var pick = h('select', { 'aria-label': 'Page', onchange: function () { clubPage = pick.value; pages(); } },
+        h('option', { value: 'home', selected: clubPage === 'home' }, 'Home' + mark('home')));
+      var groups = {};
+      list.forEach(function (x) {
+        var opt = h('option', { value: x.key, selected: x.key === clubPage }, x.label + mark(x.key));
+        if (!x.group) { pick.appendChild(opt); return; }
+        if (!groups[x.group]) {
+          groups[x.group] = h('optgroup', { label: { about: 'About Us', programs: 'Programs', camps: 'Camps' }[x.group] || x.group });
+          pick.appendChild(groups[x.group]);
+        }
+        groups[x.group].appendChild(opt);
+      });
+      var current = list.filter(function (x) { return x.key === clubPage; })[0];
       paint(h('h1', {}, 'Page content'),
-        h('p', { class: 'lead' }, 'The words on the ' + site.name + ' home page.'),
-        pageClub());
+        h('p', { class: 'lead' }, 'Choose a page of ' + site.name + ', then change what it says. A dot marks a page you have changed.'),
+        h('section', { class: 'card pagepick' },
+          h('label', { class: 'field' }, h('span', {}, 'Page'), pick),
+          h('a', { class: 'btn ghost small', href: sitePath(site) + (current ? current.slug : ''), target: '_blank', rel: 'noopener' }, 'View this page')),
+        clubPage === 'home' ? pageClub() : pageAny(clubPage));
       return;
     }
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, PAGE_TABS.map(function (t) {
@@ -548,6 +567,116 @@
     ];
   }
 
+  var clubPage = 'home';
+
+  /* Lists typed one per line, with the parts of a line separated by " | " */
+  function pipes(label, items, keys, rows, hint) {
+    var f = area(label, (items || []).map(function (it) {
+      return keys.map(function (k) { return it[k] || ''; }).join(' | ').replace(/( \| )+$/, '');
+    }).join('\n'), rows, hint);
+    f.read = function () { return pipesRead(f.input.value, keys); };
+    return f;
+  }
+  function pipesRead(str, keys) {
+    return String(str || '').split('\n').map(function (line) { return line.trim(); }).filter(Boolean).map(function (line) {
+      var parts = line.split('|').map(function (x) { return x.trim(); });
+      var out = {};
+      keys.forEach(function (k, i) { out[k] = parts[i] || ''; });
+      return out;
+    });
+  }
+  var pipesText = function (items, keys) {
+    return (items || []).map(function (it) { return keys.map(function (k) { return it[k] || ''; }).join(' | ').replace(/( \| )+$/, ''); }).join('\n');
+  };
+  var linesRead = function (str) { return String(str || '').split('\n').map(function (x) { return x.trim(); }).filter(Boolean); };
+  var parasRead = function (str) { return String(str || '').split(/\n\s*\n/).map(function (x) { return x.replace(/\s+/g, ' ').trim(); }).filter(Boolean); };
+
+  /* A row of photos that can be added to and removed from. max 1 makes it a single photo. */
+  function photoList(urls, max, size) {
+    var list = (urls || []).slice();
+    var box = h('div', { class: 'photos mini' });
+    var status = h('span', { class: 'status', role: 'status' });
+    var file = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
+      var chosen = file.files[0];
+      if (!chosen) return;
+      status.className = 'status'; status.textContent = 'Uploading...';
+      prepare(chosen, size || 1600).then(function (blob) {
+        return api('POST', '/sites/' + site.id + '/media', blob, { 'X-File-Name': encodeURIComponent(chosen.name) });
+      }).then(function (m) {
+        if (max === 1) list = [m.url]; else list.push(m.url);
+        status.className = 'status ok'; status.textContent = 'Uploaded. Save to publish.';
+        draw();
+      }).catch(function (err) { status.className = 'status bad'; status.textContent = err.message; }).then(function () { file.value = ''; });
+    } });
+    function draw() {
+      box.textContent = '';
+      list.forEach(function (url, i) {
+        box.appendChild(h('div', { class: 'photo' },
+          h('div', { class: 'thumb' }, h('img', { src: url, alt: '', loading: 'lazy' })),
+          h('div', { class: 'photo-body' }, h('button', { class: 'btn ghost small', type: 'button', onclick: function () { list.splice(i, 1); draw(); } }, 'Remove'))));
+      });
+      if (list.length < max || max === 1) {
+        box.appendChild(h('div', { class: 'photo add' },
+          h('button', { class: 'add-photo', type: 'button', onclick: function () { file.click(); } },
+            h('span', { class: 'plus', 'aria-hidden': 'true' }, '+'), max === 1 && list.length ? 'Replace photo' : 'Add a photo')));
+      }
+    }
+    draw();
+    return { el: h('div', {}, box, status, file), read: function () { return list.slice(); } };
+  }
+
+  /* Any inner page of the Dnamo Football Club site: title, introduction, sections, team and gallery */
+  function pageAny(key) {
+    var v = data.content[key];
+    var BTN = 'One per line: the label, then " | ", then the link. For example: Register now | https://...  (up to 3)';
+    var eyebrow = input('Small label above the title', v.eyebrow, {}, 'Not shown on pages that have the row of sister pages at the top.');
+    var title = input('Title', v.title), lead = input('Line under the title', v.lead);
+    var body = paras('Introduction', v.body, 7);
+    var facts = pipes('Quick facts', v.facts, ['label', 'value'], 4, 'Up to 4, one per line: the label, then " | ", then the figure. For example: Ages | U9 - U18');
+    var btns = pipes('Buttons', v.buttons, ['label', 'href'], 3, BTN);
+    var photo = photoList(v.photo ? [v.photo] : [], 1, 2000);
+    var sections = itemList(v.sections.map(function (x) {
+      return { title: x.title, text: x.text.join('\n\n'), points: x.points.join('\n'), rows: pipesText(x.rows, ['label', 'value', 'note']), buttons: pipesText(x.buttons, ['label', 'href']) };
+    }), { addLabel: 'Add a section', max: 12, blank: { title: '', text: '', points: '', rows: '', buttons: '' }, fields: [
+      { key: 'title', label: 'Heading' },
+      { key: 'text', label: 'Text', type: 'area', rows: 4, hint: 'Leave an empty line between paragraphs. Put **two stars** around words to make them bold.' },
+      { key: 'points', label: 'Bullet points', type: 'area', rows: 4, hint: 'One per line.' },
+      { key: 'rows', label: 'Table', type: 'area', rows: 4, hint: 'One row per line: the name, then " | ", the figure, then " | ", the small print. For example: Training | $561 per season | 1 training per week' },
+      { key: 'buttons', label: 'Buttons', type: 'area', rows: 2, hint: BTN }
+    ] });
+    var pTitle = input('Heading', v.peopleTitle), pIntro = area('Introduction', v.peopleIntro, 3);
+    var people = itemList(v.people, { addLabel: 'Add a person', max: 40, blank: { name: '', role: '', photo: '', bio: '' }, fields: [
+      { key: 'photo', type: 'photo' },
+      { key: 'name', label: 'Name' },
+      { key: 'role', label: 'Role and license' },
+      { key: 'bio', label: 'Profile', type: 'area', rows: 5, hint: 'Shown when a visitor selects this person.' }
+    ] });
+    var gTitle = input('Heading', v.galleryTitle), gIntro = input('Introduction', v.galleryIntro);
+    var gallery = photoList(v.gallery, 30, 1600);
+    var read = function () {
+      return {
+        eyebrow: eyebrow.input.value, title: title.input.value, lead: lead.input.value, photo: photo.read()[0] || '',
+        facts: facts.read(), body: body.read(), buttons: btns.read(),
+        sections: sections.read().map(function (x) {
+          return { title: x.title, text: parasRead(x.text), points: linesRead(x.points), rows: pipesRead(x.rows, ['label', 'value', 'note']), buttons: pipesRead(x.buttons, ['label', 'href']) };
+        }),
+        peopleTitle: pTitle.input.value, peopleIntro: pIntro.input.value, people: people.read(),
+        galleryTitle: gTitle.input.value, galleryIntro: gIntro.input.value, gallery: gallery.read()
+      };
+    };
+    return [
+      h('section', { class: 'card' }, h('h2', {}, 'Top of the page'), eyebrow, title, lead, facts, body, btns,
+        h('h3', {}, 'Photo beside the text'), photo.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Sections'),
+        h('p', { class: 'muted' }, 'The blocks down the page, in this order. Leave any part of a section empty to leave it out.'), sections.el),
+      h('section', { class: 'card' }, h('h2', {}, 'People'),
+        h('p', { class: 'muted' }, 'For a page that introduces coaches or staff. Leave the list empty on other pages.'), pTitle, pIntro, people.el),
+      h('section', { class: 'card' }, h('h2', {}, 'Photo gallery'),
+        h('p', { class: 'muted' }, 'Leave empty for no gallery.'), h('div', { class: 'two' }, gTitle, gIntro), gallery.el,
+        actions(key, read, pages))
+    ];
+  }
+
   /* The Dnamo Football Club home page */
   function pageClub() {
     var v = data.content.home;
@@ -562,13 +691,9 @@
     var video = input('Background video link (optional)', v.video, { placeholder: 'https://' },
       'Paste a YouTube or Vimeo link, or a link to an .mp4 file. It plays silently on a loop behind the headline, in place of the photo slideshow. Leave empty to show the photos.');
     var ticker = lines('Scrolling words', v.ticker, 12, 'One per line. They scroll across the page under the photo.');
-    var show = h('input', { type: 'checkbox', checked: v.eventShow !== false });
-    var eEye = input('Small label', v.eventEyebrow), eTitle = input('Event name', v.eventTitle);
-    var eText = paras('Text', v.eventText, 6);
-    var eBtn = pair('Button', v.eventButton);
     var lEye = input('Small label', v.levelsEyebrow), lTitle = input('Heading', v.levelsTitle);
     var lIntro = paras('Text under the heading', v.levelsIntro, 5);
-    var levels = itemList(v.levels, { addLabel: 'Add a level', max: 8, blank: { title: '', text: '', href: 'https://www.dnamofc.com/programs' }, fields: [
+    var levels = itemList(v.levels, { addLabel: 'Add a level', max: 8, blank: { title: '', text: '', href: 'programs.html' }, fields: [
       { key: 'title', label: 'Name' },
       { key: 'text', label: 'Text', type: 'area', rows: 3 },
       { key: 'href', label: 'Link', hint: 'Where "Explore more" goes.' }
@@ -578,19 +703,18 @@
     var jBtn = pair('Button', v.joinButton);
     return [
       h('section', { class: 'card' }, h('h2', {}, 'Top of the page'), kicker, headline, intro, b1.el, b2.el, video,
-        h('p', { class: 'muted small' }, 'The slideshow photos and the event photo are changed under Photos. Leave a button label empty to hide that button.')),
+        h('p', { class: 'muted small' }, 'The slideshow photos are changed under Photos. Leave a button label empty to hide that button.')),
       h('section', { class: 'card' }, h('h2', {}, 'Scrolling words'), ticker),
       h('section', { class: 'card' }, h('h2', {}, 'Upcoming event'),
-        h('p', { class: 'muted' }, 'The camp, tryout or event you want families to see first.'),
-        h('div', { class: 'two' }, eEye, eTitle), eText, eBtn.el,
-        h('label', { class: 'check switch' }, show, 'Show the upcoming event on the page')),
+        h('p', { class: 'muted' }, 'The upcoming event card in the corner of the home page is a pop-up. Change it, switch it off or add the next one under Pop-ups.'),
+        h('div', { class: 'stack' }, h('button', { class: 'btn ghost small', type: 'button', onclick: function () { go('popups'); } }, 'Open Pop-ups'))),
       h('section', { class: 'card' }, h('h2', {}, 'Club levels'), h('div', { class: 'two' }, lEye, lTitle), lIntro,
         h('h3', {}, 'Levels'), levels.el),
-      h('section', { class: 'card' }, h('h2', {}, 'Closing section'), jTitle, jText, jBtn.el,
+      h('section', { class: 'card' }, h('h2', {}, 'Closing section'),
+        h('p', { class: 'muted' }, 'Shown at the bottom of every page of the site.'), jTitle, jText, jBtn.el,
         actions('home', function () {
           return { kicker: kicker.input.value, headline: headline.input.value, intro: intro.input.value, video: video.input.value,
             button1: b1.read(), button2: b2.read(), ticker: ticker.read(),
-            eventShow: show.checked, eventEyebrow: eEye.input.value, eventTitle: eTitle.input.value, eventText: eText.read(), eventButton: eBtn.read(),
             levelsEyebrow: lEye.input.value, levelsTitle: lTitle.input.value, levelsIntro: lIntro.read(), levels: levels.read(),
             joinTitle: jTitle.input.value, joinText: jText.input.value, joinButton: jBtn.read() };
         }, pages))
@@ -770,7 +894,7 @@
     });
     paint(
       h('h1', {}, 'Pop-ups'),
-      h('p', { class: 'lead' }, 'Small announcements that slide in at the bottom corner of a page, so visitors see what is coming without being interrupted. A visitor sees one at a time: the newest that is live.'),
+      h('p', { class: 'lead' }, 'Small announcements that slide in at the bottom corner of a page, so visitors see what is coming without being interrupted. A visitor sees one at a time: the newest that is live. Use the wide shape for an upcoming event.'),
       h('div', { class: 'actions flat' },
         h('button', { class: 'btn', type: 'button', onclick: function () { popupEdit(null); } }, 'New pop-up'), status),
       rows.length ? h('div', { class: 'pops' }, rows)
@@ -779,10 +903,14 @@
 
   function popupEdit(p) {
     var isNew = !p;
-    p = p || { title: '', text: '', image: '', button: { label: '', href: '' }, pages: 'all', frequency: 'once', delay: 2, startsAt: null, endsAt: null, enabled: true };
+    p = p || { title: '', text: '', image: '', label: '', layout: pop.layout || 'card', button: { label: '', href: '' }, pages: 'all', frequency: 'once', delay: 2, startsAt: null, endsAt: null, enabled: true };
 
     var title = input('Title', p.title, { maxlength: 80 });
     var text = area('Text', p.text, 4, 'Keep it short. Each new line starts a new paragraph.');
+    var label = input('Small label above the title (optional)', p.label, { maxlength: 40, placeholder: 'Upcoming event' });
+    var layout = h('select', {}, (pop.layouts || []).map(function (l) {
+      return h('option', { value: l.id, selected: l.id === (p.layout || 'card') }, l.label);
+    }));
     text.input.setAttribute('maxlength', '600');
 
     var image = p.image || '';
@@ -834,9 +962,9 @@
 
     var read = function () {
       return {
-        title: title.input.value, text: text.input.value, image: image,
+        title: title.input.value, text: text.input.value, image: image, label: label.input.value, layout: layout.value,
         button: { label: bLabel.input.value, href: bHref.input.value },
-        pages: all.checked || !isFull() || isClub() ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
+        pages: all.checked || !isFull() ? 'all' : boxes.filter(function (b) { return b.box.checked; }).map(function (b) { return b.box.value; }),
         frequency: freq.value, delay: Number(delay.input.value || 0),
         startsAt: fromLocal(start.input.value), endsAt: fromLocal(end.input.value), enabled: enabled.checked
       };
@@ -858,7 +986,8 @@
       h('p', { class: 'lead' }, 'Use Preview to see it exactly as visitors will.'),
       h('section', { class: 'card' },
         h('h2', {}, 'What it says'),
-        title, text,
+        label, title, text,
+        h('label', { class: 'field' }, h('span', {}, 'Shape'), layout),
         h('h3', {}, 'Photo (optional)'),
         h('div', { class: 'pop-photo-row' }, thumb,
           h('div', { class: 'stack' },
@@ -869,10 +998,10 @@
         h('div', { class: 'two' }, bLabel, bHref)),
       h('section', { class: 'card' },
         h('h2', {}, 'Where and how often'),
-        isFull() && !isClub() ? [h('div', { class: 'checks' },
+        isFull() ? [h('div', { class: 'checks' },
           h('label', { class: 'check' }, all, 'All pages'),
           h('label', { class: 'check' }, some, 'Only the pages I choose')),
-        pageBox] : h('p', { class: 'muted' }, isClub() ? 'Shows on the ' + site.name + ' page.' : 'Shows on every page of ' + site.name + ' that has the pop-up line.'),
+        pageBox] : h('p', { class: 'muted' }, 'Shows on every page of ' + site.name + ' that has the pop-up line.'),
         h('div', { class: 'two', style: 'margin-top:16px' },
           h('label', { class: 'field' }, h('span', {}, 'How often a visitor sees it'), freq),
           delay)),

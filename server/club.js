@@ -1,45 +1,70 @@
-// The Dnamo Football Club site (template 'club'): what its page says when nothing
+// The Dnamo Football Club site (template 'club'): what its pages say when nothing
 // has been changed in the admin center, and the rules for what may be saved.
-// These defaults mirror public/fc/index.html.
+// The pages themselves are written by tools/build-club.mjs from these defaults.
+import { CLUB_DEFAULTS, CLUB_PAGES, keyOf } from './club-content.js';
+import { cleanPage, pageMain } from './club-pages.js';
 import { SHARED_CLEAN, photosCleaner } from './defaults.js';
-import { href, link, list, obj, paragraphs, text, video } from './valid.js';
+import { href, list, obj, paragraphs, text, video } from './valid.js';
 
-const FC = 'https://www.dnamofc.com';
-const PROGRAMS = ['Juniors', 'Microsoccer', 'Recreational', 'Competitive', 'Travel', 'Goalkeeper Academy', 'IDP', 'Referee'];
-const CAMPS = ['Summer Camp', 'Future Soccer Star', 'Microsoccer Shootout', 'Thanksgiving Camp', 'Winter Camp', 'Spring Camp'];
+const kids = (group) => CLUB_PAGES.filter((p) => p.group === group && !p.index && !p.menu)
+  .map((p) => ({ label: p.label, href: p.slug + '.html' }));
+
+const HOME = {
+  kicker: '2026 Season · San Francisco',
+  headline: 'Dnamo Football Club',
+  intro: "We believe that soccer is more than just a game. It's a way of life.",
+  video: '',
+  button1: { label: 'Explore programs', href: 'programs.html' },
+  button2: { label: 'Camps', href: 'camps.html' },
+  ticker: CLUB_PAGES.filter((p) => p.group === 'programs' && !p.index).map((p) => p.label),
+  levelsEyebrow: 'Our club levels',
+  levelsTitle: 'Choose your path',
+  levelsIntro: ["Dnamo FC is committed to nurturing every player's individual growth while teaching the value of teamwork, accountability, and resilience. We provide an age-appropriate curriculum emphasizing technical skills and the joy of play, fostering a lifelong passion for soccer in every child."],
+  levels: [
+    { title: 'Microsoccer', text: 'Fun, imaginative environments and a specialized curriculum that promote a love of soccer while developing social, emotional, physical and technical skills.', href: 'microsoccer.html' },
+    { title: 'Recreational', text: 'A simple, non-competitive, community-based program that safely introduces new players to soccer and builds confidence and technical skills.', href: 'recreational.html' },
+    { title: 'Competitive', text: 'High-level coaching, preparation and competition through a curriculum that builds soccer IQ, technical skills and mental conditioning.', href: 'competitive.html' },
+    { title: 'Travel', text: 'For highly motivated players seeking advanced education and skill development, with competitive challenges, travel and exposure to scouts.', href: 'travel.html' },
+  ],
+  joinTitle: 'Ready to join Dnamo FC?',
+  joinText: 'We are always looking to connect with passionate players, families and coaches committed to development and a positive environment.',
+  joinButton: { label: 'Contact us', href: 'contact.html' },
+};
+
+const pageDefaults = {};
+for (const p of CLUB_PAGES) pageDefaults[keyOf(p.slug)] = CLUB_DEFAULTS[p.slug];
 
 const DEFAULTS = {
   identity: { nameA: 'Dnamo', nameB: 'Football Club' },
   header: {
     items: [
       { label: 'Home', href: './', children: [] },
-      { label: 'Tryouts', href: FC + '/tryouts', children: [] },
-      { label: 'About Us', href: FC + '/about', children: [
-        { label: 'Who We Are', href: FC + '/about' },
-        { label: 'Meet Our Team', href: FC + '/about' },
-        { label: 'Gallery', href: FC + '/about' },
-        { label: 'Age Groups', href: FC + '/agegroups' },
-        { label: 'Fees & Financials', href: FC + '/fees' },
-        { label: 'Resources', href: FC + '/resources' },
+      { label: 'Tryouts', href: 'tryouts.html', children: [] },
+      { label: 'About Us', href: 'about.html', children: [
+        { label: 'Who We Are', href: 'about.html' },
+        { label: 'Meet Our Team', href: 'about.html#team' },
+        { label: 'Gallery', href: 'about.html#gallery' },
+        ...kids('about'),
       ] },
-      { label: 'Programs', href: FC + '/programs', children: PROGRAMS.map((label) => ({ label, href: FC + '/programs' })) },
-      { label: 'Camps', href: FC + '/camps', children: CAMPS.map((label) => ({ label, href: FC + '/camps' })) },
+      { label: 'Programs', href: 'programs.html', children: kids('programs') },
+      { label: 'Camps', href: 'camps.html', children: kids('camps') },
       { label: 'Dnamo Academy', href: 'https://www.dnamoacademy.org/', children: [] },
       { label: 'Team Store', href: 'https://www.soccer.com/club/2001959548', children: [] },
     ],
-    button: { label: 'Contact us', href: FC + '/contact' },
+    button: { label: 'Contact us', href: 'contact.html' },
   },
   footer: {
     links: [
       { label: 'Home', href: './' },
-      { label: 'About us', href: FC + '/about' },
-      { label: 'Programs', href: FC + '/programs' },
-      { label: 'Camps', href: FC + '/camps' },
+      { label: 'About us', href: 'about.html' },
+      { label: 'Programs', href: 'programs.html' },
+      { label: 'Camps', href: 'camps.html' },
+      { label: 'Tryouts', href: 'tryouts.html' },
       { label: 'Dnamo Academy', href: 'https://www.dnamoacademy.org/' },
       { label: 'Team Store', href: 'https://www.soccer.com/club/2001959548' },
-      { label: 'Contact us', href: FC + '/contact' },
-      { label: 'Terms & Conditions', href: FC + '/terms-and-conditions' },
-      { label: 'Privacy Policy', href: FC + '/privacy-policy' },
+      { label: 'Contact us', href: 'contact.html' },
+      { label: 'Terms & Conditions', href: 'https://www.dnamofc.com/terms-and-conditions' },
+      { label: 'Privacy Policy', href: 'https://www.dnamofc.com/privacy-policy' },
     ],
     legal: '',
     copyright: '© 2026 Dnamo Football Club',
@@ -47,41 +72,16 @@ const DEFAULTS = {
     instagram: 'https://www.instagram.com/dnamofc',
   },
   photos: {},
-  home: {
-    kicker: '2026 Season · San Francisco',
-    headline: 'Dnamo Football Club',
-    intro: "We believe that soccer is more than just a game. It's a way of life.",
-    video: '',
-    button1: { label: 'Explore programs', href: FC + '/programs' },
-    button2: { label: 'Camps', href: FC + '/camps' },
-    ticker: PROGRAMS,
-    eventShow: true,
-    eventEyebrow: 'Upcoming event',
-    eventTitle: 'Thanksgiving Camp',
-    eventText: ['Our Thanksgiving Soccer Camp keeps players active and engaged during the holiday break with fun, high-energy drills and small-sided games. Led by professional coaches, players develop their technical skills and tactical understanding while staying sharp for the season ahead.'],
-    eventButton: { label: 'Register now', href: 'https://dnamofc.byga.net/programs/hj15224m1v/signup' },
-    levelsEyebrow: 'Our club levels',
-    levelsTitle: 'Choose your path',
-    levelsIntro: ["Dnamo FC is committed to nurturing every player's individual growth while teaching the value of teamwork, accountability, and resilience. We provide an age-appropriate curriculum emphasizing technical skills and the joy of play, fostering a lifelong passion for soccer in every child."],
-    levels: [
-      { title: 'Microsoccer', text: 'Fun, imaginative environments and a specialized curriculum that promote a love of soccer while developing social, emotional, physical and technical skills.', href: FC + '/programs' },
-      { title: 'Recreational', text: 'A simple, non-competitive, community-based program that safely introduces new players to soccer and builds confidence and technical skills.', href: FC + '/programs' },
-      { title: 'Competitive', text: 'High-level coaching, preparation and competition through a curriculum that builds soccer IQ, technical skills and mental conditioning.', href: FC + '/programs' },
-      { title: 'Travel', text: 'For highly motivated players seeking advanced education and skill development, with competitive challenges, travel and exposure to scouts.', href: FC + '/programs' },
-    ],
-    joinTitle: 'Ready to join Dnamo FC?',
-    joinText: 'We are always looking to connect with passionate players, families and coaches committed to development and a positive environment.',
-    joinButton: { label: 'Contact us', href: FC + '/contact' },
-  },
+  home: HOME,
+  ...pageDefaults,
 };
 
 const SLOTS = [
-  { id: 'logo', group: 'Logo', label: 'Logo and browser tab icon', src: 'logo.png', max: 512 },
+  { id: 'logo', group: 'Logo', label: 'Logo and browser tab icon', src: 'fc/logo.jpg', max: 512 },
   { id: 'hero1', group: 'Home slideshow', label: 'Slide 1', src: 'hero-1.jpg', max: 2000 },
   { id: 'hero2', group: 'Home slideshow', label: 'Slide 2', src: 'hero-2.jpg', max: 2000 },
   { id: 'hero3', group: 'Home slideshow', label: 'Slide 3', src: 'hero-3.jpg', max: 2000 },
   { id: 'hero4', group: 'Home slideshow', label: 'Slide 4', src: 'hero-4.jpg', max: 2000 },
-  { id: 'event', group: 'Home page', label: 'Upcoming event photo', src: 'hero-2.jpg', max: 1600 },
 ];
 
 const button = (v, what) => {
@@ -102,11 +102,6 @@ const CLEAN = {
       button1: button(v.button1, 'The first button'),
       button2: button(v.button2, 'The second button'),
       ticker: list(v.ticker, 12, 'Scrolling words').map((w) => text(w, 40, 'A scrolling word', false)).filter(Boolean),
-      eventShow: v.eventShow !== false,
-      eventEyebrow: text(v.eventEyebrow, 60, 'The event label', false),
-      eventTitle: text(v.eventTitle, 80, 'The event title'),
-      eventText: paragraphs(v.eventText, 6, 800, 'the event text'),
-      eventButton: button(v.eventButton, 'The event button'),
       levelsEyebrow: text(v.levelsEyebrow, 60, 'The club levels label', false),
       levelsTitle: text(v.levelsTitle, 80, 'The club levels heading'),
       levelsIntro: paragraphs(v.levelsIntro, 4, 800, 'the club levels text'),
@@ -121,15 +116,30 @@ const CLEAN = {
     };
   },
 };
+for (const p of CLUB_PAGES) CLEAN[keyOf(p.slug)] = cleanPage;
 
 export const CLUB = {
   name: 'club',
-  title: 'Dnamo Football Club',       // as written in the page's <title>
+  title: 'Dnamo Football Club',       // as written in each page's <title>
   path: '/fc/',                        // where the site is reached until it has its own address
-  onePage: true,
+  dark: true,                          // dark is this site's own look; light is the visitor's choice
+  logo: '/fc/logo.jpg',
   DEFAULTS,
   SLOTS,
-  PAGES: ['./'],
+  PAGES: ['./', ...CLUB_PAGES.map((p) => p.slug + '.html'), 'about.html#team', 'about.html#gallery'],
+  POPUP_PAGES: [{ file: 'index.html', label: 'Home' }, ...CLUB_PAGES.map((p) => ({ file: p.slug + '.html', label: p.label }))],
+  // What the admin needs to list the pages: slug, content key, name and group
+  PAGE_LIST: CLUB_PAGES.map((p) => ({ slug: p.slug, key: keyOf(p.slug), label: p.index ? p.label + ' overview' : p.label, group: p.group || '' })),
   KEYS: Object.keys(CLEAN),
   CLEAN,
+  // An inner page is drawn afresh once anything that shows on it has been saved:
+  // the page itself, a page it lists, or the closing invitation from the home page.
+  // Returns { html, title } or null when the stored file can be served as it is.
+  main(file, saved) {
+    const meta = CLUB_PAGES.find((p) => p.slug + '.html' === file);
+    if (!meta) return null;
+    if (!saved.home && !CLUB_PAGES.some((p) => saved[keyOf(p.slug)])) return null;
+    const mine = saved[keyOf(meta.slug)];
+    return { html: pageMain(meta.slug, { ...DEFAULTS, ...saved }), title: mine ? mine.title : null, was: DEFAULTS[keyOf(meta.slug)].title };
+  },
 };

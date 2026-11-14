@@ -112,7 +112,7 @@ function videoHtml(url, poster) {
 // An initiative page takes its browser-tab title from the saved title of that initiative
 const INIT_PAGES = { 'scholarships.html': ['schol', 'Scholarships'], 'coaches.html': ['coach', 'Coach Recruitment &amp; Support'], 'clubhouse.html': ['club', 'Club House &amp; Field'] };
 
-export function render(response, saved, pathname, popups = [], tpl = { title: 'Dnamo Football Foundation', path: '/' }) {
+export function render(response, saved, pathname, popups = [], tpl = { title: 'Dnamo Football Foundation', path: '/', logo: '', main: () => null }) {
   const { identity, header, footer, photos, inits, giving } = saved;
   if (!Object.keys(saved).length && !popups.length) return response;
 
@@ -120,12 +120,18 @@ export function render(response, saved, pathname, popups = [], tpl = { title: 'D
   const page = pageFile(pathname);
 
   const initPage = inits && INIT_PAGES[page];
+  // A page drawn from saved content (the club's inner pages)
+  const drawn = tpl.main(page, saved);
+  if (drawn) rw.on('main', { element(el) { el.setInnerContent('\n' + drawn.html, { html: true }); } });
+  const retitle = drawn && drawn.title && drawn.title !== drawn.was ? drawn : null;
   if (identity) {
     rw.on('a.nav.brand', { element(el) {
-      el.setInnerContent(esc(identity.nameA) + (identity.nameB ? ` <span>${esc(identity.nameB)}</span>` : ''), { html: true });
+      // A site with a logo beside its name keeps it there
+      const logo = tpl.logo ? `<img class="brand-logo" data-slot="logo" src="${esc((photos && photos.logo) || tpl.logo)}" alt="" width="40" height="40">` : '';
+      el.setInnerContent(logo + esc(identity.nameA) + (identity.nameB ? ` <span>${esc(identity.nameB)}</span>` : ''), { html: true });
     } });
   }
-  if (identity || initPage) {
+  if (identity || initPage || retitle) {
     // The browser tab title: swap in the saved site name and initiative title.
     // The text arrives as it is written in the file (already escaped), so it is put back as HTML.
     const full = identity ? (identity.nameA + ' ' + identity.nameB).trim() : null;
@@ -135,6 +141,7 @@ export function render(response, saved, pathname, popups = [], tpl = { title: 'D
       if (!t.lastInTextNode) { t.remove(); return; }
       let title = buffer;
       if (initPage) title = title.split(initPage[1]).join(esc(inits[initPage[0]].title));
+      if (retitle) title = esc(retitle.title) + ' | ' + tpl.title;
       if (full) title = title.split(tpl.title).join(esc(full));
       t.replace(title, { html: true });
       buffer = '';
@@ -163,10 +170,12 @@ export function render(response, saved, pathname, popups = [], tpl = { title: 'D
     } });
     if (photos.logo) {
       // browser tab icon, phone home-screen icon and the preload hint
-      rw.on('link[href$="logo.png"]', { element(el) {
-        el.setAttribute('href', photos.logo);
-        if (el.getAttribute('type') === 'image/png') el.removeAttribute('type');
-      } });
+      for (const sel of ['link[rel="icon"]', 'link[rel="apple-touch-icon"]', 'link[rel="preload"][as="image"]']) {
+        rw.on(sel, { element(el) {
+          el.setAttribute('href', photos.logo);
+          el.removeAttribute('type');
+        } });
+      }
     }
   }
 
@@ -199,9 +208,6 @@ export function render(response, saved, pathname, popups = [], tpl = { title: 'D
     const html = make && make(saved);
     if (typeof html === 'string') el.setInnerContent(html, { html: true });
   } });
-
-  // Club home page: the upcoming event can be switched off
-  if (saved.home && saved.home.eventShow === false) rw.on('#event', { element(el) { el.remove(); } });
 
   // Donate page: amounts and gift names follow the saved giving options
   if (giving) {

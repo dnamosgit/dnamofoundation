@@ -8,7 +8,7 @@ import { MIN_PASSWORD, accountRoutes, checkNewPassword, cleanEmail, joinRoutes, 
 import { saveContent, saveMedia, savedContent } from './content.js';
 import { templateFor } from './templates.js';
 import { SITE_COLUMNS, siteRoutes } from './sites.js';
-import { FREQUENCIES, POPUP_PAGES, createPopup, deletePopup, listPopups, updatePopup } from './popups.js';
+import { FREQUENCIES, LAYOUTS, createPopup, deletePopup, listPopups, updatePopup } from './popups.js';
 
 const FILES = { '/admin.css': '/_adm/admin.css', '/admin.js': '/_adm/admin.js' };
 
@@ -140,16 +140,15 @@ export async function handleAdmin(context, base, sub) {
     const site = await env.DB.prepare('SELECT id, name, kind, template FROM sites WHERE id = ?').bind(Number(m[1])).first();
     if (!site) return fail(404, 'That site does not exist.');
     // A site hosted elsewhere has pop-ups (and their photos) only, shown on all its pages.
-    // A one-page site shows its pop-ups on that page.
     const full = site.kind === 'full';
     const tpl = templateFor(site.template);
     if (!full && m[2] === 'content') return fail(400, 'This site is hosted elsewhere, so only its pop-ups are managed here.');
-    const popup = (full && !tpl.onePage) || !body.popup || typeof body.popup !== 'object' ? body.popup : { ...body.popup, pages: 'all' };
+    const popup = full || !body.popup || typeof body.popup !== 'object' ? body.popup : { ...body.popup, pages: 'all' };
 
     // Everything the editing screens need: current values, which are customised, and the photo slots
     if (method === 'GET' && m[2] === 'content' && !m[3]) {
       const saved = await savedContent(env, site.id, tpl);
-      return json({ content: { ...tpl.DEFAULTS, ...saved }, customised: Object.keys(saved), slots: tpl.SLOTS, pages: tpl.PAGES });
+      return json({ content: { ...tpl.DEFAULTS, ...saved }, customised: Object.keys(saved), slots: tpl.SLOTS, pages: tpl.PAGES, pageList: tpl.PAGE_LIST });
     }
     // Save one section. A value of null puts the section back to the original.
     if (method === 'PUT' && m[2] === 'content' && tpl.KEYS.includes(m[3])) {
@@ -163,11 +162,11 @@ export async function handleAdmin(context, base, sub) {
     if (m[2] === 'popups') {
       const pid = /^\d+$/.test(m[3] || '') ? Number(m[3]) : null;
       if (method === 'GET' && !m[3]) {
-        return json({ popups: await listPopups(env, site.id), pages: POPUP_PAGES, frequencies: FREQUENCIES, now: now() });
+        return json({ popups: await listPopups(env, site.id), pages: tpl.POPUP_PAGES, frequencies: FREQUENCIES, layouts: LAYOUTS, layout: tpl.dark ? 'wide' : 'card', now: now() });
       }
-      if (method === 'POST' && !m[3]) return json({ popup: await createPopup(env, site.id, popup, user.id) });
+      if (method === 'POST' && !m[3]) return json({ popup: await createPopup(env, site.id, popup, user.id, tpl.POPUP_PAGES) });
       if (method === 'PUT' && pid) {
-        const changed = await updatePopup(env, site.id, pid, popup, user.id);
+        const changed = await updatePopup(env, site.id, pid, popup, user.id, tpl.POPUP_PAGES);
         return changed ? json({ popup: changed }) : fail(404, 'That pop-up no longer exists.');
       }
       if (method === 'DELETE' && pid) {

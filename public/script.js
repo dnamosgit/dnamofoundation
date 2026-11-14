@@ -14,8 +14,9 @@
     else { logo.addEventListener('load', hideSplash); logo.addEventListener('error', hideSplash); }
   }
 
-  /* Light / dark mode. Light is the default; the choice is remembered on this device.
-     The inline script in <head> applies a saved "dark" choice before the page paints. */
+  /* Light / dark mode. The choice is remembered on this device, per site: the Foundation
+     starts light, the Club site starts dark (its pages carry data-theme-key).
+     The inline script in <head> applies a saved choice before the page paints. */
   var root = document.documentElement;
   var themeBtn = document.querySelector('.theme-toggle');
   var themeMeta = document.querySelector('meta[name="theme-color"]');
@@ -29,7 +30,7 @@
       var dark = root.getAttribute('data-theme') !== 'dark';
       if (dark) root.setAttribute('data-theme', 'dark');
       else root.removeAttribute('data-theme');
-      try { localStorage.setItem('dnamoTheme', dark ? 'dark' : 'light'); } catch (e) {}
+      try { localStorage.setItem(root.getAttribute('data-theme-key') || 'dnamoTheme', dark ? 'dark' : 'light'); } catch (e) {}
       showTheme();
     });
     showTheme();

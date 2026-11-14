@@ -2,13 +2,17 @@
 // and the rules for what may be saved.
 import { CLUB } from './club.js';
 import { CLEAN, DEFAULTS, KEYS, PAGES, SLOTS } from './defaults.js';
+import { POPUP_PAGES } from './popups.js';
 
 const FOUNDATION = {
   name: 'foundation',
   title: 'Dnamo Football Foundation',
   path: '/',
-  onePage: false,
-  DEFAULTS, SLOTS, PAGES, KEYS, CLEAN,
+  dark: false,
+  logo: '',
+  DEFAULTS, SLOTS, PAGES, KEYS, CLEAN, POPUP_PAGES,
+  PAGE_LIST: [],
+  main: () => null,
 };
 
 const TEMPLATES = { foundation: FOUNDATION, club: CLUB };

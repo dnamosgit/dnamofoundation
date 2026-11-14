@@ -1,11 +1,11 @@
 // Pop-ups: announcements shown over a page to visitors.
 import { now } from './auth.js';
-import { href, list, multiline, obj, text } from './valid.js';
+import { href, image, list, multiline, obj, text } from './valid.js';
 
 const MAX_PER_SITE = 20;
 const MAX_SHOWN = 5;          // at most this many are sent to a page; the visitor sees one
 
-// Pages a pop-up can be limited to
+// Pages a pop-up can be limited to on the Foundation site (other sites bring their own list)
 export const POPUP_PAGES = [
   { file: 'index.html', label: 'Home' },
   { file: 'board.html', label: 'Board' },
@@ -17,7 +17,12 @@ export const POPUP_PAGES = [
   { file: 'contact.html', label: 'Contact' },
   { file: 'donate.html', label: 'Donate' },
 ];
-const FILES = POPUP_PAGES.map((p) => p.file);
+
+// The shape of the card: a tall card with the photo on top, or a low, wide one with the photo at the side
+export const LAYOUTS = [
+  { id: 'card', label: 'Tall card (photo on top)' },
+  { id: 'wide', label: 'Wide card (photo at the side)' },
+];
 
 // How often one visitor sees the same pop-up
 export const FREQUENCIES = [
@@ -36,15 +41,17 @@ function when(v, what) {
 }
 
 // Returns a tidy pop-up or throws an Error whose message is shown to the admin.
-export function cleanPopup(v) {
+export function cleanPopup(v, pageList = POPUP_PAGES) {
+  const FILES = pageList.map((p) => p.file);
   const o = obj(v);
   const title = text(o.title, 80, 'The title');
   const body = multiline(o.text, 600, 'The text', false);
-  const image = String(o.image || '');
-  if (image && !/^\/media\/[0-9a-f]{24}$/.test(image)) throw new Error('That photo is not one uploaded here.');
+  const photo = image(o.image, 'That photo');
+  const label = text(o.label, 40, 'The small label', false);
+  const layout = LAYOUTS.some((l) => l.id === o.layout) ? o.layout : 'card';
   const b = obj(o.button);
-  const label = text(b.label, 40, 'The button label', false);
-  const button = label ? { label, href: href(b.href, 'The button') } : { label: '', href: '' };
+  const bLabel = text(b.label, 40, 'The button label', false);
+  const button = bLabel ? { label: bLabel, href: href(b.href, 'The button') } : { label: '', href: '' };
 
   let pages = 'all';
   if (o.pages !== 'all') {
@@ -59,7 +66,7 @@ export function cleanPopup(v) {
   const endsAt = when(o.endsAt, 'The end date');
   if (startsAt !== null && endsAt !== null && endsAt <= startsAt) throw new Error('The end date must be after the start date.');
 
-  return { enabled: !!o.enabled, startsAt, endsAt, data: { title, text: body, image, button, pages, frequency, delay } };
+  return { enabled: !!o.enabled, startsAt, endsAt, data: { title, text: body, image: photo, label, layout, button, pages, frequency, delay } };
 }
 
 function fromRow(r) {
@@ -73,8 +80,8 @@ export async function listPopups(env, siteId) {
   return rows.map(fromRow);
 }
 
-export async function createPopup(env, siteId, value, userId) {
-  const p = cleanPopup(value);
+export async function createPopup(env, siteId, value, userId, pageList) {
+  const p = cleanPopup(value, pageList);
   const count = (await env.DB.prepare('SELECT COUNT(*) AS n FROM popups WHERE site_id = ?').bind(siteId).first()).n;
   if (count >= MAX_PER_SITE) throw new Error(`A site can have up to ${MAX_PER_SITE} pop-ups. Delete an old one first.`);
   const t = now();
@@ -85,8 +92,8 @@ export async function createPopup(env, siteId, value, userId) {
 }
 
 // Returns the saved pop-up, or null when it does not exist on this site.
-export async function updatePopup(env, siteId, id, value, userId) {
-  const p = cleanPopup(value);
+export async function updatePopup(env, siteId, id, value, userId, pageList) {
+  const p = cleanPopup(value, pageList);
   const t = now();
   const done = await env.DB.prepare(
     'UPDATE popups SET enabled = ?, starts_at = ?, ends_at = ?, data = ?, updated_at = ?, updated_by = ? WHERE id = ? AND site_id = ?')
@@ -113,7 +120,7 @@ export async function activePopups(env, siteId, page) {
     let d;
     try { d = JSON.parse(r.data); } catch (e) { continue; }
     if (d.pages !== 'all' && !(Array.isArray(d.pages) && d.pages.includes(page))) continue;
-    out.push({ id: r.id, title: d.title, text: d.text, image: d.image, button: d.button, frequency: d.frequency, delay: d.delay });
+    out.push({ id: r.id, title: d.title, text: d.text, image: d.image, label: d.label || '', layout: d.layout || 'card', button: d.button, frequency: d.frequency, delay: d.delay });
     if (out.length >= MAX_SHOWN) break;
   }
   return out;

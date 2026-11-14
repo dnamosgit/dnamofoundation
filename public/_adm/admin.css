@@ -187,3 +187,8 @@ button,input,select,textarea{font:inherit}
 .copy{flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.pagepick{display:flex;flex-wrap:wrap;align-items:flex-end;gap:12px 16px}
+.pagepick .field{flex:1;min-width:220px;margin-bottom:0}
+.pagepick .btn{margin-top:0;margin-bottom:4px}
+.photos.mini{grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));margin-bottom:8px}
+.photos.mini .add-photo{min-height:90px}

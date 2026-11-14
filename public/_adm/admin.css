@@ -194,3 +194,18 @@ button,input,select,textarea{font:inherit}
 .photos.mini .add-photo{min-height:90px}
 .item-photo.wide img{width:112px;height:70px;border-radius:6px}
 .item-photo .stack{margin-top:4px}
+/* Coaches */
+.crew{display:flex;flex-direction:column;margin:12px 0 4px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.crew-row{border-top:1px solid var(--line);background:#fff}
+.crew-row:first-child{border-top:0}
+.crew-row.open{background:var(--soft)}
+.crew-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 14px}
+.crew-top>img{flex:none;width:44px;height:52px;object-fit:cover;background:var(--fill);border-radius:4px}
+.crew-id{flex:1;min-width:160px;display:flex;flex-direction:column}
+.crew-id strong{font-weight:600}
+.crew-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.crew-tools .btn{margin-top:0}
+.crew-tools .icon[disabled]{opacity:.35;cursor:default}
+.crew-edit{padding:6px 14px 18px;border-top:1px solid var(--line)}
+.crew-edit .item-photo{margin-top:12px}
+.item-photo.tall img{width:96px;height:120px}

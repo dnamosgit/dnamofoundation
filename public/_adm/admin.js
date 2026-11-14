@@ -97,6 +97,7 @@
   var SECTIONS = [
     { id: 'overview', label: 'Overview' },
     { id: 'pages', label: 'Page content', full: true, group: 'Website' },
+    { id: 'coaches', label: 'Coaches', club: true, group: 'Website' },
     { id: 'photos', label: 'Photos', full: true, group: 'Website' },
     { id: 'chrome', label: 'Header & footer', full: true, group: 'Website' },
     { id: 'identity', label: 'Site settings', full: true, group: 'Website' },
@@ -110,7 +111,7 @@
   /* The Dnamo Football Club site, reached at /fc/ until it has its own address */
   var isClub = function () { return isFull() && site.template === 'club'; };
   var sitePath = function (s) { return s.template === 'club' ? '/fc/' : '/'; };
-  var allowed = function (s) { return (!s.full || isFull()) && (!s.owner || session.user.role === 'owner'); };
+  var allowed = function (s) { return (!s.full || isFull()) && (!s.club || isClub()) && (!s.owner || session.user.role === 'owner'); };
 
   var session = null;   // { user, sites }
   var site = null;      // the site being edited
@@ -188,7 +189,7 @@
       else b.removeAttribute('aria-current');
     });
     if (!data) return;
-    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages, popups: popups, sites: sites, admins: admins, account: account }[id] || overview)();
+    ({ overview: overview, identity: identity, chrome: chrome, photos: photos, pages: pages, coaches: coaches, popups: popups, sites: sites, admins: admins, account: account }[id] || overview)();
     mainEl.scrollTop = 0;
     window.scrollTo(0, 0);
   }
@@ -453,6 +454,10 @@
           var a = area(f.label, v, f.rows || 4, f.hint);
           body.appendChild(a);
           readers[f.key] = function () { return a.input.value; };
+        } else if (f.type === 'check') {
+          var tick = h('input', { type: 'checkbox', checked: !!v });
+          body.appendChild(h('label', { class: 'check' }, tick, f.label));
+          readers[f.key] = function () { return tick.checked; };
         } else if (f.type === 'amounts') {
           var am = input(f.label, amountsText(v), { inputmode: 'numeric' }, f.hint || 'Whole dollars, separated by commas.');
           body.appendChild(am);
@@ -571,6 +576,120 @@
     ];
   }
 
+  /* ---------- Coaches (Dnamo Football Club) ---------- */
+
+  /* The profiles on the Who We Are page, as a compact list: each coach can be edited,
+     moved up or down, or removed, and new ones added. Saved as part of that page. */
+  function coaches() {
+    var page = data.content.about;
+    var list = page.people.map(function (m) { return Object.assign({ license: '' }, m); });
+    var open = null;          // the coach whose details are showing
+    var dirty = false;
+    var box = h('div', { class: 'crew' });
+    var status = statusLine();
+    var order = h('select', {},
+      h('option', { value: 'title', selected: page.peopleOrder !== 'manual' }, 'By title, then name (directors first)'),
+      h('option', { value: 'manual', selected: page.peopleOrder === 'manual' }, 'In the order of this list'));
+    var changed = function () { dirty = true; status.className = 'status'; status.textContent = 'Not saved yet.'; };
+    order.addEventListener('change', function () { changed(); draw(); });
+
+    function editor(m, summary) {
+      var img = h('img', { alt: '', src: m.photo || '/person.svg' });
+      var st = statusLine();
+      var clear = h('button', { class: 'btn ghost small', type: 'button', hidden: !m.photo, onclick: function () {
+        m.photo = ''; img.src = '/person.svg'; clear.hidden = true; changed(); summary();
+      } }, 'Remove photo');
+      var file = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: function () {
+        var chosen = file.files[0];
+        if (!chosen) return;
+        st.className = 'status'; st.textContent = 'Uploading...';
+        prepare(chosen, 900).then(function (blob) {
+          return api('POST', '/sites/' + site.id + '/media', blob, { 'X-File-Name': encodeURIComponent(chosen.name) });
+        }).then(function (up) {
+          m.photo = up.url; img.src = up.url; clear.hidden = false;
+          st.className = 'status ok'; st.textContent = 'Uploaded. Save to publish.';
+          changed(); summary();
+        }).catch(function (err) { st.className = 'status bad'; st.textContent = err.message; }).then(function () { file.value = ''; });
+      } });
+      var name = input('Name', m.name, { maxlength: 80 });
+      var role = input('Title', m.role, { maxlength: 80 }, 'For example: Coach, or Director of Goalkeepers.');
+      var license = input('License (optional)', m.license, { maxlength: 80 }, 'For example: USSF C License.');
+      var bio = area('Profile', m.bio, 6, 'Shown when a visitor selects this coach. Leave an empty line between paragraphs.');
+      [[name, 'name'], [role, 'role'], [license, 'license'], [bio, 'bio']].forEach(function (pair) {
+        pair[0].input.addEventListener('input', function () { m[pair[1]] = pair[0].input.value; changed(); summary(); });
+      });
+      return h('div', { class: 'crew-edit' },
+        h('div', { class: 'item-photo wide tall' }, img,
+          h('div', {}, h('span', { class: 'muted small' }, 'Photo. An upright photo works best.'),
+            h('div', { class: 'stack' }, h('button', { class: 'btn ghost small', type: 'button', onclick: function () { file.click(); } }, 'Choose photo'), clear), st, file)),
+        h('div', { class: 'two' }, name, role), license, bio);
+    }
+
+    function draw() {
+      box.textContent = '';
+      var manual = order.value === 'manual';
+      list.forEach(function (m, i) {
+        var thumb = h('img', { alt: '', src: m.photo || '/person.svg' });
+        var who = h('strong', {}), what = h('span', { class: 'muted small' });
+        var summary = function () {
+          thumb.src = m.photo || '/person.svg';
+          who.textContent = m.name || 'New coach';
+          what.textContent = [m.role, m.license].filter(Boolean).join(' \u00b7 ') || 'No title yet';
+        };
+        summary();
+        var move = function (d) {
+          var j = i + d;
+          if (j < 0 || j >= list.length) return;
+          list.splice(i, 1); list.splice(j, 0, m);
+          changed(); draw();
+        };
+        var row = h('div', { class: 'crew-row' + (open === m ? ' open' : '') },
+          h('div', { class: 'crew-top' }, thumb,
+            h('div', { class: 'crew-id' }, who, what),
+            h('div', { class: 'crew-tools' },
+              manual ? h('button', { class: 'icon', type: 'button', title: 'Move up', 'aria-label': 'Move ' + m.name + ' up', disabled: i === 0, onclick: function () { move(-1); } }, '\u2191') : null,
+              manual ? h('button', { class: 'icon', type: 'button', title: 'Move down', 'aria-label': 'Move ' + m.name + ' down', disabled: i === list.length - 1, onclick: function () { move(1); } }, '\u2193') : null,
+              h('button', { class: 'btn ghost small', type: 'button', onclick: function () { open = open === m ? null : m; draw(); } }, open === m ? 'Close' : 'Edit'),
+              h('button', { class: 'btn ghost small', type: 'button', onclick: function () {
+                if (!window.confirm('Remove ' + (m.name || 'this coach') + ' from the page?')) return;
+                list.splice(i, 1); if (open === m) open = null;
+                changed(); draw();
+              } }, 'Remove'))),
+          open === m ? editor(m, summary) : null);
+        box.appendChild(row);
+      });
+      if (!list.length) box.appendChild(h('p', { class: 'muted' }, 'No coaches yet.'));
+      count.textContent = list.length + (list.length === 1 ? ' coach' : ' coaches');
+    }
+
+    var count = h('span', { class: 'muted small' });
+    var addBtn = h('button', { class: 'btn ghost', type: 'button', onclick: function () {
+      if (list.length >= 40) { status.className = 'status bad'; status.textContent = 'There is room for 40 coaches.'; return; }
+      var m = { name: '', role: 'Coach', license: '', photo: '', bio: '' };
+      list.push(m); open = m;
+      changed(); draw();
+      var first = box.querySelector('.crew-row.open input[type=text]');
+      if (first) first.focus();
+    } }, 'Add a coach');
+    var saveBtn = h('button', { class: 'btn', type: 'button', onclick: function () {
+      var missing = list.filter(function (m) { return !String(m.name).trim(); })[0];
+      if (missing) { open = missing; draw(); status.className = 'status bad'; status.textContent = 'Every coach needs a name.'; return; }
+      save('about', Object.assign({}, data.content.about, { people: list, peopleOrder: order.value }), status, saveBtn).then(function () { dirty = false; }, function () {});
+    } }, 'Save changes');
+
+    draw();
+    paint(
+      h('h1', {}, 'Coaches'),
+      h('p', { class: 'lead' }, 'The coach profiles on the Who We Are page of ' + site.name + '. Edit a profile, change its photo, remove it, or add a new one.'),
+      h('section', { class: 'card' },
+        h('label', { class: 'field' }, h('span', {}, 'Order on the page'), order,
+          h('small', {}, 'Choose "In the order of this list" to arrange the coaches yourself with the arrows.')),
+        h('div', { class: 'pop-head' }, h('h2', {}, 'Profiles'), count),
+        box,
+        h('div', { class: 'actions' }, saveBtn, addBtn, status,
+          h('a', { class: 'btn ghost small', href: sitePath(site) + 'about#team', target: '_blank', rel: 'noopener' }, 'View on the site'))));
+  }
+
   var clubPage = 'home';
 
   /* Lists typed one per line, with the parts of a line separated by " | " */
@@ -641,14 +760,15 @@
     var photo = photoList(v.photo ? [v.photo] : [], 1, 2000);
     var side = photoList(v.sidePhoto ? [v.sidePhoto] : [], 1, 1600);
     var sections = itemList(v.sections.map(function (x) {
-      return { title: x.title, text: x.text.join('\n\n'), points: x.points.join('\n'), rows: pipesText(x.rows, ['label', 'value', 'note']), buttons: pipesText(x.buttons, ['label', 'href']), photo: x.photo || '' };
-    }), { addLabel: 'Add a section', max: 12, blank: { title: '', text: '', points: '', rows: '', buttons: '', photo: '' }, fields: [
+      return { title: x.title, text: x.text.join('\n\n'), points: x.points.join('\n'), rows: pipesText(x.rows, ['label', 'value', 'note']), buttons: pipesText(x.buttons, ['label', 'href']), photo: x.photo || '', highlight: !!x.highlight };
+    }), { addLabel: 'Add a section', max: 12, blank: { title: '', text: '', points: '', rows: '', buttons: '', photo: '', highlight: false }, fields: [
       { key: 'title', label: 'Heading' },
       { key: 'text', label: 'Text', type: 'area', rows: 4, hint: 'Leave an empty line between paragraphs. Put **two stars** around words to make them bold.' },
       { key: 'points', label: 'Bullet points', type: 'area', rows: 4, hint: 'One per line.' },
       { key: 'rows', label: 'Table', type: 'area', rows: 4, hint: 'One row per line: the name, then " | ", the figure, then " | ", the small print. For example: Training | $561 per season | 1 training per week' },
       { key: 'buttons', label: 'Buttons', type: 'area', rows: 2, hint: BTN },
-      { key: 'photo', type: 'photo', size: 1600, wide: true, label: 'Photo beside this section (optional)' }
+      { key: 'photo', type: 'photo', size: 1600, wide: true, label: 'Photo beside this section (optional)' },
+      { key: 'highlight', type: 'check', label: 'Show as a call to action (large and centred, on a dark band)' }
     ] });
     var pTitle = input('Heading', v.peopleTitle), pIntro = area('Introduction', v.peopleIntro, 3);
     var people = itemList(v.people, { addLabel: 'Add a profile', max: 40, blank: { name: '', role: 'Coach', license: '', photo: '', bio: '' }, fields: [
@@ -696,7 +816,7 @@
         eyebrow: eyebrow.input.value, title: title.input.value, lead: lead.input.value, photo: photo.read()[0] || '', sidePhoto: side.read()[0] || '',
         facts: facts.read(), body: body.read(), buttons: btns.read(),
         sections: sections.read().map(function (x) {
-          return { title: x.title, text: parasRead(x.text), points: linesRead(x.points), rows: pipesRead(x.rows, ['label', 'value', 'note']), buttons: pipesRead(x.buttons, ['label', 'href']), photo: x.photo || '' };
+          return { title: x.title, text: parasRead(x.text), points: linesRead(x.points), rows: pipesRead(x.rows, ['label', 'value', 'note']), buttons: pipesRead(x.buttons, ['label', 'href']), photo: x.photo || '', highlight: !!x.highlight };
         }),
         peopleTitle: pTitle.input.value, peopleIntro: pIntro.input.value, peopleOrder: pOrder.value, people: people.read(),
         galleryTitle: gTitle.input.value, galleryIntro: gIntro.input.value, gallerySource: gSource.value,
@@ -712,7 +832,7 @@
       h('section', { class: 'card' }, h('h2', {}, 'Sections'),
         h('p', { class: 'muted' }, 'The blocks down the page, in this order. Leave any part of a section empty to leave it out. Each section can have a photo beside it.'), sections.el),
       h('section', { class: 'card' }, h('h2', {}, 'People'),
-        h('p', { class: 'muted' }, 'The coach and staff profiles. Add a profile at the bottom of the list; remove one with the \u00d7 beside it. Leave the list empty on pages without profiles.'),
+        h('p', { class: 'muted' }, 'Profiles shown on this page. The club\'s coaches are easier to manage under Coaches in the menu on the left. Leave the list empty on pages without profiles.'),
         pTitle, pIntro,
         h('label', { class: 'field' }, h('span', {}, 'Order on the page'), pOrder,
           h('small', {}, 'To arrange them yourself, choose "In the order of the list below" and use the arrows beside each profile.')),

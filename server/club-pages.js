@@ -10,6 +10,7 @@ const attr = (s) => esc(s).replace(/\n/g, '&#10;');
 // Text where **double stars** mark bold
 const rich = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
+// (kept for pages that still use the profile panel)
 const CLOSE = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
 function buttons(items) {
@@ -74,7 +75,8 @@ export function pageMain(slug, all, live) {
   }
 
   // Sections take turns between the dark band and the plain page
-  let dark = true;
+  // After an introduction the first section is dark; with none it starts on the plain page
+  let dark = !!(p.facts.length || p.body.length || p.buttons.length || p.sidePhoto);
   const band = (inner, id) => {
     const tag = id ? ` id="${id}"` : '';
     const html = dark ? `<section class="dark"${tag}><div class="w pad-l club-sec">${inner}</div></section>\n` : `<section class="w pad-l club-sec"${tag}>${inner}</section>\n`;
@@ -97,6 +99,12 @@ export function pageMain(slug, all, live) {
     if (s.text.length) inner += '<div class="prose">' + s.text.map((x) => `<p>${rich(x)}</p>`).join('') + '</div>';
     if (s.points.length) inner += '<ul class="goals">' + s.points.map((x) => `<li>${rich(x)}</li>`).join('') + '</ul>';
     inner += rows(s.rows) + buttons(s.buttons);
+    // A call to action stands apart: large and centred on its own dark band
+    if (s.highlight) {
+      out += `<section class="club-cta"><div class="w">${inner}</div></section>\n`;
+      dark = false;
+      continue;
+    }
     // A section's photo sits beside it, on the right and the left in turn
     if (s.photo) {
       inner = `<div class="sec-split${flip ? ' flip' : ''}"><div>${inner}</div><img class="shot" src="${esc(s.photo)}" alt="" width="2000" height="1125" loading="lazy"></div>`;
@@ -108,10 +116,16 @@ export function pageMain(slug, all, live) {
   if (p.people.length) {
     let inner = p.peopleTitle ? `<h2 class="h">${esc(p.peopleTitle)}</h2>` : '';
     if (p.peopleIntro) inner += `<p class="lead">${esc(p.peopleIntro)}</p>`;
+    // Each coach is a card: photo, name, title, license. Selecting one opens the profile under the name.
     const staff = p.people.map(withLicense);
-    inner += '<div class="grid people">' + (p.peopleOrder === 'manual' ? staff : sortPeople(staff)).map((m) =>
-      `<button class="dir" type="button" aria-expanded="false" aria-controls="profile" data-name="${attr(m.name)}" data-role="${attr(m.role + (m.license ? ' · ' + m.license : ''))}" data-bio="${attr(m.bio)}"><img src="${esc(m.photo || '/person.svg')}" alt="" width="120" height="120" loading="lazy"><span class="h">${esc(m.name)}</span><span class="red">${esc(m.role)}</span>${m.license ? `<span class="lic">${esc(m.license)}</span>` : ''}</button>`).join('') + '</div>';
-    inner += `<div class="profile" id="profile" hidden aria-live="polite"><button class="pclose" type="button" aria-label="Close profile" title="Close">${CLOSE}</button><h2 class="h pname"></h2><p class="prole"></p><p class="pbio"></p></div>`;
+    inner += '<div class="coaches">' + (p.peopleOrder === 'manual' ? staff : sortPeople(staff)).map((m, i) => {
+      const id = `<span class="h">${esc(m.name)}</span><span class="red">${esc(m.role)}</span>${m.license ? `<span class="lic">${esc(m.license)}</span>` : ''}`;
+      const bio = String(m.bio || '').split(/\n+/).map((x) => x.trim()).filter(Boolean);
+      const img = `<img src="${esc(m.photo || '/person.svg')}" alt=""${m.photo ? '' : ' class="none"'} width="400" height="500" loading="lazy">`;
+      if (!bio.length) return `<article class="coach">${img}<div class="coach-body"><div class="coach-head">${id}</div></div></article>`;
+      return `<article class="coach">${img}<div class="coach-body"><button class="coach-head" type="button" aria-expanded="false" aria-controls="coach-${i}">${id}<span class="coach-more" aria-hidden="true"></span></button>`
+        + `<div class="coach-bio" id="coach-${i}" hidden>${bio.map((x) => `<p>${esc(x)}</p>`).join('')}</div></div></article>`;
+    }).join('') + '</div>';
     out += band(inner, 'team');
   }
 
@@ -188,6 +202,7 @@ export function cleanPage(v) {
         }),
         buttons: buttonList(o.buttons, 'Section'),
         photo: image(o.photo, `The photo for "${name || 'a section'}"`),
+        highlight: !!o.highlight,
       };
     }),
     peopleTitle: text(v.peopleTitle, 80, 'The team heading', false),

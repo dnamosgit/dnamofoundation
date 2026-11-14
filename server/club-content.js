@@ -7,7 +7,8 @@
 //              galleryTitle, galleryIntro, gallerySource, galleryCount, galleryFeed, gallery }
 //   peopleOrder    'title' sorts people by title then name; 'manual' keeps the order of the list
 //   gallerySource  'photos' shows the uploaded photos; 'instagram' shows the latest posts
-// A section is: { title, text, points, rows, buttons, photo }
+// A section is: { title, text, points, rows, buttons, photo, highlight }
+//   highlight  shows the section as a call to action: large, centred, on a dark band
 //   photo      the banner across the top of the page
 //   sidePhoto  a photo beside the introduction; a section's photo sits beside that section
 //   facts   [{ label, value }]            short figures under the lead
@@ -52,7 +53,7 @@ const page = (p) => ({
   peopleTitle: '', peopleIntro: '', peopleOrder: 'title', people: [],
   galleryTitle: '', galleryIntro: '', gallerySource: 'photos', galleryCount: 12, galleryFeed: '', gallery: [], ...p,
 });
-const section = (s) => ({ title: '', text: [], points: [], rows: [], buttons: [], photo: '', ...s });
+const section = (s) => ({ title: '', text: [], points: [], rows: [], buttons: [], photo: '', highlight: false, ...s });
 // Written as "Title · License" below; kept as two separate fields
 const person = (name, role, bio) => {
   const [title, ...rest] = role.split(' · ');
@@ -222,6 +223,7 @@ export const CLUB_DEFAULTS = {
     eyebrow: 'About us',
     title: 'Resources',
     lead: 'Partners who help our players stay healthy, recover well and perform.',
+    body: ['Playing well starts with being well. These are the partners our families can turn to for injury care, recovery and long-term health, on top of what our coaches do on the field.'],
     sections: [
       section({ title: 'Atlas Health Center', text: [
         'Atlas Health Center is a long-standing integrative wellness facility in San Francisco that has provided holistic care for more than 30 years. The center specializes in chiropractic adjustments, acupuncture and manual therapy to address the root causes of pain, with on-site digital X-rays and individual recovery plans for patients of all ages.',
@@ -330,16 +332,40 @@ export const CLUB_DEFAULTS = {
 
   goalkeeper: page({
     title: 'Goalkeeper Academy',
-    lead: 'Specialized training for the most specialized position on the field.',
+    lead: 'The last line of defense deserves its own coaching. Give your goalkeeper a place built for them.',
     photo: '/hero-4.jpg',
-    facts: [{ label: 'For', value: 'Goalkeepers' }, { label: 'Led by', value: 'Former professional goalkeepers' }],
+    facts: [{ label: 'For', value: 'Goalkeepers' }, { label: 'Coaches', value: 'Former professional keepers' }, { label: 'Setting', value: 'Goalkeepers only' }],
     body: [
-      'The Dnamo FC Goalkeeper Academy helps goalkeepers develop the technical, tactical and mental skills the modern game demands. Training takes place in a focused goalkeeper environment where players work alongside other goalkeepers and receive detailed coaching from experienced staff.',
+      'In a normal team session a goalkeeper faces a handful of shots and gets a few minutes of position-specific coaching. It is nobody\'s fault; there is one keeper and fifteen outfield players. But it means most young goalkeepers are left to teach themselves the hardest position on the field.',
+      'The Dnamo FC Goalkeeper Academy fixes that. Your child trains in a focused goalkeeper environment, alongside other goalkeepers, with coaches who have played the position professionally and know exactly what it takes.',
     ],
-    buttons: info(BYGA + '/programs/urprxiudtx/signup'),
+    buttons: [{ label: 'Reserve a spot', href: BYGA + '/programs/urprxiudtx/signup' }, { label: 'Ask us a question', href: 'contact.html' }],
     sections: [
-      section({ title: 'What we train', points: ['Shot stopping and reaction saves', 'Handling and catching techniques', 'Footwork and positioning', '1v1 situations and decision-making', 'Distribution with hands and feet', 'Communication and leadership'] }),
-      section({ title: 'Why join', text: ['Goalkeepers receive more repetitions, detailed feedback and specialized coaching that accelerates development and builds confidence in matches. The program is led by former professional goalkeeper coaches and is designed to grow confident, reliable goalkeepers who perform consistently in competitive environments.'] }),
+      section({ title: 'What your goalkeeper will train', text: ['Every session builds the full modern goalkeeper: brave in the goal, calm on the ball and loud in the back.'], points: [
+        '**Shot stopping** and reaction saves',
+        '**Handling** and catching technique',
+        '**Footwork** and positioning',
+        '**1v1 situations** and decision-making',
+        '**Distribution** with hands and feet',
+        '**Communication** and leadership',
+      ] }),
+      section({ title: 'What parents notice', points: [
+        '**More repetitions.** Dozens of quality actions every session, not a few shots at the end of practice.',
+        '**Detailed feedback.** Coaches correct technique on the spot and explain the why, so the lesson sticks.',
+        '**Confidence in matches.** A keeper who has rehearsed the moment handles it calmly when it counts.',
+        '**A group of their own.** Goalkeepers push each other, share the pressure of the position and build real friendships.',
+      ] }),
+      section({ title: 'Coached by people who have stood in the goal', text: [
+        'The academy is led by Paulo Romero, our Director of Goalkeepers, who came through Peru\'s top academies and was selected to the U-15 national team as a goalkeeper, and has coached for more than 12 years.',
+        'He works alongside goalkeeper coaches with professional careers in Brazil and Europe and academy backgrounds in France. Your child learns the position from people who have lived it.',
+      ], buttons: [{ label: 'Meet our coaches', href: 'about.html#team' }] }),
+      section({ title: 'How to get started', points: [
+        '**Tell us about your goalkeeper.** Use the Reserve a spot button and share their age and experience.',
+        '**Come to a session.** We place your child with goalkeepers at a similar stage.',
+        '**Watch them grow.** You will see the difference in training first, then on game day.',
+      ] }),
+      section({ highlight: true, title: 'Every great team starts with a goalkeeper who believes in themselves', text: ['Spots in the Goalkeeper Academy are limited so every keeper gets real attention. If your child loves the position, or is curious about it, now is the time.'],
+        buttons: [{ label: 'Reserve a spot', href: BYGA + '/programs/urprxiudtx/signup' }, { label: 'Talk to a coach', href: 'contact.html' }] }),
     ],
   }),
 

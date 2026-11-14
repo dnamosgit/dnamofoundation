@@ -84,6 +84,30 @@
     });
   }
 
+  /* Coaches (Club pages): selecting a coach opens their profile under the name; one is open at a time */
+  Array.prototype.forEach.call(document.querySelectorAll('.coach'), function (card) {
+    var head = card.querySelector('button.coach-head');
+    if (!head) return;
+    var bio = card.querySelector('.coach-bio');
+    var toggle = function () {
+      var open = !card.classList.contains('open');
+      Array.prototype.forEach.call(document.querySelectorAll('.coach.open'), function (other) {
+        other.classList.remove('open');
+        other.querySelector('.coach-bio').hidden = true;
+        other.querySelector('button.coach-head').setAttribute('aria-expanded', 'false');
+      });
+      if (!open) return;
+      card.classList.add('open');
+      bio.hidden = false;
+      head.setAttribute('aria-expanded', 'true');
+      // The card moves when it opens across the row: keep it in view
+      var top = card.getBoundingClientRect().top;
+      if (top < 90 || top > window.innerHeight * 0.6) window.scrollTo({ top: window.scrollY + top - 110, behavior: reduceMotion ? 'auto' : 'smooth' });
+    };
+    head.addEventListener('click', toggle);
+    card.querySelector('img').addEventListener('click', toggle);
+  });
+
   /* Page banner (Club pages): the photo moves a little slower than the page */
   var banner = document.querySelector('.pagehero img');
   if (banner && !reduceMotion) {

@@ -477,6 +477,44 @@ html[data-splash-key] .splash{background:#000}
 @keyframes ph-in{from{scale:1.1;opacity:.4}to{scale:1;opacity:1}}
 @media (max-width:900px){.sec-split{grid-template-columns:1fr;gap:28px}.sec-split.flip>div{order:0}.pagehero h1.h{font-size:44px}.ph-in{padding-top:110px;padding-bottom:32px}.club-top{padding-bottom:56px}}
 @media (max-width:640px){.pagehero{min-height:300px}.pagehero h1.h{font-size:34px}.ph-lead{font-size:16px}.mq-dark::before,.mq-dark::after{width:16%}.marquee.mq-dark{padding:18px 0}}
+/* Club site: photos have square corners; the row of sister pages is centred */
+[data-site="club"] .shot,[data-site="club"] .gallery img,[data-site="club"] .gallery.insta a,[data-site="club"] .coach img{border-radius:0}
+.club-chips nav{justify-content:center}
+/* Coaches: cards in rows of four. Selecting one opens it across the row, with the profile under the name. */
+.coaches{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;grid-auto-flow:dense}
+.coach{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);color:var(--fg);transition:border-color .25s ease,box-shadow .25s ease}
+.coach:hover{border-color:var(--line-strong);box-shadow:var(--shadow)}
+.coach img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:var(--ph);cursor:pointer}
+.coach img.none{object-position:center 30%}
+.coach-body{display:flex;flex-direction:column;flex:1}
+.coach-head{position:relative;display:block;width:100%;padding:16px 44px 16px 18px;border:0;background:none;color:inherit;font:inherit;text-align:left}
+button.coach-head{cursor:pointer}
+.coach-head .h{display:block;font-size:21px}
+.coach-head .red{display:block;margin-top:4px;font-size:13px;font-weight:600}
+.coach-head .lic{display:block;margin-top:3px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.6}
+.coach-more{position:absolute;right:16px;top:20px;width:14px;height:14px}
+.coach-more::before,.coach-more::after{content:"";position:absolute;left:0;top:6px;width:14px;height:2px;background:currentColor;transition:transform .25s ease}
+.coach-more::after{transform:rotate(90deg)}
+.coach.open .coach-more::after{transform:rotate(0)}
+.coach-bio{padding:0 18px 20px;font-size:15px;line-height:1.65}
+.coach-bio p{margin:0 0 12px}
+.coach-bio p:last-child{margin-bottom:0}
+.coach.open{grid-column:1/-1;flex-direction:row;border-color:var(--red)}
+.coach.open img{flex:none;width:min(30%,300px);aspect-ratio:auto;height:auto;min-height:260px;align-self:stretch}
+.coach.open .coach-head .h{font-size:30px}
+.coach.open .coach-bio{max-width:820px}
+@media (max-width:1100px){.coaches{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:760px){.coaches{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.coach.open{flex-direction:column}.coach.open img{width:100%;min-height:0;aspect-ratio:4/3}.coach-head .h{font-size:18px}.coach.open .coach-head .h{font-size:24px}}
+@media (max-width:420px){.coaches{grid-template-columns:1fr}}
+/* A call to action inside a page */
+.club-cta{--fg:#fff;position:relative;overflow:hidden;background:radial-gradient(90% 160% at 50% 120%,#5a0f0f,#0b0b0b 62%);color:#fff;text-align:center}
+.club-cta .w{padding-top:84px;padding-bottom:84px}
+.club-cta h2.h{max-width:860px;margin:0 auto 18px;font-size:46px}
+.club-cta .prose{max-width:640px;margin:0 auto;font-size:17px;opacity:.92}
+.club-cta .goals{display:inline-flex;margin:22px auto 0;text-align:left}
+.club-cta .club-btns{justify-content:center;margin-top:30px}
+.club-cta .btn.s{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
+@media (max-width:760px){.club-cta .w{padding-top:56px;padding-bottom:56px}.club-cta h2.h{font-size:32px}}
 .club-top .prose{margin-bottom:28px}
 .club-top:not(.split2)>div{max-width:820px}
 .club-btns{margin-top:4px}
